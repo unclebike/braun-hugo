@@ -1,0 +1,110 @@
+.site-footer {
+    padding-top: 8rem;
+    padding-bottom: 4rem;
+}
+
+.footer-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-top: 4rem;
+}
+
+.fade-to-right,
+.fade-to-left {
+    flex: 1 1 0%;
+    height: 1px;
+}
+
+.fade-to-right {
+    background: linear-gradient(
+        to right,
+        hsla(214,70%,4%,0) 10%,
+        hsla(214,70%,4%,0.1) 50%,
+        hsla(214,70%,4%,0.1) 80%,
+        hsla(214,70%,4%,0) 100%);
+}
+
+:root[data-theme="dark"] .fade-to-right {
+    background: linear-gradient(
+        to right,
+        hsla(210, 1%, 69%, 0) 10%,
+        hsla(210, 1%, 69%, 0.1) 50%,
+        hsla(210, 1%, 69%, 0.1) 80%,
+        hsla(210, 1%, 69%, 0) 100%);
+}
+
+.fade-to-left {
+    background: linear-gradient(
+        to left,
+        hsla(214,70%,4%,0) 10%,
+        hsla(214,70%,4%,0.1) 50%,
+        hsla(214,70%,4%,0.1) 80%,
+        hsla(214,70%,4%,0) 100%);
+}
+
+:root[data-theme="dark"] .fade-to-left {
+    background: linear-gradient(
+        to left,
+        hsla(210, 1%, 69%, 0) 10%,
+        hsla(210, 1%, 69%, 0.1) 50%,
+        hsla(210, 1%, 69%, 0.1) 80%,
+        hsla(210, 1%, 69%, 0) 100%);
+}
+
+.footer-inner-main {
+    padding: 6.4rem 0 6.4rem;
+    align-items: start;
+}
+
+.footer-copyright {
+    color: var(--tertiary-text-color);
+    position: relative;
+    text-align: center;
+}
+
+.nav-footer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding-left: 0;
+    column-gap: .4rem;
+    row-gap: 0;
+    flex-wrap: wrap;
+    margin-top: 3.2rem;
+}
+
+.nav-footer .nav-footer-item {
+    list-style-type: none;
+}
+
+.nav-footer .nav-footer-item a {
+    padding: 1.6rem 1.6rem;
+    color: var(--secondary-text-color);
+}
+
+.footer-group-header {
+    color: var(--tertiary-text-color);
+}
+
+.has-serif-body .footer-copyright,
+.has-serif-body .footer-desc,
+.has-serif-body .nav-footer .nav-footer-item {
+    font-family: var(--font-serif);
+}
+
+@media (max-width: 767px) {
+    .footer-inner-main {
+        grid-template-columns: 1fr;
+        padding-top: 3rem;
+    }
+
+    .footer-left {
+        margin-bottom: 3rem;
+    }
+
+    .footer-right {
+        align-items: start;
+    }
+}

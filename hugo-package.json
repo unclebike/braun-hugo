@@ -1,0 +1,13 @@
+{
+  "name": "braun-hugo",
+  "version": "1.0.0",
+  "description": "Braun Hugo Theme",
+  "scripts": {
+    "build": "hugo --minify && npx pagefind --site public",
+    "dev": "hugo server -D",
+    "preview": "hugo server"
+  },
+  "devDependencies": {
+    "pagefind": "^0.12.0"
+  }
+}

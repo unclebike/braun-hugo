@@ -1,0 +1,26 @@
+{{ define "main" }}
+<div class="content-area">
+    <main class="site-main">
+        <section class="container medium">
+            <div class="hero-wrapper">
+                <h1 class="hero-header">{{ .Title }}</h1>
+                {{ if .Params.description }}
+                    <p class="body-1 hero-desc">{{ .Params.description }}</p>
+                {{ end }}
+            </div>
+        </section>
+
+        {{ partial "components/cat-nav" . }}
+
+        <section class="section-container">
+            <div class="post-feed {{ if ne .Site.Params.blog_article_layout "Minimal" }}expanded{{ end }} {{ if eq .Site.Params.blog_article_layout "Right thumbnail" }}right-thumbnail{{ end }} {{ if eq .Site.Params.blog_article_layout "Text-only" }}text-only{{ end }} {{ if eq .Site.Params.blog_article_layout "Card" }}feed-card kg-grid kg-grid-3col{{ end }} gh-feed container medium">
+                {{ range .Pages }}
+                    {{ partial "loop" . }}
+                {{ end }}
+            </div>
+        </section>
+
+        {{ partial "pagination" . }}
+    </main>
+</div>
+{{ end }}

@@ -1,0 +1,395 @@
+/* Content refers to styling all page and post content that is
+created within the Ghost editor. The main content handles
+headings, text, images and lists. We deal with cards lower down. */
+
+.gh-content,
+.side-timeline {
+    position: relative;
+}
+/* Default vertical spacing */
+.gh-content > * + * {
+    margin-top: 2.8rem;
+    margin-bottom: 0;
+}
+
+.hero-wrapper .gh-content p {
+    word-break: keep-all;
+}
+
+/* [id] represents all headings h1-h6, reset all margins */
+.gh-content > [id] {
+    margin: 0;
+}
+
+.has-serif-title .gh-content > [id] {
+    font-family: var(--font-serif);
+    font-weight: var(--font-weight-regular);
+}
+
+/* Add back a top margin to all headings, unless a heading
+is the very first element in the post content */
+.gh-content > [id]:not(:first-child) {
+    margin-top: 6.4rem;
+}
+
+/* Add a small margin between a heading and anything after it */
+.gh-content > [id] + * {
+    margin-top: 2rem;
+}
+
+.gh-content > [id] + p {
+    margin-top: 1.6rem;
+}
+
+.gh-content > [id] + .kg-card {
+    margin-top: 2.8rem;
+}
+
+/* A larger margin before/after HRs and blockquotes */
+.gh-content > hr,
+.gh-content > blockquote {
+    position: relative;
+/*     margin-top: 4.8rem; */
+}
+
+.gh-content > hr + *,
+.gh-content > blockquote + * {
+/*     margin-top: 4.8rem; */
+}
+
+.gh-content > hr {
+    border-color: var(--primary-text-color);
+    display: block;
+    opacity: .1;
+    width: 100%;
+}
+
+.gh-content > hr::after {
+    content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 100%;
+	background-color: var(--background-primary);
+	margin: 0 46%;
+	background-size: contain;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' width='8' height='8' fill='none' stroke='%23ffffff90' stroke-width='3px' stroke-linecap='round' stroke-linejoin='round' class='logo-wireframe'%3E%3Cpath d='M 30.91 17.52 L 34.43 35.7 M 61.44 14.41 L 62.61 0 M 34.43 35.7 L 37.57 90.47 M 81 26.39 L 61.44 14.41 L 34.43 35.7 L 65.35 100 M 62.61 0 L 30.91 17.52 L 18 45.45 L 37.57 90.47 L 65.35 100 L 70.44 89.8 L 81 26.39 L 62.61 0 Z'%3E%3C/path%3E%3C/svg%3E");
+}
+
+
+/* Cards */
+.gh-content :not(.kg-card):not([id]) + .kg-card {
+    margin-top: 4.8rem;
+}
+
+.gh-content .kg-card + :not(.kg-card):not([id]) {
+    margin-top: 4.8rem;
+}
+
+.gh-content :not(.kg-card):not([id]) + .kg-card:not(.kg-width-wide):not(.kg-width-full) {
+    margin-top: 3.6rem;
+}
+
+.gh-content .kg-card:not(.kg-width-wide):not(.kg-width-full) + :not(.kg-card):not([id]) {
+    margin-top: 3.6rem;
+}
+
+/* Now the content typography styles */
+.gh-content h1 {
+    font-size: 4.8rem;
+    letter-spacing: .012em;
+}
+
+.gh-content h2 {
+    font-size: 4rem;
+    letter-spacing: .004em;
+}
+
+.gh-content h3 {
+    font-size: 3.2rem;
+    letter-spacing: .004em;
+}
+
+.gh-content h4 {
+    font-size: 2.6rem;
+}
+
+.gh-content h5 {
+    font-size: 2.2rem;
+}
+
+.gh-content h6 {
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    color: var(--secondary-text-color);
+    margin-bottom: -6.4rem !important;
+    margin-top: 12rem !important;
+    line-height: 2.5;
+}
+
+.serie-page .gh-content h2 {
+    font-size: 2.2rem;
+}
+
+.serie-page .gh-content .single-title a {
+    text-decoration: none;
+}
+
+.serie-page .gh-content h3 {
+    font-size: 1.8rem;
+}
+
+.serie-page .gh-content h4 {
+    font-size: 1.8rem;
+}
+
+.serie-page .gh-content h5 {
+    font-size: 1.8rem;
+}
+
+
+.gh-content a {
+    word-break: break-word;
+    text-decoration: underline;
+    text-decoration-color: var(--tertiary-text-color);
+    text-decoration-skip-ink: none;
+    transition: all 150ms var(--animation-base);
+    color: inherit;
+
+    text-underline-offset: 5px !important;
+    text-decoration-thickness: 1px !important;
+}
+
+.gh-content a:not([class]):hover {
+    text-decoration-color: var(--brand-color);
+    color: var(--brand-color);
+}
+
+.gh-content a[class]:hover {
+    opacity: 1;
+}
+
+.gh-content > ol,
+.gh-content > ul,
+.gh-content > dl,
+.gh-content > p {
+    font-size: var(--base-text-size);
+    letter-spacing: 0;
+}
+
+.gh-content .kg-callout-card .kg-callout-text,
+.gh-content .kg-toggle-card .kg-toggle-content > ol,
+.gh-content .kg-toggle-card .kg-toggle-content > ul,
+.gh-content .kg-toggle-card .kg-toggle-content > p,
+.gh-content .kg-product-card .kg-product-card-description > ol,
+.gh-content .kg-product-card .kg-product-card-description > ul,
+.gh-content .kg-product-card .kg-product-card-description > p {
+    font-size: var(--base-text-size);
+    letter-spacing: 0;
+}
+
+.has-serif-title .gh-content > blockquote,
+.has-serif-body .gh-content > ol,
+.has-serif-body .gh-content > ul,
+.has-serif-body .gh-content > dl,
+.has-serif-body .gh-content > p,
+.has-serif-body .gh-content .kg-callout-text,
+.has-serif-body .gh-content .kg-toggle-content > ol,
+.has-serif-body .gh-content .kg-toggle-content > ul,
+.has-serif-body .gh-content .kg-toggle-content > p {
+    font-family: var(--font-serif);
+}
+
+.has-serif-title .gh-content > blockquote {
+    font-style: italic;
+    color: var(--primary-text-color);
+}
+
+.gh-content > ul,
+.gh-content > ol,
+.gh-content > dl {
+    padding-left: 2.4rem;
+}
+
+.gh-content li + li {
+    margin-top: 1.2rem;
+}
+
+.gh-content-line {
+    border-color: var(--primary-text-color);
+    display: block;
+    width: 100%;
+    /* opacity: .1; */
+    height: 1px;
+    margin: 4vmin 0 3vmin 0;
+    border-top-width: 2px;
+}
+
+.meta-sticky-top {
+    position: sticky;
+    top: 1.2rem;
+    margin-top: -2rem;
+    justify-content: end;
+    margin-right: 3.2rem;
+}
+
+.time-line {
+    border-right: 1px solid var(--divider-color);
+    margin-right: 2.8rem;
+}
+
+.time-line::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    background: var(--brand-color);
+    display: inline-block;
+    position: absolute;
+    top: -12px;
+    right: -4px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px hsl(from var(--brand-color) h s l / .2);
+}
+
+.anchor-indent {
+    padding-top: 3.2rem;
+}
+
+.tag-hash-u-hide-overview .serie-overview {
+    display: none;
+}
+
+.timeline-content {
+    margin-top: -2rem;
+    padding-left: 3.2rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.timeline-content .single-media {
+    margin-top: 2.4rem;
+}
+
+.timeline-content .toc-container {
+    display: none;
+}
+
+.timeline-content .gh-content {
+    margin-top: 0;
+}
+
+.view-arrow {
+    position: absolute;
+    top: -.4rem;
+    right: 0;
+    padding: .8rem;
+    background-color: var(--input-background-color);
+    height: 3.2rem;
+    width: 3.2rem;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color .2s var(--animation-base);
+}
+
+.view-arrow .icon {
+    width: 2.8rem;
+    height: 2.8rem;
+}
+
+.timeline-content:hover .view-arrow {
+    background-color: var(--brand-color);
+}
+
+.timeline-content:hover .view-arrow .icon {
+    fill: var(--white-color);
+}
+
+/* footnote */
+.footnote { 
+    margin-left: 0.25rem; 
+    margin-right: 0.5rem;
+}
+.footnote a { 
+    text-decoration: none;
+    color: var(--brand-color);
+    font-weight: 400;
+    font-size: 0.9em;
+}
+
+.footnote-list {
+    padding: .8rem 0 2.4rem 2.4rem;
+    margin-top: 4rem;
+    margin-bottom: 4rem;
+    font-size: 0.9em;
+    border-top: 1px solid var(--divider-color);
+    border-bottom: 1px solid var(--divider-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.footnote-list li {
+    padding-top: 1.6rem;
+    line-height: 1.5;
+}
+
+
+@media (max-width: 1199px) {
+    .meta-sticky-top {
+        justify-content: start;
+    }
+}
+
+@media (max-width: 767px) {
+    
+    .gh-content h1 {
+        font-size: 3.6rem;
+    }
+    
+    .gh-content h2 {
+        font-size: 3.2rem;
+    }
+    
+    .gh-content h3 {
+        font-size: 2.8rem;
+    }
+    .gh-content > ol,
+    .gh-content > ul,
+    .gh-content > dl,
+    .gh-content > p {
+        font-size: 2rem;
+        line-height: 1.66;
+    }
+
+    .gh-content .kg-callout-card .kg-callout-text,
+    .gh-content .kg-toggle-card .kg-toggle-content > ol,
+    .gh-content .kg-toggle-card .kg-toggle-content > ul,
+    .gh-content .kg-toggle-card .kg-toggle-content > p,
+    .gh-content .kg-product-card .kg-product-card-description > ol,
+    .gh-content .kg-product-card .kg-product-card-description > ul,
+    .gh-content .kg-product-card .kg-product-card-description > p {
+        font-size: 2rem;
+        line-height: 1.66;
+    }
+
+    .time-line {
+        border: 0;
+        margin-right: 0;
+    }
+
+    .time-line::before {
+        display: none;
+    }
+
+    .timeline-content {
+        padding-left: 0;
+    }
+
+}

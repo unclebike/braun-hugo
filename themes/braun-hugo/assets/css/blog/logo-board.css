@@ -1,0 +1,22 @@
+.logo-list {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 6rem;
+    row-gap: 2.4rem;
+    justify-content: start;
+    padding-bottom: 2.4rem;
+}
+
+.logo-list .kg-image-card {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border-radius: unset;
+    width: 120px;
+}
+
+.logo-board .feed-header-title {
+
+}

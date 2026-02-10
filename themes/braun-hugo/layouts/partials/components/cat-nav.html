@@ -1,0 +1,8 @@
+<nav class="blog-nav container medium">
+    <div class="blog-navbar">
+        <a href="/posts/" class="body-2 blog-navbar-item">All</a>
+        {{ range first 5 .Site.Taxonomies.tags.ByCount }}
+            <a href="{{ .Page.RelPermalink }}" class="body-2 blog-nav-{{ .Page.Title | urlize }} blog-navbar-item">{{ .Page.Title }}</a>
+        {{ end }}
+    </div>
+</nav>

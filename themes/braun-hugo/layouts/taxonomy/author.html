@@ -1,0 +1,58 @@
+{{ define "main" }}
+<div class="content-area">
+    <main class="site-main">
+        <section class="taxonomy">
+            <header class="single-header kg-canvas">
+                {{ if .Params.profile_image }}
+                    <div class="taxonomy-media u-placeholder square round">
+                        <img class="u-object-fit" src="{{ .Params.profile_image }}" alt="{{ .Title }}">
+                    </div>
+                {{ end }}
+                <div class="tag-wrapper">
+                    {{ if .Params.website }}
+                        <h1 class="single-title">
+                            <a href="{{ .Params.website }}" target="_blank" rel="noopener noreferrer">{{ .Title }}</a>
+                        </h1>
+                    {{ else }}
+                        <h1 class="single-title">{{ .Title }}</h1>
+                    {{ end }}
+
+                    {{ if .Params.location }}
+                        <div class="author-meta">{{ .Params.location }}</div>
+                    {{ end }}
+
+                    <div class="single-excerpt">{{ .Params.bio }}</div>
+
+                    <div class="share author-social">
+                        {{ if .Params.website }}
+                            <a class="share-link author-social-item" href="{{ .Params.website }}" target="_blank" rel="noopener noreferrer">
+                                {{ partial "icons/link" . }}
+                            </a>
+                        {{ end }}
+                        {{ if .Params.facebook }}
+                            <a class="share-link author-social-item" href="https://www.facebook.com/{{ .Params.facebook }}" target="_blank" rel="noopener noreferrer">
+                                {{ partial "icons/facebook" . }}
+                            </a>
+                        {{ end }}
+                        {{ if .Params.twitter }}
+                            <a class="share-link author-social-item" href="https://twitter.com/{{ .Params.twitter }}" target="_blank" rel="noopener noreferrer">
+                                {{ partial "icons/twitter" . }}
+                            </a>
+                        {{ end }}
+                    </div>
+                </div>
+            </header>
+        </section>
+
+        <div class="kg-canvas">
+            <div class="post-feed gh-feed {{ if ne .Site.Params.blog_article_layout "Minimal" }}expanded{{ end }} {{ if eq .Site.Params.blog_article_layout "Right thumbnail" }}right-thumbnail{{ end }} {{ if eq .Site.Params.blog_article_layout "Text-only" }}text-only{{ end }}">
+                {{ range .Pages }}
+                    {{ partial "loop" . }}
+                {{ end }}
+            </div>
+
+            {{ partial "pagination" . }}
+        </div>
+    </main>
+</div>
+{{ end }}

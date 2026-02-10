@@ -1,0 +1,41 @@
+{{ $ctx := .context }}
+<article class="card {{ if .isOverlay }}card-overlay{{ end }} {{ if .isSmall }}card-text-only{{ end }} {{ if .isReverse }}card-reverse{{ end }} {{ if .isBook }}card-book{{ end }}" data-month="{{ $ctx.Date.Format "January 2006" }}">
+    {{ if .showVisual }}
+        {{ if $ctx.Params.featured_image }}
+            <figure class="card-image {{ if .isSmall }}card-image-small{{ end }}">
+                <img
+                    src="{{ $ctx.Params.featured_image }}"
+                    alt="{{ if $ctx.Params.featured_image_alt }}{{ $ctx.Params.featured_image_alt }}{{ else }}{{ $ctx.Title }}{{ end }}"
+                    loading="lazy"
+                >
+            </figure>
+        {{ end }}
+    {{ end }}
+    <div class="card-wrapper">
+        {{ if $ctx.Params.featured_image_caption }}
+            <div class="sub-heading">{{ $ctx.Params.featured_image_caption }}</div>
+        {{ end }}
+        <h2 class="{{ if .isLarge }}h2{{ else }}{{ if .isSmall }}h4{{ else }}h3{{ end }}{{ end }} card-title">
+            {{ $ctx.Title }}
+            {{ if $ctx.Params.canonical_url }}{{ partial "icons/arrow-upright" . }}{{ else }}{{ partial "icons/arrow-right" . }}{{ end }}
+        </h2>
+        {{ if not .hideTags }}
+            {{ if not .isPost }}
+                {{ if $ctx.Params.tags }}
+                    <div class="tags-list">
+                        {{ range first 2 $ctx.Params.tags }}
+                            <div class="sub-heading tag-item">{{ . }}</div>
+                        {{ end }}
+                    </div>
+                {{ end }}
+            {{ end }}
+        {{ end }}
+        {{ if not .isOverlay }}
+            {{ if $ctx.Summary }}
+                <div class="sub-heading card-excerpt">{{ $ctx.Summary }}</div>
+            {{ end }}
+        {{ end }}
+        {{ partial "components/edit-shortcut" (dict "isPost" .isPost) }}
+    </div>
+    <a class="u-permalink" href="{{ if $ctx.Params.canonical_url }}{{ $ctx.Params.canonical_url }}{{ else }}{{ $ctx.RelPermalink }}{{ end }}" aria-label="{{ $ctx.Title }}"></a>
+</article>

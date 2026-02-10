@@ -1,0 +1,22 @@
+<article class="feed post">
+    {{ if .Params.featured_image }}
+        <div class="feed-image">
+            <img src="{{ .Params.featured_image }}" alt="{{ .Title }}" loading="lazy">
+        </div>
+    {{ end }}
+    <div class="feed-wrapper">
+        {{ if .Params.tags }}
+            <div class="feed-tag">
+                <span class="feed-tag-item sub-heading">{{ index .Params.tags 0 }}</span>
+            </div>
+        {{ end }}
+        <h2 class="body-1 feed-title">{{ .Title }}</h2>
+        {{ if .Summary }}
+            <div class="feed-excerpt">{{ .Summary }}</div>
+        {{ end }}
+        <time class="body-1 feed-calendar" datetime="{{ .Date.Format "2006-01-02" }}">
+            {{ .Date.Format "02 Jan" }}
+        </time>
+    </div>
+    <a class="u-permalink" href="{{ .RelPermalink }}" aria-label="{{ .Title }}"></a>
+</article>

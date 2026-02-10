@@ -1,0 +1,69 @@
+.kg-canvas .toc-container {
+    font-size: 1.4rem;
+    grid-column: main-start/main-end;
+    margin: 2.4rem 0 2.4rem;
+    padding: 0;
+    position: static;
+    width: 100%;
+}
+
+.toc-sidebar {
+    background-color: var(--hero-background-color);
+    padding: 2.4rem 2.4rem 1rem;
+    width: 100%;
+    border-radius: var(--radii-small);
+}
+
+.has-serif-title .toc-sidebar {
+    font-family: var(--font-serif);
+}
+
+.toc-sidebar h4 {
+    font-size: 2rem;
+    font-weight: 600;
+    font-variant: all-petite-caps;
+}
+
+.has-serif-title .toc-sidebar h4 {
+    font-family: var(--font-serif);
+}
+
+.toc {
+    align-self: stretch;
+    padding: 1px 0 0;
+}
+
+.toc > .toc-list {
+    /* padding-left: 0; */
+    margin: .8rem 0;
+}
+
+.toc-list,
+.gh-content ol.toc-list li {
+    list-style-type: circle;
+}
+
+.gh-content ol.toc-list li li {
+    list-style-type: square;
+}
+
+.toc-list-item {
+    font-size: 1.6rem;
+    padding: .4rem 0;
+    line-height: 1.4;
+}
+
+
+.gh-content li+li {
+    margin-top: 0;
+}
+
+.toc-list-item.is-active-li a {
+    /* font-weight: 700; */
+    /* color: var(--brand-color); */
+}
+
+.toc-list-item a {
+    text-decoration: none;
+    color: var(--primary-text-color);
+}

@@ -1,0 +1,80 @@
+.share {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .8rem;
+}
+
+.share-label {
+    writing-mode: vertical-lr;
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+    color: var(--secondary-text-color);
+}
+
+.share-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    color: var(--secondary-text-color);
+    font-size: 1.6rem;
+    line-height: 0;
+    font-weight: 400;
+    letter-spacing: 0.04rem;
+    border-radius: 50%;
+    transition: all .15s var(--ease-in-out-quad);
+}
+
+.share-link:hover {
+    border-color: var(--brand-color);
+    color: var(--white-color);
+}
+
+.share-link:hover .icon {
+    fill: var(--brand-color);
+}
+
+.has-serif-body .share-link {
+    font-family: var(--font-serif);
+}
+
+.share-link .icon {
+    width: 24px;
+    height: 24px;
+    fill: var(--secondary-text-color);
+    transition: fill 200ms var(--ease-in-out-quad);
+}
+
+.share-link-label {
+    width: auto;
+    border-radius: 5px;
+    padding: 4px 16px;
+}
+
+.share-link-label .icon {
+    margin-right: 8px;
+}
+
+@media (max-width: 767px) {
+    .share {
+        flex-direction: row;
+        width: auto;
+        justify-content: center;
+        gap: 0;
+    }
+    .share-link {
+        width: 4.4rem;
+        height: 4.4rem;
+    }
+    .share-label {
+        writing-mode: horizontal-tb;
+        margin: 0 .8rem;
+    }
+
+    .gh-content .right-sidebar-container-post {
+        display: none;
+    }
+
+}

@@ -1,0 +1,14 @@
+<header class="feed-header container medium">
+    <div class="feed-header-wrapper">
+        <div class="header-group">
+            <h2 class="h1 feed-header-title">{{ .title }}</h2>
+            {{ partial "components/edit-shortcut" . }}
+        </div>
+        {{ if .view_all_url }}
+            <a class="link-view-all button button-text" href="{{ .view_all_url }}">
+                <span class="link-label">View all</span>
+                {{ partial "icons/arrow-right" . }}
+            </a>
+        {{ end }}
+    </div>
+</header>

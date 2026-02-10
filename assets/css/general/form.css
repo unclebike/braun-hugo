@@ -1,0 +1,216 @@
+label {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--primary-text-color);
+    margin-top: 3.2rem;
+    margin-bottom: .8rem;
+    font-family: var(--font-base);
+}
+
+label + label {
+    margin-top: 2rem;
+}
+
+label input,
+label textarea {
+    margin-top: 0.7rem;
+}
+
+input,
+textarea {
+    flex: 1 0 0;
+    height: var(--form-input-height);
+    padding: 0 1.5rem;
+    font-size: 1.6rem;
+    color: var(--primary-text-color);
+    appearance: none;
+    background-color: var(--input-background-color);
+    border: 0;
+    border-radius: var(--radii-small);
+    outline: none;
+    font-family: var(--gh-font-body, var(--font-base));
+    transition: box-shadow 150ms var(--animation-base);
+    width: 100%;
+}
+
+input:focus,
+textarea:focus {
+    box-shadow: 
+        0 0 0 2px hsl(from var(--brand-color) h s l/.8),
+        0 0 0 6px hsl(from var(--brand-color) h s l/.3);
+}
+
+::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: var(--tertiary-text-color);
+}
+
+textarea {
+    height: 100%;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    resize: vertical;
+}
+
+fieldset {
+    border: 0;
+    padding: 0;
+    margin-bottom: 2.4rem;
+}
+
+.has-serif-body input,
+.has-serif-body textarea {
+    font-family: var(--font-serif);
+}
+
+.form-wrapper {
+    position: relative;
+    max-width: 480px;
+}
+
+.form-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 15px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--white-color);
+    cursor: pointer;
+    background-color: var(--brand-color);
+    border: 0;
+    border-radius: 4px;
+    outline: none;
+}
+
+.form-button.with-icon {
+    width: 40px;
+    padding: 0;
+    border-radius: 0 4px 4px 0;
+}
+
+.form-wrapper .loader,
+.form-wrapper .success {
+    display: none;
+}
+
+.form-wrapper .loader .icon {
+    width: 28px;
+    height: 28px;
+}
+
+.form-wrapper.loading .default,
+.form-wrapper.success .default,
+.form-wrapper.success .loader {
+    display: none;
+}
+
+.form-wrapper.loading .loader {
+    display: block;
+}
+
+.form-wrapper.success .success {
+    display: flex;
+    align-items: center;
+}
+
+.inline-form {
+    display: flex;
+    gap: 1.6rem;
+}
+
+.contact-form {
+    margin-top: 3rem;
+}
+
+.contact-form .button {
+    margin-top: 1.5rem;
+}
+
+.subscription-wrapper {
+    margin-top: 3.2rem;
+}
+
+.subscribe-title {
+    color: var(--secondary-text-color);
+    margin-bottom: 1.6rem;
+}
+
+/* parent flex container for input + button */
+.inline-field-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  /* no gap here, we share a single continuous border */
+}
+
+/* input wrapper flexes to fill all available space */
+.inline-field-group .inline-field-wrapper {
+  flex: 1 1 auto;
+  min-width: 0; /* allow it to shrink if needed */
+}
+
+/* the injected <input> takes 100% of wrapper */
+.inline-field-wrapper input {
+  width: 100%;
+  padding:     0.75rem 1rem;                  /* adjust for your theme */
+  padding-right: 3rem;                        /* room for arrow */
+  border:      1px solid var(--divider-color);
+  border-right: none;                         /* no double border */
+  border-radius: var(--radii-small) 0 0 var(--radii-small);
+  transition:  opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* arrow-btn sits flush on the right, no flex-grow */
+.inline-field-group .arrow-btn {
+  flex:        0 0 auto;
+  margin:      0;                            /* no gap */
+  border:      1px solid var(--divider-color);
+  border-left: none;                         /* no double border */
+  border-radius: 0 var(--radii-small) var(--radii-small) 0;
+  background:  var(--ghost-accent-color);
+  color:       var(--white-color);
+  font-size: 1.6rem;
+  font-weight: 700;
+  padding:     0 1rem;
+  height:      var(--form-input-height);
+  display:     flex;
+  align-items: center;
+  justify-content: center;
+  cursor:      pointer;
+  transition:  background-color 0.2s ease, transform 0.2s ease;
+}
+
+/* hover state */
+.inline-field-group .arrow-btn:hover {
+  background: hsl(from var(--ghost-accent-color) h s l/.9);
+}
+/* when the input is focused, give the arrow the same focus ring */
+.inline-field-group:focus-within .arrow-btn {
+  box-shadow:
+    0 0 0 2px hsl(from var(--brand-color) h s l/.8),
+    0 0 0 6px hsl(from var(--brand-color) h s l/.3);
+}
+
+@media (max-width: 767px) {
+  .inline-field-group {
+    flex-direction: column;
+  }
+  .inline-field-wrapper input {
+    padding-right: 1rem;
+    border-right: 1px solid var(--divider-color);
+    border-radius: var(--radii-small);
+    width: 100%;
+  }
+  .inline-field-group .arrow-btn {
+    margin-top: 0.75rem;
+    width: 100%;
+    height: auto;
+    border-left: 1px solid var(--divider-color);
+    border-radius: var(--radii-small);
+  }
+}

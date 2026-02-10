@@ -1,0 +1,7 @@
+{{ define "main" }}
+<main class="site-main">
+    {{ partial "content" (dict "context" . "width" "narrow") }}
+    {{ partial "comments" . }}
+    {{ partial "related-posts" . }}
+</main>
+{{ end }}

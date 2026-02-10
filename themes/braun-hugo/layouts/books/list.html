@@ -1,0 +1,34 @@
+{{ define "main" }}
+<div class="content-area custom-page">
+    <main class="site-main">
+        {{ partial "page-header" (dict "title" .Title) }}
+        
+        {{ range where .Pages "Params.reading" true }}
+            <section class="section-container books">
+                <header class="feed-header container medium">
+                    <div class="feed-header-wrapper">
+                        <h2 class="h2 feed-header-title">Currently reading</h2>
+                    </div>
+                </header>
+                <div class="cards kg-grid kg-grid-3col container medium">
+                    {{ partial "components/card-project" (dict "showVisual" true "isBook" true "isOverlay" false "isLarge" false "hideTags" true "context" .) }}
+                </div>
+            </section>
+        {{ end }}
+
+        <section class="section-container books">
+            <header class="feed-header container medium">
+                <div class="feed-header-wrapper">
+                    <h2 class="h2 feed-header-title">{{ .Site.Title }}'s Shelf&nbsp;<span>{{ len .Pages }} books</span></h2>
+                </div>
+            </header>
+            <div class="cards kg-grid kg-grid-3col gh-feed container medium">
+                {{ range .Pages }}
+                    {{ partial "components/card-project" (dict "showVisual" true "isBook" true "isOverlay" false "isLarge" false "hideTags" true "imageSizes" "340px" "context" .) }}
+                {{ end }}
+            </div>
+            {{ partial "pagination" . }}
+        </section>
+    </main>
+</div>
+{{ end }}

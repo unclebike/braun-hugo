@@ -1,0 +1,72 @@
+.author-meta {
+    text-align: left;
+    width: 100%;
+    margin-left: .8rem;
+}
+
+.author-social {
+    justify-content: start;
+    margin-top: 2.5rem;
+}
+
+.author-list {
+    display: flex;
+    align-items: center;
+    margin-left: .8rem;
+}
+
+.author-list .author-name {
+    color: var(--secondary-text-color);
+    text-align: left;
+}
+
+.author-list .author-name a {
+    color: var(--primary-text-color);
+}
+
+.author-images {
+    display: flex;
+}
+
+.author-list .author-image-placeholder {
+    flex-shrink: 0;
+    overflow: hidden;
+    margin-left: -8px;
+    width: 3.2rem;
+    border-radius: 50%;
+}
+
+.author-card {
+    position: relative;
+    margin-bottom: 4rem;
+}
+
+.author-card-title {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 2.8rem;
+}
+
+.author-post-number {
+    text-align: center;
+    font-size: 2rem;
+}
+
+.has-serif-title .author-card-title,
+.has-serif-body .author-post-number,
+.has-serif-body .author-meta {
+    font-family: var(--font-serif);
+}
+
+@media (max-width: 767px) {
+    .author-list {
+        flex-direction: row;
+        margin-left: 0;
+    }
+    .author-meta {
+        margin-left: 0;
+    }
+    .author-images {
+        display: none;
+    }
+}

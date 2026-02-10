@@ -1,0 +1,121 @@
+build:
+  command: npm install -g hugo && hugo --minify && npx pagefind --site public
+  output_directory: public
+  root_directory: /
+
+media:
+  input: static/images
+  output: /images
+
+content:
+  - name: posts
+    label: Blog Posts
+    type: collection
+    path: content/posts
+    filename: "{primary}.md"
+    view:
+      fields: [title, date, draft]
+      primary: title
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: date
+        label: Date
+        type: date
+        options:
+          format: "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+          time: true
+      - name: draft
+        label: Draft
+        type: boolean
+        default: false
+      - name: tags
+        label: Tags
+        type: string
+        list: true
+      - name: description
+        label: Description
+        type: text
+      - name: featured_image
+        label: Featured Image
+        type: image
+      - name: body
+        label: Body
+        type: rich-text
+
+  - name: pages
+    label: Pages
+    type: collection
+    path: content/pages
+    filename: "{primary}.md"
+    view:
+      fields: [title, date, draft]
+      primary: title
+      sort: [title]
+      default:
+        sort: title
+        order: asc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: date
+        label: Date
+        type: date
+        options:
+          format: "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+          time: true
+      - name: draft
+        label: Draft
+        type: boolean
+        default: false
+      - name: tags
+        label: Tags
+        type: string
+        list: true
+      - name: description
+        label: Description
+        type: text
+      - name: featured_image
+        label: Featured Image
+        type: image
+      - name: body
+        label: Body
+        type: rich-text
+
+  - name: hugo-config
+    label: Site Config
+    type: file
+    path: hugo.toml
+    format: toml
+    fields:
+      - name: title
+        label: Site Title
+        type: string
+      - name: baseURL
+        label: Base URL
+        type: string
+      - name: params
+        label: Parameters
+        type: object
+        fields:
+          - name: description
+            label: Site Description
+            type: string
+          - name: author
+            label: Author
+            type: string
+          - name: tagline_text
+            label: Tagline
+            type: string
+
+settings:
+  content:
+    merge: true

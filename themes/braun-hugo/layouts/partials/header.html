@@ -1,0 +1,65 @@
+<header id="gh-head" class="gh-outer">
+    <div class="head-inner {{ if not .Site.Params.logo }}no-profile{{ end }}">
+        <div class="gh-head-nav">
+            <div class="gh-head-brand">
+                <div class="gh-head-brand-wrapper">
+                    <div class="gh-head-logo-text">
+                        {{ if .Site.Params.logo }}
+                            <a href="{{ .Site.BaseURL }}">
+                                <figure class="gh-head-logo-wrapper">
+                                    <img
+                                        src="{{ .Site.Params.logo }}"
+                                        alt="{{ .Site.Title }}"
+                                        loading="lazy"
+                                        class="u-object-fit"
+                                    >
+                                </figure>
+                            </a>
+                        {{ end }}
+                    </div>
+                    <div class="gh-head-text-wrapper">
+                        <a class="h4 gh-head-title" href="{{ .Site.BaseURL }}">
+                            {{ .Site.Title }}
+                        </a>
+                        {{ if .Site.Params.tagline_text }}
+                            <div class="sub-heading tagline">
+                                {{ .Site.Params.tagline_text }}
+                            </div>
+                        {{ end }}
+                    </div>
+                </div>
+                {{ partial "components/theme-toggle" . }}
+                <button class="gh-search gh-icon-btn" aria-label="Search this site">{{ partial "icons/search" . }}</button>
+                <button class="gh-burger"></button>
+            </div>
+
+            <div class="head-action-social">
+                <a class="header-search-bar u-header-search-bar"
+                    href="#"
+                    aria-label="Search">
+                    <span class="social-item">
+                        {{ partial "icons/search" . }}
+                    </span>
+                    <span class="search-help-text">⌘K</span>
+                </a>
+                {{ partial "components/theme-toggle" (dict "isDesktopOnly" true) }}
+            </div>
+            
+            <nav class="head-menu{{ if not .Site.Params.show_navigation_icons }} no-icons{{ end }}">
+                {{ partial "navigation" (dict "isSecondary" false "Site" .Site "Page" .) }}
+            </nav>
+
+        </div>
+        {{ if ne .Site.Params.navigation_buttons "Off" }}
+            <div class="head-member-actions">
+                <div class="gh-head-members">
+                    {{ if eq .Site.Params.navigation_buttons "Subscription" }}
+                        <a class="gh-head-link button button-primary button-head" id="zenbooker-trigger" href="https://widget.zenbooker.com/book/1746111848718x728354147005624300?embed=true">Book Online</a>
+                    {{ else }}
+                        <a class="button button-primary button-head" href="{{ .Site.Params.navigation_buttons_link }}">{{ .Site.Params.navigation_buttons_text }}</a>
+                    {{ end }}
+                </div>
+            </div>
+        {{ end }}
+    </div>
+</header>

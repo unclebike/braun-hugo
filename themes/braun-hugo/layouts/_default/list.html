@@ -1,0 +1,18 @@
+{{ define "main" }}
+<div class="content-area custom-page">
+    <main class="site-main">
+        {{ partial "page-header" (dict "noImage" true "title" .Title) }}
+        
+        {{ partial "components/cat-nav" . }}
+        
+        <section class="section-container">
+            <div class="post-feed {{ if ne .Site.Params.blog_article_layout "Minimal" }}expanded{{ end }} {{ if eq .Site.Params.blog_article_layout "Right thumbnail" }}right-thumbnail{{ end }} {{ if eq .Site.Params.blog_article_layout "Text-only" }}text-only{{ end }} {{ if eq .Site.Params.blog_article_layout "Card" }}feed-card kg-grid kg-grid-3col{{ end }} gh-feed container medium">
+                {{ range .Pages }}
+                    {{ partial "loop" . }}
+                {{ end }}
+            </div>
+            {{ partial "pagination" . }}
+        </section>
+    </main>
+</div>
+{{ end }}

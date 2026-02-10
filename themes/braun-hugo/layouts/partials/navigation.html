@@ -1,0 +1,23 @@
+{{ $page := .Page }}
+{{ if .isSecondary }}
+    <ul class="nav-footer">
+        {{ range .Site.Menus.secondary }}
+            <li class="nav-{{ .Name | urlize }} nav-footer-item">
+                <a href="{{ .URL | absURL }}">
+                    <span>{{ .Name }}</span>
+                </a>
+            </li>
+        {{ end }}
+    </ul>
+{{ else }}
+    <ul class="nav">
+        {{ range .Site.Menus.main }}
+            <li class="nav-{{ .Name | urlize }}{{ if and $page ($page.IsMenuCurrent "main" .) }} nav-current{{ end }} nav-item">
+                <a href="{{ .URL | absURL }}">
+                    <div class="nav-icon"></div>
+                    <span>{{ .Name }}</span>
+                </a>
+            </li>
+        {{ end }}
+    </ul>
+{{ end }}

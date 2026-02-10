@@ -1,0 +1,23 @@
+{{ define "main" }}
+<div class="content-area custom-page">
+    <main class="site-main">
+        {{ partial "page-header" (dict "title" .Title) }}
+        
+        <section class="section-container gallery">
+            <div class="gallery-grid kg-grid kg-grid-3col container medium">
+                {{ range .Pages }}
+                    <figure class="gallery-item">
+                        {{ if .Params.featured_image }}
+                            <img src="{{ .Params.featured_image }}" alt="{{ .Title }}" loading="lazy">
+                        {{ end }}
+                        {{ if .Title }}
+                            <figcaption>{{ .Title }}</figcaption>
+                        {{ end }}
+                    </figure>
+                {{ end }}
+            </div>
+            {{ partial "pagination" . }}
+        </section>
+    </main>
+</div>
+{{ end }}

@@ -1,0 +1,159 @@
+.masonry-container {
+    width: 100%;
+    /* max-width: 1920px; */
+    margin: 0 auto;
+    padding: 24px;
+    overflow: hidden;
+}
+
+.masonry-wrapper {
+    display: flex;
+    gap: .2rem;
+    width: 100%;
+}
+
+.masonry-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    min-width: 200px;
+}
+
+.masonry-brick {
+    break-inside: avoid;
+    position: relative;
+    overflow: hidden;
+    background: var(--background-color);
+    transform: translateZ(0);
+    opacity: 1;
+}
+
+/* New class for initial load animation */
+.masonry-brick.initial-load {
+    animation: masonry-fade-in 0.1s ease-out forwards;
+    opacity: 0;
+}
+
+.masonry-content {
+    margin: 0;
+    display: block;
+    position: relative;
+    width: 100%;
+    border-radius: var(--radii-medium);
+    overflow: hidden;
+}
+
+.masonry-title {
+    position: absolute;
+    bottom: .8rem;
+    left: .8rem;
+    padding: 0 .8rem;
+    font-size: 1.4rem;
+    line-height: 2.8rem;
+    border-radius: var(--radii-large);
+    color: var(--secondary-text-color);
+    background-color: hsl(from var(--background-color) h s l/.7);
+    backdrop-filter: blur(16px);
+    align-items: center;
+    gap: .4rem;
+    max-width: calc(100% - 4.8rem);
+}
+
+.masonry-title-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.masonry-title:hover {
+    background-color: hsl(from var(--background-color) h s l/.8);
+
+}
+
+.masonry-title .icon {
+    height: 1.6rem;
+    width: 1.6rem;
+}
+
+.masonry-content img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    cursor: zoom-in;
+    transition: transform 0.3s ease-in-out;
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+.masonry-brick:hover .masonry-content img {
+    transform: scale(1.02);
+}
+
+.masonry-brick::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none;
+}
+
+.masonry-brick:hover::after {
+    opacity: 1;
+}
+
+@media (min-width: 2000px) {
+    .masonry-wrapper {
+        --columns: 4;
+    }
+}
+
+@media (min-width: 1600px) and (max-width: 1999px) {
+    .masonry-wrapper {
+        --columns: 3;
+    }
+}
+
+@media (min-width: 1200px) and (max-width: 1599px) {
+    .masonry-wrapper {
+        --columns: 3;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+    .masonry-wrapper {
+        --columns: 2;
+    }
+}
+
+@media (max-width: 767px) {
+    .masonry-container {
+        padding: 16px;
+    }
+    
+    .masonry-wrapper {
+        --columns: 1;
+        gap: 16px;
+    }
+
+    .masonry-column {
+        min-width: unset;
+    }
+}
+
+@keyframes masonry-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

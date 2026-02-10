@@ -1,0 +1,65 @@
+{{ $ctx := .context }}
+{{ $width := .width }}
+<article class="single ghost-content {{ $ctx.Params.post_class }}">
+    {{ if $ctx.Params.show_title_and_feature_image }}
+        <header class="single-header kg-canvas">
+            <div class="single-heading-wrap">
+                {{ if eq $ctx.Type "posts" }}
+                    <div class="single-meta">
+                        <span class="single-meta-item single-meta-length">
+                            <time datetime="{{ $ctx.Date.Format "2006-01-02" }}">
+                                {{ $ctx.Date.Format "Jan 02, 2006" }}
+                            </time>
+                        </span>
+                        {{ if $ctx.Params.tags }}
+                            <span class="single-meta-item single-meta-tag">
+                                <a class="post-tag" href="/tags/{{ index $ctx.Params.tags 0 | urlize }}">{{ index $ctx.Params.tags 0 }}</a>
+                            </span>
+                        {{ end }}
+                    </div>
+                {{ end }}
+
+                <h1 class="single-title">{{ $ctx.Title }}</h1>
+
+                {{ if $ctx.Params.description }}
+                    <div class="sub-heading-large single-excerpt">
+                        {{ $ctx.Params.description }}
+                    </div>
+                {{ end }}
+
+                {{ if $.Site.Params.show_author }}
+                    {{ partial "content-footer" $ctx }}
+                {{ else if $.Site.Params.show_social_share }}
+                    {{ partial "content-footer" $ctx }}
+                {{ end }}
+            </div>
+
+            {{ if $ctx.Params.featured_image }}
+                <figure class="single-media kg-width-{{ $width }}">
+                    <img 
+                        src="{{ $ctx.Params.featured_image }}"
+                        alt="{{ if $ctx.Params.featured_image_alt }}{{ $ctx.Params.featured_image_alt }}{{ else }}{{ $ctx.Title }}{{ end }}"
+                        loading="lazy">
+                </figure>
+            {{ end }}
+        </header>
+    {{ end }}
+
+    <div class="single-content gh-content kg-canvas">
+        {{ $ctx.Content }}
+    </div>
+    
+    {{ if and (eq $ctx.Type "posts") $.Site.Params.show_subscription_box }}
+        <div class="single-content gh-content kg-canvas">
+            <div class="single-cta">
+                <div class="h3 single-cta-title">
+                    {{ $.Site.Params.email_signup_text }}
+                </div>
+                {{ partial "subscription-box" $ctx }}
+                <p class="sub-heading single-cta-desc">
+                    No spam, no sharing to third party. Only you and me.
+                </p>
+            </div>
+        </div>
+    {{ end }}
+</article>

@@ -1,0 +1,11 @@
+---
+title: "Uncle Bike is a hybrid Kona Dealer"
+date: "2025-05-24T23:55:53.000Z"
+draft: false
+tags:
+
+description: undefined
+featured_image: "/images/ghost/2025/05/kro.png"
+---
+
+<p>I’ve built and sold a lot of Kona bikes over the years—and ridden mine far enough to feel like they “get” the kind of riding I do. The new KRO program feels like an evolution that still leaves room for folks like me: local, trusted, and hands-on. I’m not a storefront anymore, but I can still get you the Kona that fits you best, build it right, and deliver it ready to ride. This kind of hybrid approach keeps the soul of local bike culture alive, even as the business shifts.</p><p>Check out this piece from The Radavist about Kona’s KRO program—it’s a smart move that helps riders connect with their local experts in a new way:</p><figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="https://theradavist.com/kona-kro-helps-out-local-dealers/"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Kona Redesigned KRO Helps Out Local Dealers</div><div class="kg-bookmark-description">The Kona Ride Online, aka KRO, is back – and better than ever. After a brief hiatus while Kona rebuilt things from the ground up, the KRO is officially live again—now fully integrated into konaworld.com.&nbsp;That means you don’t have to go very far to finally click “TAKE MY MONEY!” on that bike you’ve been geeking out over on your lunch break.&nbsp;The Kona Ride Online gives you access to the widest selection of Kona bikes available, all from the comfort of your mobile device or laptop. What about local dealers? Well, here’s the best part about the KRO. You’re not buying&amp;hellip;</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="/images/ghost/icon/favicon.bdae2e.svg" alt=""><span class="kg-bookmark-author">The Radavist</span><span class="kg-bookmark-publisher">John Watson</span></div></div><div class="kg-bookmark-thumbnail"><img src="/images/ghost/thumbnail/2024-kona-process-134-radavist-review-32.jpg" alt="" onerror="this.style.display = 'none'"></div></a></figure>

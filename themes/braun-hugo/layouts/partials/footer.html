@@ -1,0 +1,19 @@
+<footer class="site-footer">
+    <div class="container medium footer-container">
+        <div class="fade-to-right"></div>
+        <div class="body-2 footer-copyright">
+            {{ .Site.Title }} © {{ now.Year }}.
+           <span class="footer-signature">
+                Published with
+                <a class="menu-item badge" href="https://ghost.org/" target="_blank" rel="noopener noreferrer"> Ghost</a>
+                & <a class="menu-item badge" href="https://themex.studio/braun/" target="_blank" rel="noopener noreferrer"> Braun</a>
+            </span>
+        </div>
+         <div class="fade-to-left"></div>
+    </div>
+    <div class="footer-container-bottom">
+        <div class="footer-bottom-inner body-2">
+            {{ partial "navigation" (dict "isSecondary" true "Site" .Site "Page" .) }}
+        </div>
+    </div>
+</footer>

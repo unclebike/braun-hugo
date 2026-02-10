@@ -1,0 +1,11 @@
+{{ $related := .Site.RegularPages.Related . | first 6 }}
+{{ with $related }}
+    <section class="section-container related-wrapper kg-canvas">
+        <h3 class="section-title related-title">Similar thoughts</h3>
+        <div class="post-feed gh-feed">
+            {{ range . }}
+                {{ partial "loop" . }}
+            {{ end }}
+        </div>
+    </section>
+{{ end }}

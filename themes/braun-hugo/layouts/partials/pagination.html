@@ -1,0 +1,9 @@
+<nav class="load-more">
+    {{ if .Paginator.HasNext }}
+        <a class="button button-secondary gh-loadmore" href="{{ .Paginator.Next.URL }}">Load More</a>
+    {{ else }}
+        <button class="button button-secondary button-disabled gh-loadmore" disabled>
+            {{ partial "icons/spinner" . }}
+        </button>
+    {{ end }}
+</nav>

@@ -1,0 +1,75 @@
+baseURL = "https://braun.dev/"
+languageCode = "en-us"
+title = "Braun"
+theme = "braun-hugo"
+
+# Output formats
+[outputs]
+  home = ["HTML", "JSON"]
+
+# Markup settings
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+# Menu configuration
+[menu]
+  [[menu.main]]
+    name = "Home"
+    url = "/"
+    weight = 1
+  [[menu.main]]
+    name = "Blog"
+    url = "/posts/"
+    weight = 2
+
+# Image processing
+[imaging]
+  quality = 75
+  resampleFilter = "lanczos"
+
+# Related content
+[related]
+  threshold = 80
+  includeNewer = true
+  [[related.indices]]
+    name = "tags"
+    weight = 100
+
+# Taxonomies
+[taxonomies]
+  tag = "tags"
+  author = "authors"
+
+# Params - Theme Settings (from Ghost package.json config.custom)
+[params]
+  description = "Braun - A modern Hugo theme"
+  author = "Braun"
+  
+  # Core settings
+  edit_mode = false
+  color_combinations = "Default"
+  appearance = "system"
+  tagline_text = "Designer and creator."
+  show_navigation_icons = true
+  navigation_buttons = "Subscription"
+  navigation_buttons_text = "Action"
+  navigation_buttons_link = "https://themex.studio"
+  
+  # Homepage settings
+  hero_layout = "Rectangle image top"
+  case_study_card_style = "Full row"
+  blog_article_layout = "Card"
+  blog_image_orientation = "Landscape"
+  blog_category_navigation = ""
+  excluded_tags = "books,now,hash-timeline,hash-gallery"
+  email_signup_text = "Subscribe to my monthly newsletter"
+  
+  # Post settings
+  show_author = false
+  show_social_share = false
+  show_subscription_box = false
+  
+  # Pagination
+  posts_per_page = 18

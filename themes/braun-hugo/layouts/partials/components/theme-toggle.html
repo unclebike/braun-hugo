@@ -1,0 +1,24 @@
+{{/* Theme toggle button - shows when appearance is set to "user" */}}
+{{- if .Site -}}
+  {{/* Called with page context */}}
+  {{- if eq .Site.Params.appearance "user" -}}
+  <button class="gh-theme-toggle gh-icon-btn visible-mobile" aria-label="Toggle theme">
+      <div class="theme-toggle-icon">
+          <div class="moon-or-sun">
+              <div class="moon-mask"></div>
+          </div>
+      </div>
+  </button>
+  {{- end -}}
+{{- else -}}
+  {{/* Called with dict context - check for isDesktopOnly flag */}}
+  {{- if .isDesktopOnly -}}
+  <button class="gh-theme-toggle gh-icon-btn visible-desktop" aria-label="Toggle theme">
+      <div class="theme-toggle-icon">
+          <div class="moon-or-sun">
+              <div class="moon-mask"></div>
+          </div>
+      </div>
+  </button>
+  {{- end -}}
+{{- end -}}

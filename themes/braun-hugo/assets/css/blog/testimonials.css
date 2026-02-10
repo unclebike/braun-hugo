@@ -1,0 +1,33 @@
+/* style for about me */
+
+.about-creator {
+    align-items: start;
+}
+
+.about-creator .about-text {
+    grid-column: 2 / span 2;
+}
+
+.about-text.gh-content {
+    margin-top: 0;
+}
+
+.creators {
+    position: relative;
+}
+
+.creator-media {
+    aspect-ratio: 2/3;
+    margin-right: 2.4rem;
+    margin-top: .8rem;
+    border-radius: var(--corner-radius-small);
+}
+
+@media (max-width: 767px) {
+    .about-creator .about-text {
+        grid-column: auto;
+    }
+    .creator-media {
+        width: 64vw;
+    }
+}

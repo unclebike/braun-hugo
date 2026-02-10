@@ -1,0 +1,354 @@
+:root {
+    --brand-color: var(--ghost-accent-color, #6c49b6);
+    --primary-text-color: hsla(214,70%,4%,0.92);
+    --secondary-text-color: hsla(0,0%,2%,0.7);
+    --tertiary-text-color: hsla(0,0%,2%,0.55);
+    --diabled-background-color: var(--tertiary-text-color);
+    --divider-color: rgb(0 0 0 / 10%);
+    --input-background-color: rgb(0 0 0 / 8%);
+    --hero-background-color: rgb(0 0 0 / 4%);
+    --overlay-bg: rgb(250 250 250 / 95%);
+    --base-contrast: #fff;
+    --background-color: #fffffe;
+    --background-base: #FAF5EE;
+    --white-color: #fff;
+    --black-color: #000;
+    --green-color: #28a745;
+    --orange-color: #ffc107;
+    --red-color: #dc3545;
+    --facebook-color: #3b5998;
+    --twitter-color: #1da1f2;
+    --rss-color: #f26522;
+    /* invert color */
+    --primary-text-color-invert: rgb(250 250 250 / 95%);
+    --secondary-text-color-invert: rgb(250 250 250 / 75%);
+    --tertiary-text-color-invert: rgb(250 250 250 / 55%);
+    --primary-text-color-overlay: hsla(214,70%,4%,0.92);
+    --secondary-text-color-overlay: hsla(214,70%,4%,0.7);
+    --tertiary-text-color-overlay: hsla(214,70%,4%,0.55);
+    --divider-color-verlay: rgb(0 0 0 / 10%);
+    /* built-in Ghost color */
+    --color-lighter-gray: hsla(0,0%,12%,0.06);
+    --color-light-gray: hsla(0,0%,2%,0.1);
+    --color-mid-gray: hsla(0,0%,0%,0.35);
+    --color-dark-gray: hsla(0,0%,1%,0.74);
+    --color-darker-gray: hsla(204,71%,1%,0.92);
+
+    --animation-base: ease-in-out;
+    --font-base: -apple-system, BlinkMacSystemFont, 'Inter', Segoe UI, Helvetica, Arial, sans-serif;
+    --font-serif: 'Cardo', serif;
+    --font-weight-regular: 400;
+    --font-weight-bold: 600;
+    --navbar-height: 8rem;
+    --form-input-height: 4.8rem;
+    --base-text-size: 1.8rem;
+    --spacepsection: 12.8rem;
+    --sidebar-width: 24rem;
+    --radii-small: .8rem;
+    --radii-medium: 1.2rem;
+    --radii-large: 2rem;
+    --radii-pill: 16rem;
+    /* --content-spacing-multiplier: 5; */
+}
+
+:root.has-light-text,
+:root.dark-page,
+:root[data-theme="dark"] {
+    --primary-text-color: rgb(255 255 255 / 90%);
+    --secondary-text-color: rgb(255 255 255 / 65%);
+    --tertiary-text-color: rgb(255 255 255 / 45%);
+    --darker-gray-color: var(--primary-text-color);
+    --divider-color: rgb(255 255 255 / 12%);
+    --input-background-color: rgb(255 255 255 / 8%);
+    --hero-background-color: rgb(255 255 255 / 6%);
+    --base-contrast: hsla(214,70%,4%,0.92);
+    --overlay-bg: rgb(0 0 0 / 80%);
+    
+    /* built-in Ghost color */
+    --color-lighter-gray: rgb(255 255 255 / 6%);
+    --color-light-gray: rgb(255 255 255 / 12%);
+    --color-mid-gray: rgb(255 255 255 / 35%);
+    --color-dark-gray: rgb(255 255 255 / 74%);
+    --color-darker-gray: rgb(255 255 255 / 92%);
+}
+
+:root.dark-page,
+:root[data-theme="dark"] {
+    --background-color: #1A1A1A;
+    --background-base: #141414;
+}
+
+:root.is-color-onyx {
+    --background-color: #ffffff;
+    --background-base: #f7f7f7;
+}
+
+:root[data-theme="dark"].is-color-onyx {
+    --background-color: #1A1A1A;
+    --background-base: #141414;
+}
+
+:root.is-color-rust {
+    --background-color: #F2F1E7;
+    --background-base: #E9E4D8;
+}
+
+:root[data-theme="dark"].is-color-rust {
+    --background-color: #2B2B28;
+    --background-base: #22221E;
+}
+
+:root.is-color-fossil {
+    --background-color: #E1DEDB;
+    --background-base: #D6D3D0;
+}
+
+:root[data-theme="dark"].is-color-fossil {
+    --background-color: #1C1A19;
+    --background-base: #161514;
+}
+
+:root.is-color-mint {
+    --background-color: #F1FEFB;
+    --background-base: #E5EFEB;
+}
+
+:root[data-theme="dark"].is-color-mint {
+    --background-color: #1A1F1D;
+    --background-base: #151918;
+}
+
+:root.is-color-ember {
+    --background-color: #F4F0E6;
+    --background-base: #F6DECD;
+}
+
+:root[data-theme="dark"].is-color-ember {
+    --background-color: #1F1C18;
+    --background-base: #1F1916;
+}
+
+:root.is-color-ice {
+    --background-color: #EBEBEF;
+    --background-base: #DCE0E7;
+}
+
+:root[data-theme="dark"].is-color-ice {
+    --background-color: #1C1C1E;
+    --background-base: #171819;
+}
+
+:root.is-color-maelstrom {
+    --background-color: #E5EEF9;
+    --background-base: #D1E0F4;
+}
+
+:root[data-theme="dark"].is-color-maelstrom {
+    --background-color: #234E8A;
+    --background-base: #3962A0;
+}
+
+@media (max-width: 767px) {
+    :root {
+        --navbar-height: 8rem;
+    }
+}
+
+html {
+    box-sizing: border-box;
+    font-size: 62.5%;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+body {
+    color: var(--primary-text-color);
+    font-family: var(--gh-font-body, var(--font-base));
+    font-size: var(--base-text-size);
+    line-height: 1.75;
+    text-rendering: optimizeLegibility;
+    background-color: var(--background-base);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-wrap: pretty;
+}
+
+body.with-custom-background {
+    background-color: var(--background-base);
+}
+
+::selection {
+    background: var(--ghost-accent-color);
+    color:  var(--white-color);
+}
+
+a {
+    color: var(--primary-text-color);
+    text-decoration: none;
+    transition: color 0.1s var(--animation-base);
+}
+
+a:hover {
+    opacity: 0.9;
+}
+
+.gh-root-frame iframe {
+    border-radius: 0 !important;
+    backdrop-filter: blur(60px);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+    color: var(--primary-text-color);
+    font-family: var(--gh-font-heading, var(--font-base));
+    line-height: 1.25;
+    font-weight: var(--font-weight-bold);
+}
+
+p {
+    margin: 0;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+blockquote:not([class]) {
+    margin-right: 0;
+    margin-left: 0;
+    padding: 0 2.2rem;
+    border-left: 2px solid var(--brand-color);
+    color: var(--primary-text-color);
+    font-size: calc(var(--base-text-size) + .3rem);
+    line-height: 1.7;
+    font-weight: var(--font-weight-regular);
+    letter-spacing: -0.03rem;
+}
+
+blockquote:not([class]) strong {
+    font-weight: var(--font-weight-bold);
+    color: var(--primary-text-color);
+}
+
+ul,
+ol {
+    padding-left: 2rem;
+}
+
+iframe,
+embed {
+    display: block;
+    overflow: hidden;
+    width: 100%;
+    border: 0;
+}
+
+figure {
+    margin-right: 0;
+    margin-left: 0;
+}
+
+figcaption {
+    margin-top: 1.5rem;
+    color: var(--secondary-text-color);
+    font-size: 1.4rem;
+    line-height: 1.4;
+    text-align: center;
+}
+
+figcaption a {
+    color: var(--secondary-text-color) !important;
+    font-weight: 400 !important;
+}
+
+pre {
+    overflow-x: scroll;
+    padding: 1.6rem 2.2rem;
+    font-size: 1.6rem !important;
+    line-height: 1.5;
+    background-color: var( --lighter-gray-color);
+    border-radius: 8px !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+hr {
+    position: relative;
+    margin: 2rem auto;
+    border: 0;
+    border-top: 1px solid;
+    height: 1px;
+}
+
+table:not(.highlight) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1.5rem;
+    word-break: normal;
+}
+
+table:not(.highlight) thead {
+    background-color: var(--lighter-gray-color);
+}
+
+table:not(.highlight) tr + table:not(.highlight) tr {
+    border-top: 1px solid var(--light-gray-color);
+}
+
+table:not(.highlight) tr:hover td {
+    background-color: var(--lighter-gray-color);
+}
+
+table:not(.highlight) th,
+table:not(.highlight) td {
+    padding: 1rem 1.5rem;
+    line-height: 1.5;
+}
+
+table:not(.highlight) th {
+    text-align: left;
+}
+
+table:not(.highlight) tfoot {
+    border-top: 1px solid var(--mid-gray-color);
+}
+
+table:not(.highlight) tfoot td {
+    font-weight: 700;
+}
+
+@media (max-width: 767px) {
+    .table thead {
+        display: none;
+    }
+
+    .table tr {
+        display: block;
+        padding: 1.2rem 0;
+    }
+
+    .table td {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.7rem 0;
+        width: 100%;
+        text-align: right;
+    }
+
+    .table td::before {
+        content: attr(data-label);
+        margin-right: 1rem;
+        color: var(--secondary-text-color);
+        white-space: nowrap;
+    }
+}

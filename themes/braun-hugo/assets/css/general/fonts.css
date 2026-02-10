@@ -1,0 +1,26 @@
+@font-face {
+    font-family: 'Helvetica Now Text';
+    src: url('../fonts/HelveticaNowText-Regular.woff2') format('woff2'),
+        url('../fonts/HelveticaNowText-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Helvetica Now Text';
+    src: url('../fonts/HelveticaNowText-Medium.woff2') format('woff2'),
+        url('../fonts/HelveticaNowText-Medium.woff') format('woff');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Helvetica Now Display';
+    src: url('../fonts/HelveticaNowDisplay-Medium.woff2') format('woff2'),
+        url('../fonts/HelveticaNowDisplay-Medium.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}

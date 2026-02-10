@@ -1,0 +1,16 @@
+{{ define "main" }}
+<div class="content-area custom-page">
+    <main class="site-main">
+        {{ partial "page-header" (dict "title" .Title) }}
+        
+        <section class="section-container works">
+            <div class="cards kg-grid {{ if eq .Site.Params.case_study_card_style "Full row" }}full-row u-gap-big{{ else }}kg-grid-2col{{ end }} container medium">
+                {{ range .Pages }}
+                    {{ partial "components/card-project" (dict "showVisual" true "isOverlay" false "isLarge" false "isReverse" true "hideTags" true "imageSizes" "900px" "context" .) }}
+                {{ end }}
+            </div>
+            {{ partial "pagination" . }}
+        </section>
+    </main>
+</div>
+{{ end }}

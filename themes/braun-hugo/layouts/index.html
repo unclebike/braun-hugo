@@ -1,0 +1,40 @@
+{{ define "main" }}
+<div class="content-area">
+    <main class="site-main">
+        {{ with .Site.Data.sections.hero }}
+        <div class="hero-wrapper container medium">
+            <div class="hero-grid is-hero-image-{{ $.Site.Params.hero_layout | urlize }}">
+                {{ if .image }}
+                <figure class="hero-image">
+                    <img src="{{ .image }}" alt="{{ .title }}" loading="lazy">
+                </figure>
+                {{ end }}
+                <div class="hero-content">
+                    <h1 class="h1 hero-title">{{ .title }}</h1>
+                    <section class="gh-content">{{ .content | markdownify }}</section>
+                    {{ if .button_text }}
+                    <a href="{{ .button_link }}" class="button button-primary">{{ .button_text }}</a>
+                    {{ end }}
+                </div>
+            </div>
+        </div>
+        {{ end }}
+        
+        {{ with .Site.Data.sections.testimonials }}
+            {{ partial "components/landing-content" . }}
+        {{ end }}
+        
+        {{ with .Site.Data.sections.logos }}
+            {{ partial "components/landing-content" . }}
+        {{ end }}
+        
+        {{ with .Site.Data.sections.staticBanner }}
+            {{ partial "components/landing-content" . }}
+        {{ end }}
+        
+        {{ with .Site.Data.sections.staticText }}
+            {{ partial "components/landing-content" . }}
+        {{ end }}
+    </main>
+</div>
+{{ end }}

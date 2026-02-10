@@ -1,0 +1,84 @@
+.feed-card-inside {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    line-height: 1;
+}
+
+.post-feed.right-thumbnail .feed-card-inside {
+    flex-direction: row-reverse;
+}
+
+.archive-wrapper  {
+    display: block;
+}
+
+.date-wrapper {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.year-post-label,
+.month-post-label {
+    color: var(--tertiary-text-color);
+    padding-top: 6rem;
+    margin-bottom: 2rem;
+}
+
+.month-post-label {
+    margin-left: auto;
+}
+
+.has-serif-title .year-post-label,
+.has-serif-title .month-post-label {
+    font-family: var(--font-serif);
+}
+
+/* Archive page */
+.post-date-2014 + .post-date-2014 .year-post-label, 
+.post-year-2015 + .post-year-2015 .year-post-label, 
+.post-year-2016 + .post-year-2016 .year-post-label, 
+.post-year-2017 + .post-year-2017 .year-post-label, 
+.post-year-2018 + .post-year-2018 .year-post-label, 
+.post-year-2019 + .post-year-2019 .year-post-label, 
+.post-year-2020 + .post-year-2020 .year-post-label, 
+.post-year-2021 + .post-year-2021 .year-post-label, 
+.post-year-2022 + .post-year-2022 .year-post-label, 
+.post-year-2023 + .post-year-2023 .year-post-label, 
+.post-year-2024 + .post-year-2024 .year-post-label, 
+.post-year-2025 + .post-year-2025 .year-post-label,
+.post-year-2026 + .post-year-2026 .year-post-label,
+.post-year-2027 + .post-year-2027 .year-post-label,
+.post-year-2028 + .post-year-2028 .year-post-label,
+.post-year-2029 + .post-year-2029 .year-post-label,
+.post-year-2030 + .post-year-2030 .year-post-label,
+.post-date-1 + .post-date-1 .month-post-label, 
+.post-date-2 + .post-date-2 .month-post-label, 
+.post-date-3 + .post-date-3 .month-post-label, 
+.post-date-4 + .post-date-4 .month-post-label, 
+.post-date-5 + .post-date-5 .month-post-label, 
+.post-date-6 + .post-date-6 .month-post-label, 
+.post-date-7 + .post-date-7 .month-post-label, 
+.post-date-8 + .post-date-8 .month-post-label, 
+.post-date-9 + .post-date-9 .month-post-label, 
+.post-date-10 + .post-date-10 .month-post-label, 
+.post-date-11 + .post-date-11 .month-post-label, 
+.post-date-12 + .post-date-12 .month-post-label {
+    display: none;
+}
+
+@media (max-width: 575px) {
+    .archive-wrapper .feed-excerpt {
+        display: none;
+    }
+    
+    .archive-wrapper .feed-image {
+        width: 128px;
+        margin-right: 1.6rem;
+    }
+    
+    .archive-wrapper .feed-title {
+        font-size: 2rem !important;
+    }
+}
