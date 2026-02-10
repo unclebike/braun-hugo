@@ -1,4 +1,4 @@
-baseURL = "https://braun.dev/"
+baseURL = "https://theme-unclebike-xyz.pages.dev/"
 languageCode = "en-us"
 title = "Braun"
 theme = "braun-hugo"
@@ -20,9 +20,25 @@ theme = "braun-hugo"
     url = "/"
     weight = 1
   [[menu.main]]
-    name = "Blog"
-    url = "/posts/"
+    name = "Services"
+    url = "/services/"
     weight = 2
+  [[menu.main]]
+    name = "Membership"
+    url = "/membership/"
+    weight = 3
+  [[menu.main]]
+    name = "About"
+    url = "/about/"
+    weight = 4
+  [[menu.main]]
+    name = "Contact"
+    url = "/contact/"
+    weight = 5
+  [[menu.main]]
+    name = "News"
+    url = "/posts/"
+    weight = 6
 
 # Image processing
 [imaging]
@@ -41,6 +57,10 @@ theme = "braun-hugo"
 [taxonomies]
   tag = "tags"
   author = "authors"
+
+# Permalinks - pages at root level (e.g., /about/ instead of /pages/about/)
+[permalinks]
+  pages = "/:filename/"
 
 # Params - Theme Settings (from Ghost package.json config.custom)
 [params]

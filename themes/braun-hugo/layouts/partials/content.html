@@ -1,7 +1,11 @@
 {{ $ctx := .context }}
 {{ $width := .width }}
+{{ $showHeader := true }}
+{{ if isset $ctx.Params "show_title_and_feature_image" }}
+    {{ $showHeader = $ctx.Params.show_title_and_feature_image }}
+{{ end }}
 <article class="single ghost-content {{ $ctx.Params.post_class }}">
-    {{ if $ctx.Params.show_title_and_feature_image }}
+    {{ if $showHeader }}
         <header class="single-header kg-canvas">
             <div class="single-heading-wrap">
                 {{ if eq $ctx.Type "posts" }}
