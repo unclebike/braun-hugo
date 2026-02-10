@@ -1,0 +1,22 @@
+{{ $exp := . }}
+<article class="experience-item">
+    {{ if .logo }}
+    <figure class="experience-logo">
+        <img src="{{ .logo }}" alt="{{ .company }}" loading="lazy">
+    </figure>
+    {{ end }}
+    <div class="experience-content">
+        <div class="experience-header">
+            <h3 class="h4 experience-title">{{ .title }}</h3>
+            {{ if .company }}
+            <span class="sub-heading experience-company">{{ .company }}</span>
+            {{ end }}
+        </div>
+        {{ if .period }}
+        <time class="sub-heading experience-period">{{ .period }}</time>
+        {{ end }}
+        {{ if .description }}
+        <div class="experience-description">{{ .description | markdownify }}</div>
+        {{ end }}
+    </div>
+</article>

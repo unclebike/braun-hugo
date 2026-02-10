@@ -1,0 +1,5 @@
+type: "side-projects"
+title: "Services"
+enabled: true
+view_all_url: "/services/"
+limit: 4

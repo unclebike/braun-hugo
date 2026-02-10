@@ -1,48 +1,95 @@
-
 baseURL = 'https://theme-unclebike-xyz.pages.dev/'
 languageCode = 'en-us'
 title = 'Uncle Bike'
 theme = 'braun-hugo'
-outputs.home = [
-	'HTML',
-	'JSON',
-]
-markup.goldmark.renderer.unsafe = true
-menu.main = [
-	{ name = 'Home', url = '/', weight = 1.0 },
-	{ name = 'Services', url = '/services/', weight = 2.0 },
-	{ name = 'Membership', url = '/membership/', weight = 3.0 },
-	{ name = 'About', url = '/about/', weight = 4.0 },
-	{ name = 'Contact', url = '/contact/', weight = 5.0 },
-	{ name = 'News', url = '/posts/', weight = 6.0 },
-]
-imaging.quality = 75.0
-imaging.resampleFilter = 'lanczos'
-related.threshold = 80.0
-related.includeNewer = true
-related.indices = [
-	{ name = 'tags', weight = 100.0 },
-]
-taxonomies.tag = 'tags'
-taxonomies.author = 'authors'
-permalinks.pages = '/:filename/'
-params.description = 'Uncle Bike'
-params.author = 'Braun'
-params.edit_mode = false
-params.color_combinations = 'Default'
-params.appearance = 'system'
-params.tagline_text = 'Designer and creator.'
-params.show_navigation_icons = true
-params.navigation_buttons = 'Subscription'
-params.navigation_buttons_text = 'Action'
-params.navigation_buttons_link = 'https://themex.studio'
-params.hero_layout = 'Rectangle image top'
-params.case_study_card_style = 'Full row'
-params.blog_article_layout = 'Card'
-params.blog_image_orientation = 'Landscape'
-params.excluded_tags = 'books,now,hash-timeline,hash-gallery'
-params.email_signup_text = 'Subscribe to my monthly newsletter'
-params.show_author = false
-params.show_social_share = false
-params.show_subscription_box = false
-params.posts_per_page = 18.0
+
+# Output formats
+[outputs]
+  home = ["HTML", "JSON"]
+
+# Markup settings
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+# Menu configuration
+[menu]
+  [[menu.main]]
+    name = "Home"
+    url = "/"
+    weight = 1
+  [[menu.main]]
+    name = "Services"
+    url = "/services/"
+    weight = 2
+  [[menu.main]]
+    name = "Membership"
+    url = "/membership/"
+    weight = 3
+  [[menu.main]]
+    name = "About"
+    url = "/about/"
+    weight = 4
+  [[menu.main]]
+    name = "Contact"
+    url = "/contact/"
+    weight = 5
+  [[menu.main]]
+    name = "News"
+    url = "/posts/"
+    weight = 6
+
+# Image processing
+[imaging]
+  quality = 75
+  resampleFilter = "lanczos"
+
+# Related content
+[related]
+  threshold = 80
+  includeNewer = true
+  [[related.indices]]
+    name = "tags"
+    weight = 100
+
+# Taxonomies
+[taxonomies]
+  tag = "tags"
+  author = "authors"
+
+# Permalinks - pages at root level (e.g., /about/ instead of /pages/about/)
+[permalinks]
+  pages = "/:filename/"
+
+# Params - Theme Settings (from Ghost package.json config.custom)
+[params]
+  description = "Uncle Bike"
+  author = "Braun"
+  
+  # Core settings
+  edit_mode = false
+  color_combinations = "Default"
+  appearance = "system"
+  tagline_text = "Designer and creator."
+  show_navigation_icons = true
+  navigation_buttons = "Subscription"
+  navigation_buttons_text = "Action"
+  navigation_buttons_link = "https://themex.studio"
+  
+  # Homepage settings
+  hero_layout = "Rectangle image top"
+  case_study_card_style = "Full row"
+  blog_article_layout = "Card"
+  blog_image_orientation = "Landscape"
+  blog_category_navigation = ""
+  excluded_tags = "books,now,hash-timeline,hash-gallery"
+  email_signup_text = "Subscribe to my monthly newsletter"
+  
+  # Post settings
+  show_author = false
+  show_social_share = false
+  show_subscription_box = false
+  
+  # Pagination
+  posts_per_page = 18

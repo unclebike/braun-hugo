@@ -1,0 +1,5 @@
+type: "books"
+title: "Reading List"
+enabled: false
+view_all_url: "/books/"
+limit: 4

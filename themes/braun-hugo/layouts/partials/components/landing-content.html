@@ -1,6 +1,11 @@
+{{ $bgStyle := "" }}
+{{ with .background_color }}
+    {{ $bgStyle = printf "background-color: %s;" . }}
+{{ end }}
+
 {{/* Logo Wall Section */}}
 {{ if eq .type "logos" }}
-<section class="section-container logo-board">
+<section class="section-container logo-board"{{ with $bgStyle }} style="{{ . | safeCSS }}"{{ end }}>
     {{ partial "components/section-title" (dict "title" .title) }}
     <div class="container medium logo-list">
         {{ .content | markdownify }}
@@ -10,7 +15,7 @@
 
 {{/* Side Projects Section */}}
 {{ if eq .type "side-projects" }}
-<section class="section-container section-side-project">
+<section class="section-container section-side-project"{{ with $bgStyle }} style="{{ . | safeCSS }}"{{ end }}>
     {{ partial "components/section-title" (dict "title" .title "view_all_url" .view_all_url) }}
     <div class="cards content-3col gh-feed container medium">
         {{ range .content }}
@@ -34,9 +39,10 @@
 
 {{/* Blog Section */}}
 {{ if eq .type "blog" }}
-<section class="section-container section-blog">
+<section class="section-container section-blog"{{ with $bgStyle }} style="{{ . | safeCSS }}"{{ end }}>
     {{ partial "components/section-title" (dict "title" .title "view_all_url" .view_all_url) }}
-    <div class="post-feed {{ if ne $.Site.Params.blog_article_layout "Minimal" }}expanded{{ end }} {{ if eq $.Site.Params.blog_article_layout "Right thumbnail" }}right-thumbnail{{ end }} {{ if eq $.Site.Params.blog_article_layout "Text-only" }}text-only{{ end }} {{ if eq $.Site.Params.blog_article_layout "Card" }}feed-card kg-grid kg-grid-3col{{ end }} gh-feed container medium">
+    {{ $layout := $.Site.Params.blog_article_layout }}
+    <div class="post-feed {{ if eq $layout "Card" }}expanded feed-card kg-grid kg-grid-3col{{ else if eq $layout "Expanded" }}expanded{{ else if eq $layout "Right thumbnail" }}expanded right-thumbnail{{ else if eq $layout "Text-only" }}expanded text-only{{ else if eq $layout "Minimal" }}minimal{{ end }} gh-feed container medium">
         {{ range .content }}
             {{ partial "loop" . }}
         {{ end }}
@@ -46,7 +52,7 @@
 
 {{/* Case Studies Section */}}
 {{ if eq .type "case-studies" }}
-<section class="section-container case-study">
+<section class="section-container case-study"{{ with $bgStyle }} style="{{ . | safeCSS }}"{{ end }}>
     {{ partial "components/section-title" (dict "title" .title "view_all_url" .view_all_url) }}
     <div class="cards kg-grid {{ if eq $.Site.Params.case_study_card_style "Full row" }}full-row u-gap-big{{ else }}kg-grid-2col{{ end }} container medium">
         {{ range .content }}
@@ -58,7 +64,7 @@
 
 {{/* Testimonials Section */}}
 {{ if eq .type "testimonials" }}
-<section class="section-container testimonials">
+<section class="section-container testimonials"{{ with $bgStyle }} style="{{ . | safeCSS }}"{{ end }}>
     {{ partial "components/section-title" (dict "title" .title) }}
     <div class="container medium">
         <div class="kg-width-content kg-grid kg-grid-3col">
@@ -70,7 +76,7 @@
 
 {{/* Static Banner Section */}}
 {{ if eq .type "static-banner" }}
-<section class="section-container static-banner">
+<section class="section-container static-banner"{{ with $bgStyle }} style="{{ . | safeCSS }}"{{ end }}>
     {{ partial "components/section-title" (dict "title" .title) }}
     <div class="container medium">
         <div class="kg-width-content content-3col">
@@ -82,7 +88,7 @@
 
 {{/* Static Text Section */}}
 {{ if eq .type "static-text" }}
-<section class="section-container static-text">
+<section class="section-container static-text"{{ with $bgStyle }} style="{{ . | safeCSS }}"{{ end }}>
     {{ partial "components/section-title" (dict "title" .title) }}
     <div class="container medium">
         <div class="kg-width-content content-3col">
@@ -94,7 +100,7 @@
 
 {{/* Experiences Section */}}
 {{ if eq .type "experiences" }}
-<section class="section-container experiences">
+<section class="section-container experiences"{{ with $bgStyle }} style="{{ . | safeCSS }}"{{ end }}>
     {{ partial "components/section-title" (dict "title" .title) }}
     <div class="container medium">
         {{ range .content }}
@@ -106,7 +112,7 @@
 
 {{/* Books Section */}}
 {{ if eq .type "books" }}
-<section class="section-container books">
+<section class="section-container books"{{ with $bgStyle }} style="{{ . | safeCSS }}"{{ end }}>
     {{ partial "components/section-title" (dict "title" .title "view_all_url" .view_all_url) }}
     <div class="cards kg-grid kg-grid-4col container medium">
         {{ range .content }}

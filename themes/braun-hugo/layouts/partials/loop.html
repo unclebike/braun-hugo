@@ -6,13 +6,18 @@
     {{ end }}
     <div class="feed-wrapper">
         {{ if .Params.tags }}
+            {{ with index .Params.tags 0 }}
             <div class="feed-tag">
-                <span class="feed-tag-item sub-heading">{{ index .Params.tags 0 }}</span>
+                <span class="feed-tag-item sub-heading">{{ . }}</span>
             </div>
+            {{ end }}
         {{ end }}
         <h2 class="body-1 feed-title">{{ .Title }}</h2>
-        {{ if .Summary }}
-            <div class="feed-excerpt">{{ .Summary }}</div>
+        {{ $desc := .Params.description }}
+        {{ if and $desc (ne $desc "undefined") }}
+            <div class="feed-excerpt">{{ $desc | truncate 200 }}</div>
+        {{ else if .Summary }}
+            <div class="feed-excerpt">{{ .Summary | plainify | truncate 200 }}</div>
         {{ end }}
         <time class="body-1 feed-calendar" datetime="{{ .Date.Format "2006-01-02" }}">
             {{ .Date.Format "02 Jan" }}

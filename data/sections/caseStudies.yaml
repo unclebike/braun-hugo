@@ -1,0 +1,5 @@
+type: "case-studies"
+title: "Featured Work"
+enabled: false
+view_all_url: "/works/"
+limit: 4

@@ -318,6 +318,25 @@
     display: none;
 }
 
+.post-feed.minimal .feed {
+    padding: 1.2rem 0;
+    border-bottom: 1px solid var(--divider-color);
+}
+
+.post-feed.minimal .feed:last-child {
+    border-bottom: none;
+}
+
+.post-feed.minimal .feed-image,
+.post-feed.minimal .feed-excerpt,
+.post-feed.minimal .feed-tag {
+    display: none;
+}
+
+.post-feed.minimal .feed-title {
+    font-weight: var(--font-weight-regular);
+}
+
 @media (max-width: 575px) {
 
     .feed-image {

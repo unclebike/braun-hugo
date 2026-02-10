@@ -31,8 +31,11 @@
             {{ end }}
         {{ end }}
         {{ if not .isOverlay }}
-            {{ if $ctx.Summary }}
-                <div class="sub-heading card-excerpt">{{ $ctx.Summary }}</div>
+            {{ $desc := $ctx.Params.description }}
+            {{ if and $desc (ne $desc "undefined") }}
+                <div class="sub-heading card-excerpt">{{ $desc }}</div>
+            {{ else if $ctx.Summary }}
+                <div class="sub-heading card-excerpt">{{ $ctx.Summary | plainify | truncate 200 }}</div>
             {{ end }}
         {{ end }}
         {{ partial "components/edit-shortcut" (dict "isPost" .isPost) }}
