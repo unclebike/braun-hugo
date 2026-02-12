@@ -1,5 +1,5 @@
 type: "side-projects"
-title: "Services"
+title: "Side Projects"
 enabled: true
-view_all_url: "/services/"
-limit: 4
+view_all_url: "/projects/"
+limit: 3

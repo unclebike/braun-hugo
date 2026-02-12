@@ -1,7 +1,24 @@
 {{ define "main" }}
 <div class="content-area">
     <main class="site-main">
-        {{/* Hero Section - Always first */}}
+        {{/* Hero Section - Rich content from home-header page */}}
+        {{ $heroPage := .Site.GetPage "/pages/home-header" }}
+        {{ if $heroPage }}
+        <div class="hero-wrapper container medium">
+            <div class="hero-grid is-hero-image-{{ .Site.Params.hero_layout | urlize }}">
+                {{ with $heroPage.Params.featured_image }}
+                <figure class="hero-image">
+                    <img src="{{ . }}" alt="{{ $heroPage.Title }}" loading="lazy">
+                </figure>
+                {{ end }}
+                <div class="hero-content">
+                    <h1 class="h1 hero-title">{{ $heroPage.Title }}</h1>
+                    <section class="gh-content">{{ $heroPage.Content }}</section>
+                </div>
+            </div>
+        </div>
+        {{ else }}
+        {{/* Fallback to yaml hero */}}
         {{ with .Site.Data.sections.hero }}
         <div class="hero-wrapper container medium">
             <div class="hero-grid is-hero-image-{{ $.Site.Params.hero_layout | urlize }}">
@@ -21,33 +38,36 @@
             </div>
         </div>
         {{ end }}
-        
-        {{/* Blog Section - Latest posts */}}
-        {{ with .Site.Data.sections.blog }}
+        {{ end }}
+
+        {{/* Newsletter signup */}}
+        {{ partial "components/newsletter-signup" . }}
+
+        {{/* Service Packages Section */}}
+        {{ with .Site.Data.sections.services }}
             {{ if .enabled }}
-                {{/* Build content from actual posts */}}
-                {{ $posts := where site.RegularPages "Section" "posts" }}
-                {{ $posts = $posts | first (default 6 .limit) }}
+                {{ $services := where site.RegularPages "Section" "services" }}
+                {{ $services = $services | first (default 4 .limit) }}
                 {{ partial "components/landing-content" (dict 
-                    "type" "blog" 
+                    "type" "side-projects" 
                     "title" .title 
-                    "view_all_url" (default "/posts/" .view_all_url)
-                    "content" $posts
+                    "view_all_url" (default "/services/" .view_all_url)
+                    "content" $services
                     "background_color" .background_color
                 ) }}
             {{ end }}
         {{ end }}
-        
-        {{/* Case Studies Section - Works/Portfolio */}}
-        {{ with .Site.Data.sections.caseStudies }}
+
+        {{/* Benefits Section */}}
+        {{ with .Site.Data.sections.benefits }}
             {{ if .enabled }}
-                {{ $works := where site.RegularPages "Section" "works" }}
-                {{ $works = $works | first (default 4 .limit) }}
+                {{ $benefits := where site.RegularPages "Section" "benefits" }}
+                {{ $benefits = $benefits | first (default 3 .limit) }}
                 {{ partial "components/landing-content" (dict 
-                    "type" "case-studies" 
+                    "type" "side-projects" 
                     "title" .title 
-                    "view_all_url" (default "/works/" .view_all_url)
-                    "content" $works
+                    "view_all_url" (default "/benefits/" .view_all_url)
+                    "content" $benefits
                     "background_color" .background_color
                 ) }}
             {{ end }}
@@ -56,12 +76,7 @@
         {{/* Side Projects Section */}}
         {{ with .Site.Data.sections.sideProjects }}
             {{ if .enabled }}
-                {{/* Can use a custom section or filter by tag */}}
                 {{ $projects := where site.RegularPages "Section" "projects" }}
-                {{ if not $projects }}
-                    {{/* Fallback: use services as side projects if no projects section */}}
-                    {{ $projects = where site.RegularPages "Section" "services" }}
-                {{ end }}
                 {{ $projects = $projects | first (default 4 .limit) }}
                 {{ partial "components/landing-content" (dict 
                     "type" "side-projects" 
@@ -73,58 +88,18 @@
             {{ end }}
         {{ end }}
         
-        {{/* Experiences Section - Work history */}}
-        {{ with .Site.Data.sections.experiences }}
+        {{/* Blog Section - Latest posts */}}
+        {{ with .Site.Data.sections.blog }}
             {{ if .enabled }}
+                {{ $posts := where site.RegularPages "Section" "posts" }}
+                {{ $posts = $posts | first (default 6 .limit) }}
                 {{ partial "components/landing-content" (dict 
-                    "type" "experiences" 
+                    "type" "blog" 
                     "title" .title 
-                    "content" .items
+                    "view_all_url" (default "/posts/" .view_all_url)
+                    "content" $posts
                     "background_color" .background_color
                 ) }}
-            {{ end }}
-        {{ end }}
-        
-        {{/* Books Section */}}
-        {{ with .Site.Data.sections.books }}
-            {{ if .enabled }}
-                {{ $books := where site.RegularPages "Section" "books" }}
-                {{ $books = $books | first (default 4 .limit) }}
-                {{ partial "components/landing-content" (dict 
-                    "type" "books" 
-                    "title" .title 
-                    "view_all_url" (default "/books/" .view_all_url)
-                    "content" $books
-                    "background_color" .background_color
-                ) }}
-            {{ end }}
-        {{ end }}
-        
-        {{/* Testimonials Section */}}
-        {{ with .Site.Data.sections.testimonials }}
-            {{ if .enabled }}
-                {{ partial "components/landing-content" . }}
-            {{ end }}
-        {{ end }}
-        
-        {{/* Logos Section */}}
-        {{ with .Site.Data.sections.logos }}
-            {{ if .enabled }}
-                {{ partial "components/landing-content" . }}
-            {{ end }}
-        {{ end }}
-        
-        {{/* Static Banner Section */}}
-        {{ with .Site.Data.sections.staticBanner }}
-            {{ if .enabled }}
-                {{ partial "components/landing-content" . }}
-            {{ end }}
-        {{ end }}
-        
-        {{/* Static Text Section */}}
-        {{ with .Site.Data.sections.staticText }}
-            {{ if .enabled }}
-                {{ partial "components/landing-content" . }}
             {{ end }}
         {{ end }}
     </main>

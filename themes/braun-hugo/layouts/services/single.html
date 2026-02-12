@@ -1,5 +1,16 @@
 {{ define "main" }}
 <main class="site-main">
     {{ partial "content" (dict "context" . "width" "wide") }}
+
+    {{ $siblings := where (where .Site.RegularPages "Section" "services") ".Permalink" "ne" .Permalink }}
+    {{ if $siblings }}
+    <div class="read-more-wrap">
+        <div class="cards content-3col gh-feed container medium">
+            {{ range sort $siblings "Params.weight" }}
+                {{ partial "components/card-project" (dict "showVisual" true "isSmall" true "imageSizes" "80px" "context" .) }}
+            {{ end }}
+        </div>
+    </div>
+    {{ end }}
 </main>
 {{ end }}

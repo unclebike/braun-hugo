@@ -2,10 +2,12 @@
 title: "Basic Bob"
 date: "2025-03-30T21:00:00.000Z"
 draft: false
+weight: 1
 tags:
-
+subtitle: "Tweak & Tune"
 description: "Reliable, essential bike care with friendly email support and routine tune-ups to keep your ride ready. Ideal for riders seeking basic, hassle-free maintenance."
 featured_image: "/images/ghost/2025/05/basic-bob-2.png"
+price: "$115"
 ---
 
 <div class="kg-card kg-toggle-card" data-kg-toggle-state="close">
@@ -30,10 +32,7 @@ featured_image: "/images/ghost/2025/05/basic-bob-2.png"
             <div class="kg-toggle-content"><p><span style="white-space: pre-wrap;">If you’re interested, we’ll schedule your service for next year—just like your dentist does. Once you’re on Uncle Bike’s list, your bike’s ready to ride every spring and properly tucked away each fall.&nbsp;</span><b><strong style="white-space: pre-wrap;">It’s the easiest way to keep your bike running longer, smoother, and stress-free.</strong></b></p></div>
         </div>
 <!--kg-card-begin: html-->
-<br>  <!-- Zenbooker inline popup button begin -->
-										<link href="https://cdn.zenbooker.com/widget/latest/zenbooker.css" rel="stylesheet">
-										<script src="https://cdn.zenbooker.com/widget/latest/zenbooker.js" type="text/javascript"></script>
-										<a class="gh-head-link button button-primary button-head" id="cieg-trigger" onclick="Zenbooker.showPopupWidget('https://widget.zenbooker.com/book/1746111848718x728354147005624300?embed=true&preselected-service=1746111984657x325329023444713500');return false;">Book Online</a>
-										<!-- Zenbooker inline popup button end -->
+<br>
+<a class="gh-head-link button button-primary button-head zbw-book-btn" href="#book">Book Online</a>
 <!--kg-card-end: html-->
 <hr><p></p>

@@ -3,8 +3,8 @@ title: "Uncle Bike is a hybrid Kona Dealer"
 date: "2025-05-24T23:55:53.000Z"
 draft: false
 tags:
-
-description: undefined
+  - "Industry Updates"
+description: ""
 featured_image: "/images/ghost/2025/05/kro.png"
 ---
 

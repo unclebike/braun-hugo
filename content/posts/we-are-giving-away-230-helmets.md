@@ -3,7 +3,7 @@ title: "We are giving away 230 helmets!"
 date: "2025-05-24T23:37:13.000Z"
 draft: false
 tags:
-
+  - "News"
 description: "Saturday, June 7, 2025\nfrom 9:00am to 12:00pm"
 featured_image: "/images/ghost/2025/05/PNG-image-4C17-801A-CF-0.png"
 ---

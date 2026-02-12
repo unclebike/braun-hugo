@@ -2,10 +2,12 @@
 title: "Ready Eddy"
 date: "2025-03-30T20:00:00.000Z"
 draft: false
+weight: 2
 tags:
-
+subtitle: "Clean & Dialed"
 description: "Frequent riders who want their bikes ready from day one will enjoy priority appointments and a pre-scheduled winter tune-up to kick off your season hassle-free."
 featured_image: "/images/ghost/2025/05/ready-eddy-3.png"
+price: "$225"
 ---
 
 <div class="kg-card kg-toggle-card" data-kg-toggle-state="close">
@@ -60,11 +62,7 @@ featured_image: "/images/ghost/2025/05/ready-eddy-3.png"
             <div class="kg-toggle-content"><p><span style="white-space: pre-wrap;">Become a member and save on your next service. </span></p></div>
         </div>
 <!--kg-card-begin: html-->
-</br>
-<!-- Zenbooker inline popup button begin -->
-										<link href="https://cdn.zenbooker.com/widget/latest/zenbooker.css" rel="stylesheet">
-										<script src="https://cdn.zenbooker.com/widget/latest/zenbooker.js" type="text/javascript"></script>
-										<a class="gh-head-link button button-primary button-head" id="cieg-trigger" onclick="Zenbooker.showPopupWidget('https://widget.zenbooker.com/book/1746111848718x728354147005624300?embed=true&preselected-service=1746144552972x888862071449452500');return false;">Book Online</a>
-										<!-- Zenbooker inline popup button end -->
+<br>
+<a class="gh-head-link button button-primary button-head zbw-book-btn" href="#book">Book Online</a>
 <!--kg-card-end: html-->
 <hr><p></p>

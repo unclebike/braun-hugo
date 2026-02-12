@@ -1,0 +1,5 @@
+type: "side-projects"
+title: "Service Packages"
+enabled: true
+view_all_url: "/services/"
+limit: 4

@@ -1,0 +1,226 @@
+{{/* 
+  Pricing table partial — reusable on any page.
+  Usage: {{ partial "components/pricing-table" . }}
+  
+  Reads pricing data from data/pricing.yaml.
+  Features: Monthly/Yearly toggle, responsive card grid, CTA buttons.
+*/}}
+{{ $pricing := .Site.Data.pricing }}
+{{ if $pricing }}
+<section class="pricing-section">
+    <div class="container medium">
+        {{/* Monthly / Yearly Toggle */}}
+        <div class="pricing-toggle-wrapper">
+            <span class="pricing-toggle-label" data-period="monthly">Monthly</span>
+            <button class="pricing-toggle" id="pricing-toggle" aria-label="Toggle pricing period">
+                <span class="pricing-toggle-knob"></span>
+            </button>
+            <span class="pricing-toggle-label pricing-toggle-label--active" data-period="yearly">Yearly</span>
+        </div>
+
+        <div class="pricing-grid">
+            {{ range $pricing.tiers }}
+            <div class="pricing-card{{ if .featured }} pricing-card--featured{{ end }}">
+                <div class="pricing-card-header">
+                    <h2 class="pricing-card-name">{{ .name }}</h2>
+                    {{ if .price_monthly }}
+                    <div class="pricing-card-price" data-monthly="{{ .price_monthly }}" data-yearly="{{ .price_yearly }}">
+                        <span class="pricing-amount pricing-amount--monthly" style="display:none;">
+                            <span class="pricing-currency">CA$</span>{{ .price_monthly }}<span class="pricing-period">/mo</span>
+                        </span>
+                        <span class="pricing-amount pricing-amount--yearly">
+                            <span class="pricing-currency">CA$</span>{{ .price_yearly }}<span class="pricing-period">/y</span>
+                        </span>
+                    </div>
+                    {{ else }}
+                    <div class="pricing-card-price">
+                        <span class="pricing-amount"><span class="pricing-currency">$</span>0</span>
+                    </div>
+                    {{ end }}
+                    <p class="pricing-card-description">{{ .description }}</p>
+                </div>
+                <ul class="pricing-features">
+                    {{ range .features }}
+                    <li>{{ . }}</li>
+                    {{ end }}
+                </ul>
+                <div class="pricing-card-cta">
+                    <a href="{{ .cta_url }}" class="button {{ if .featured }}button-primary{{ else }}button-text{{ end }} pricing-button">{{ .cta_text }}</a>
+                </div>
+            </div>
+            {{ end }}
+        </div>
+    </div>
+</section>
+
+<style>
+.pricing-section {
+    padding: 2rem 0 4rem;
+}
+.pricing-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+}
+.pricing-toggle-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.pricing-toggle-label--active {
+    color: var(--primary-text-color);
+    font-weight: 600;
+}
+.pricing-toggle {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    background: var(--color-light-gray, #e5e7eb);
+    border: none;
+    border-radius: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+    padding: 0;
+}
+.pricing-toggle.is-monthly {
+    background: var(--color-light-gray, #e5e7eb);
+}
+.pricing-toggle-knob {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 20px;
+    height: 20px;
+    background: var(--background-color, #fff);
+    border-radius: 50%;
+    transition: transform 0.2s;
+}
+.pricing-toggle.is-monthly .pricing-toggle-knob {
+    transform: translateX(-22px);
+}
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    align-items: start;
+}
+.pricing-card {
+    border: 1px solid var(--divider-color, #e5e7eb);
+    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s;
+}
+.pricing-card:hover {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+.pricing-card--featured {
+    border-color: var(--ghost-accent-color, #ff8c82);
+    box-shadow: 0 0 0 1px var(--ghost-accent-color, #ff8c82);
+}
+.pricing-card-header {
+    margin-bottom: 1.5rem;
+}
+.pricing-card-name {
+    font-size: 1.25rem;
+    margin: 0 0 0.5rem;
+}
+.pricing-card-price {
+    margin-bottom: 0.75rem;
+}
+.pricing-amount {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.pricing-currency {
+    font-size: 1rem;
+    font-weight: 500;
+    vertical-align: super;
+}
+.pricing-period {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--secondary-text-color);
+}
+.pricing-card-description {
+    font-size: 0.875rem;
+    color: var(--secondary-text-color);
+    line-height: 1.5;
+    margin: 0;
+}
+.pricing-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    flex: 1;
+}
+.pricing-features li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--divider-color, #f0f0f0);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+.pricing-features li:last-child {
+    border-bottom: none;
+}
+.pricing-features li::before {
+    content: "✓ ";
+    color: var(--green-color, #22c55e);
+    font-weight: 600;
+}
+.pricing-card-cta {
+    margin-top: auto;
+}
+.pricing-button {
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+@media (max-width: 640px) {
+    .pricing-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+(function() {
+    var toggle = document.getElementById('pricing-toggle');
+    if (!toggle) return;
+    var labels = document.querySelectorAll('.pricing-toggle-label');
+    var monthlyPrices = document.querySelectorAll('.pricing-amount--monthly');
+    var yearlyPrices = document.querySelectorAll('.pricing-amount--yearly');
+    
+    function setPeriod(period) {
+        if (period === 'monthly') {
+            toggle.classList.add('is-monthly');
+            monthlyPrices.forEach(function(el) { el.style.display = ''; });
+            yearlyPrices.forEach(function(el) { el.style.display = 'none'; });
+        } else {
+            toggle.classList.remove('is-monthly');
+            monthlyPrices.forEach(function(el) { el.style.display = 'none'; });
+            yearlyPrices.forEach(function(el) { el.style.display = ''; });
+        }
+        labels.forEach(function(l) {
+            l.classList.toggle('pricing-toggle-label--active', l.dataset.period === period);
+        });
+    }
+    
+    toggle.addEventListener('click', function() {
+        setPeriod(toggle.classList.contains('is-monthly') ? 'yearly' : 'monthly');
+    });
+    labels.forEach(function(l) {
+        l.addEventListener('click', function() { setPeriod(l.dataset.period); });
+    });
+    
+    // Default to yearly
+    setPeriod('yearly');
+})();
+</script>
+{{ end }}

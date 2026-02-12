@@ -1,4 +1,4 @@
-baseURL = '/'
+baseURL = 'https://unclebike.xyz/'
 languageCode = 'en-us'
 title = 'Uncle Bike'
 theme = 'braun-hugo'
@@ -20,25 +20,21 @@ theme = 'braun-hugo'
     url = "/"
     weight = 1
   [[menu.main]]
-    name = "Services"
-    url = "/services/"
-    weight = 2
-  [[menu.main]]
-    name = "Membership"
-    url = "/membership/"
-    weight = 3
-  [[menu.main]]
     name = "About"
     url = "/about/"
+    weight = 2
+  [[menu.main]]
+    name = "Service Packages"
+    url = "/services/"
+    weight = 3
+  [[menu.main]]
+    name = "Become a Member"
+    url = "/membership/"
     weight = 4
   [[menu.main]]
     name = "Contact"
     url = "/contact/"
     weight = 5
-  [[menu.main]]
-    name = "News"
-    url = "/posts/"
-    weight = 6
 
 # Image processing
 [imaging]
@@ -58,24 +54,29 @@ theme = 'braun-hugo'
   tag = "tags"
   author = "authors"
 
-# Permalinks - pages at root level (e.g., /about/ instead of /pages/about/)
+# Permalinks - pages/projects/benefits at root level to match Ghost URLs
 [permalinks]
   pages = "/:filename/"
+  projects = "/:filename/"
+  benefits = "/:filename/"
+  services = "/:filename/"
+  posts = "/:filename/"
 
 # Params - Theme Settings (from Ghost package.json config.custom)
 [params]
   description = "Uncle Bike"
-  author = "Braun"
+  author = "Adam Tilley"
+  logo = "/images/ghost/uncle_logo-1.svg"
   
   # Core settings
   edit_mode = false
   color_combinations = "Default"
-  appearance = "system"
-  tagline_text = "Designer and creator."
+  appearance = "user"
+  tagline_text = "Your Local Bike Guy."
   show_navigation_icons = true
   navigation_buttons = "Subscription"
-  navigation_buttons_text = "Action"
-  navigation_buttons_link = "https://themex.studio"
+  navigation_buttons_text = "Book Online"
+  navigation_buttons_link = "#book"
   
   # Homepage settings
   hero_layout = "Rectangle image top"

@@ -1,0 +1,23 @@
+{{ define "main" }}
+<div class="content-area custom-page">
+    <main class="site-main">
+        {{ partial "page-header" (dict "title" .Title "description" .Params.description) }}
+        
+        <section class="section-container section-side-project">
+            <div class="cards content-3col gh-feed container medium">
+                {{ range .Pages }}
+                    {{ partial "components/card-project" (dict "showVisual" true "isSmall" true "imageSizes" "80px" "context" .) }}
+                {{ end }}
+            </div>
+        </section>
+        
+        {{ if .Content }}
+        <section class="section-container">
+            <div class="container medium gh-content">
+                {{ .Content }}
+            </div>
+        </section>
+        {{ end }}
+    </main>
+</div>
+{{ end }}

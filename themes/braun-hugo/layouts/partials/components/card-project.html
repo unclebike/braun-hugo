@@ -12,7 +12,9 @@
         {{ end }}
     {{ end }}
     <div class="card-wrapper">
-        {{ if $ctx.Params.featured_image_caption }}
+        {{ if $ctx.Params.subtitle }}
+            <div class="sub-heading">{{ $ctx.Params.subtitle }}</div>
+        {{ else if $ctx.Params.featured_image_caption }}
             <div class="sub-heading">{{ $ctx.Params.featured_image_caption }}</div>
         {{ end }}
         <h2 class="{{ if .isLarge }}h2{{ else }}{{ if .isSmall }}h4{{ else }}h3{{ end }}{{ end }} card-title">

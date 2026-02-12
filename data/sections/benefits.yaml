@@ -1,0 +1,5 @@
+type: "side-projects"
+title: "Benefits"
+enabled: true
+view_all_url: "/benefits/"
+limit: 3

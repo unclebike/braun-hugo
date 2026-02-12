@@ -7,6 +7,9 @@
 <article class="single ghost-content {{ $ctx.Params.post_class }}">
     {{ if $showHeader }}
         <header class="single-header kg-canvas">
+            {{ if $ctx.Params.subtitle }}
+            <div class="tiny-image-wrap kg-width-wide">
+            {{ end }}
             <div class="single-heading-wrap">
                 {{ if eq $ctx.Type "posts" }}
                     <div class="single-meta">
@@ -23,11 +26,21 @@
                     </div>
                 {{ end }}
 
+                {{ if $ctx.Params.subtitle }}
+                    <div class="sub-heading single-meta">{{ $ctx.Params.subtitle }}</div>
+                {{ end }}
+
                 <h1 class="single-title">{{ $ctx.Title }}</h1>
 
                 {{ if $ctx.Params.description }}
                     <div class="sub-heading-large single-excerpt">
                         {{ $ctx.Params.description }}
+                    </div>
+                {{ end }}
+
+                {{ if $ctx.Params.price }}
+                    <div class="single-meta book-meta">
+                        <span class="single-meta-item">Starting at {{ $ctx.Params.price }}</span>
                     </div>
                 {{ end }}
 
@@ -39,12 +52,15 @@
             </div>
 
             {{ if $ctx.Params.featured_image }}
-                <figure class="single-media kg-width-{{ $width }}">
+                <figure class="single-media kg-width-{{ if $ctx.Params.subtitle }}narrow{{ else }}{{ $width }}{{ end }}">
                     <img 
                         src="{{ $ctx.Params.featured_image }}"
                         alt="{{ if $ctx.Params.featured_image_alt }}{{ $ctx.Params.featured_image_alt }}{{ else }}{{ $ctx.Title }}{{ end }}"
                         loading="lazy">
                 </figure>
+            {{ end }}
+            {{ if $ctx.Params.subtitle }}
+            </div>
             {{ end }}
         </header>
     {{ end }}

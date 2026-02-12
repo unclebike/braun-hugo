@@ -2,10 +2,12 @@
 title: "Primo Pete"
 date: "2025-03-30T19:00:00.000Z"
 draft: false
+weight: 3
 tags:
-
+subtitle: "Strip & Rebuild"
 description: "For riders seeking ultimate care—get full priority access, a booked winter overhaul, and in-season check-ins to keep your bike in peak form all season long."
 featured_image: "/images/ghost/2025/05/primo-pete-2.png"
+price: "$225"
 ---
 
 <div class="kg-card kg-toggle-card" data-kg-toggle-state="close">
@@ -80,10 +82,7 @@ featured_image: "/images/ghost/2025/05/primo-pete-2.png"
             <div class="kg-toggle-content"><p><span style="white-space: pre-wrap;">I want to make sure you're having a great season and able to ride whenever you can. I'll proactively stay in touch to offer advice or service to keep your season rolling!</span></p></div>
         </div>
 <!--kg-card-begin: html-->
-<br>  <!-- Zenbooker inline popup button begin -->
-										<link href="https://cdn.zenbooker.com/widget/latest/zenbooker.css" rel="stylesheet">
-										<script src="https://cdn.zenbooker.com/widget/latest/zenbooker.js" type="text/javascript"></script>
-										<a class="gh-head-link button button-primary button-head" id="cieg-trigger" onclick="Zenbooker.showPopupWidget('https://widget.zenbooker.com/book/1746111848718x728354147005624300?embed=true&preselected-service=1746144957835x105775031280730110');return false;">Book Online</a>
-										<!-- Zenbooker inline popup button end -->
+<br>
+<a class="gh-head-link button button-primary button-head zbw-book-btn" href="#book">Book Online</a>
 <!--kg-card-end: html-->
 <hr><p></p>

@@ -1,0 +1,29 @@
+{{ define "main" }}
+<main class="site-main">
+    <article class="single ghost-content">
+        <header class="single-header kg-canvas">
+            <div class="single-heading-wrap">
+                <h1 class="single-title">{{ .Title }}</h1>
+                {{ if .Params.description }}
+                    <div class="sub-heading-large single-excerpt">
+                        {{ .Params.description }}
+                    </div>
+                {{ end }}
+            </div>
+        </header>
+
+        {{ if .Content }}
+        <div class="single-content gh-content kg-canvas">
+            {{ .Content }}
+        </div>
+        {{ end }}
+
+        {{/* Pricing table partial — data-driven from data/pricing.yaml */}}
+        {{ partial "components/pricing-table" . }}
+
+        <div class="single-content gh-content kg-canvas" style="margin-top: 2rem; text-align: center;">
+            <p>Already have an account? <a href="/contact/">Contact us</a></p>
+        </div>
+    </article>
+</main>
+{{ end }}

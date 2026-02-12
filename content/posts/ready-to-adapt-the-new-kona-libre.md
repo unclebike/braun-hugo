@@ -3,8 +3,8 @@ title: "🏁 Ready to adapt: The New Kona Libre"
 date: "2025-04-30T02:32:00.000Z"
 draft: false
 tags:
-
-description: undefined
+  - "Kona"
+description: ""
 ---
 
 <p>Hey there,</p>

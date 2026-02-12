@@ -1,0 +1,60 @@
+tiers:
+  - name: "Basic Bob"
+    price_monthly: ""
+    price_yearly: ""
+    description: "Stay in touch with Uncle Bike"
+    featured: false
+    features:
+      - "No travel fee within 15 km"
+      - "Pay-as-you-go service at standard rates"
+      - "Group Ride Notifications"
+      - "Product Reviews"
+      - "Adventure Reports"
+      - "More!"
+    cta_text: "Subscribe now"
+    cta_url: "/contact/"
+
+  - name: "Ready Eddy"
+    price_monthly: "4"
+    price_yearly: "36"
+    description: "Ideal for riders seeking basic, hassle-free maintenance."
+    featured: false
+    features:
+      - "Everything from the Free Tier"
+      - "No travel fee within 30 km"
+      - "Priority Booking Access Included"
+      - "15 Minute Fit/Comfort Consult Included"
+      - "Invite-only Early Booking for Seasonal Checkups"
+      - "Ready Eddy Service Package for $195"
+    cta_text: "Sign Up for Ready Eddy"
+    cta_url: "/contact/"
+
+  - name: "Uncle Bike"
+    price_monthly: "9"
+    price_yearly: "79"
+    description: "For regular riders who want their bikes ready from day one—enjoy priority access and a pre-booked tune-up to kick off your season hassle-free."
+    featured: true
+    features:
+      - "Everything from the Basic Plan"
+      - "No travel fee within 50 km"
+      - "Pre-Scheduled Annual Service"
+      - "15% off labour"
+      - "Primo Pete Service Package for $195"
+    cta_text: "Sign Up for Uncle Bike"
+    cta_url: "/contact/"
+
+  - name: "Fam Jam Plan"
+    price_monthly: "25"
+    price_yearly: "275"
+    description: "Tailored for families— adult tune ups and kids' safety checks with expert family cycling advice."
+    featured: false
+    features:
+      - "Basic Bob Tune Ups for 2 Adult Bikes"
+      - "Safety Check for up to 2 Kids Bikes"
+      - "Safety Check for Kids Trailers"
+      - "Family Riding Recommendations"
+      - "Kids Bike Sizing Seasonal Check In"
+      - "Coming Soon: Kids Bike & Carrier Classifieds"
+      - "Included On-Site Service"
+    cta_text: "Sign Up for Fam Jam Plan"
+    cta_url: "/contact/"
