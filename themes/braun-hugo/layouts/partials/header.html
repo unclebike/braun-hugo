@@ -54,7 +54,7 @@
             <div class="head-member-actions">
                 <div class="gh-head-members">
                     {{ if eq .Site.Params.navigation_buttons "Subscription" }}
-                        <a class="gh-head-link button button-primary button-head" id="zenbooker-trigger" href="https://widget.zenbooker.com/book/1746111848718x728354147005624300?embed=true">Book Online</a>
+                        <a class="gh-head-link button button-primary button-head" id="zenbooker-trigger" href="{{ .Site.Params.zenbooker_url }}">Book Online</a>
                     {{ else }}
                         <a class="button button-primary button-head" href="{{ .Site.Params.navigation_buttons_link }}">{{ .Site.Params.navigation_buttons_text }}</a>
                     {{ end }}

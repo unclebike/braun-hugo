@@ -1,4 +1,4 @@
-baseURL = 'https://theme-unclebike-xyz.pages.dev/'
+baseURL = '/'
 languageCode = 'en-us'
 title = 'Uncle Bike'
 theme = 'braun-hugo'
@@ -85,6 +85,9 @@ theme = 'braun-hugo'
   blog_category_navigation = ""
   excluded_tags = "books,now,hash-timeline,hash-gallery"
   email_signup_text = "Subscribe to my monthly newsletter"
+  
+  # Zenbooker booking widget
+  zenbooker_url = "https://widget.zenbooker.com/book/1746111848718x728354147005624300?embed=true"
   
   # Post settings
   show_author = false

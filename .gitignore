@@ -21,3 +21,44 @@ Thumbs.db
 # Environment files
 .env
 .env.local
+
+# AI Tools
+# Cursor
+.cursor/
+.cursorignore
+.cursorrules
+
+# Claude / Anthropic
+claude_context.md
+CLAUDE.md
+.claude/
+
+# GitHub Copilot
+.github/copilot-instructions.md
+
+# Cline
+.cline/
+.clinerules
+.clineignore
+
+# Windsurf
+.windsurf/
+.windsurfrules
+
+# Aider
+.aider*
+.aiderignore
+
+# Continue
+.continue/
+.continuerules
+
+# OpenCode / Sisyphus
+.opencode/
+.sisyphus/
+.sisyphus
+AGENTS.md
+
+# General AI context files
+**/ai-context.md
+**/AI_CONTEXT.md

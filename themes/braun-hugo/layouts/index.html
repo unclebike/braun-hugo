@@ -14,7 +14,8 @@
                     <h1 class="h1 hero-title">{{ .title }}</h1>
                     <section class="gh-content">{{ .content | markdownify }}</section>
                     {{ if .button_text }}
-                    <a href="{{ .button_link }}" class="button button-primary">{{ .button_text }}</a>
+                    {{ $link := .button_link | default $.Site.Params.zenbooker_url }}
+                    <a href="{{ $link }}" class="button button-primary">{{ .button_text }}</a>
                     {{ end }}
                 </div>
             </div>
