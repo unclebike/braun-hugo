@@ -738,6 +738,12 @@ app.post('/customers', async (c) => {
   return c.redirect('/admin/customers');
 });
 
+app.get('/customers/:id', async (c) => {
+  const id = c.req.param('id');
+  if (id === 'new') return c.redirect('/admin/customers/new');
+  return c.redirect(`/admin/customers/${id}/edit`);
+});
+
 app.get('/customers/:id/edit', async (c) => {
   const db = c.env.DB;
   const id = c.req.param('id');
@@ -1548,11 +1554,16 @@ app.post('/jobs/:id/status', async (c) => {
   const body = await c.req.parseBody();
   const status = body.status as string;
   
-  const updates: string[] = [`status = '${status}'`, "updated_at = datetime('now')"];
+  const validStatuses = ['created', 'assigned', 'enroute', 'in_progress', 'complete', 'cancelled'];
+  if (!validStatuses.includes(status)) return c.redirect(`/admin/jobs/${jobId}`);
+  
+  const updates: string[] = ['status = ?', "updated_at = datetime('now')"];
+  const binds: unknown[] = [status];
   if (status === 'complete') updates.push("completed_at = datetime('now')");
   if (status === 'cancelled') updates.push("cancelled_at = datetime('now')");
+  binds.push(jobId);
   
-  await db.prepare(`UPDATE jobs SET ${updates.join(', ')} WHERE id = ?`).bind(jobId).run();
+  await db.prepare(`UPDATE jobs SET ${updates.join(', ')} WHERE id = ?`).bind(...binds).run();
   
   if (status === 'complete') {
     const job = await db.prepare(
@@ -1710,6 +1721,7 @@ app.get('/invoices', async (c) => {
       created: new Date(i.created_at as string).toLocaleDateString()
     })),
     createUrl: '/admin/invoices/new',
+    detailUrlPrefix: '/admin/invoices',
     deleteUrlPrefix: '/admin/invoices'
   }));
 });
@@ -1762,6 +1774,12 @@ app.post('/invoices', async (c) => {
   ).run();
   
   return c.redirect('/admin/invoices');
+});
+
+app.get('/invoices/:id', async (c) => {
+  const id = c.req.param('id');
+  if (id === 'new') return c.redirect('/admin/invoices/new');
+  return c.redirect(`/admin/invoices/${id}/edit`);
 });
 
 app.get('/invoices/:id/edit', async (c) => {
@@ -1862,6 +1880,7 @@ app.get('/recurring', async (c) => {
       active: r.is_active ? 'active' : 'inactive'
     })),
     createUrl: '/admin/recurring/new',
+    detailUrlPrefix: '/admin/recurring',
     deleteUrlPrefix: '/admin/recurring'
   }));
 });
@@ -1932,6 +1951,12 @@ app.post('/recurring', async (c) => {
   ).run();
   
   return c.redirect('/admin/recurring');
+});
+
+app.get('/recurring/:id', async (c) => {
+  const id = c.req.param('id');
+  if (id === 'new') return c.redirect('/admin/recurring/new');
+  return c.redirect(`/admin/recurring/${id}/edit`);
 });
 
 app.get('/recurring/:id/edit', async (c) => {
@@ -2168,6 +2193,7 @@ app.get('/coupons', async (c) => {
       active: cp.is_active ? 'active' : 'inactive'
     })),
     createUrl: '/admin/coupons/new',
+    detailUrlPrefix: '/admin/coupons',
     deleteUrlPrefix: '/admin/coupons'
   }));
 });
@@ -2214,6 +2240,12 @@ app.post('/coupons', async (c) => {
   ).run();
   
   return c.redirect('/admin/coupons');
+});
+
+app.get('/coupons/:id', async (c) => {
+  const id = c.req.param('id');
+  if (id === 'new') return c.redirect('/admin/coupons/new');
+  return c.redirect(`/admin/coupons/${id}/edit`);
 });
 
 app.get('/coupons/:id/edit', async (c) => {
@@ -2304,6 +2336,7 @@ app.get('/webhooks', async (c) => {
       active: w.is_active ? 'active' : 'inactive'
     })),
     createUrl: '/admin/webhooks/new',
+    detailUrlPrefix: '/admin/webhooks',
     deleteUrlPrefix: '/admin/webhooks'
   }));
 });
@@ -2350,6 +2383,12 @@ app.post('/webhooks', async (c) => {
   ).run();
   
   return c.redirect('/admin/webhooks');
+});
+
+app.get('/webhooks/:id', async (c) => {
+  const id = c.req.param('id');
+  if (id === 'new') return c.redirect('/admin/webhooks/new');
+  return c.redirect(`/admin/webhooks/${id}/edit`);
 });
 
 app.get('/webhooks/:id/edit', async (c) => {

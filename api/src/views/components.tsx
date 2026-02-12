@@ -127,8 +127,8 @@ const TableView = ({ title, columns, rows, createUrl, detailUrlPrefix, deleteUrl
                             <button
                               type="button"
                               class="delete-btn"
+                              data-confirm="arm"
                               hx-post={`${deleteUrlPrefix}/${actualId}/delete`}
-                              hx-confirm="Are you sure you want to delete this?"
                               hx-target="closest tr"
                               hx-swap="delete swap:300ms"
                             >
@@ -250,7 +250,7 @@ const FormView = ({ title, fields, submitUrl, cancelUrl, isEdit, deleteUrl }: Fo
                <button type="submit" class="uk-btn uk-btn-primary">{isEdit ? 'Update' : 'Create'}</button>
                <a href={cancelUrl} class="uk-btn uk-btn-default" hx-get={cancelUrl} hx-target="#page-content" hx-push-url="true">Cancel</a>
               {deleteUrl && (
-                <button type="button" class="delete-btn" hx-post={deleteUrl} hx-confirm="Are you sure? This cannot be undone." style="margin-left: auto;">Delete</button>
+                <button type="button" class="delete-btn" data-confirm="arm" hx-post={deleteUrl} style="margin-left: auto;">Delete</button>
               )}
             </div>
           </form>
@@ -304,16 +304,16 @@ const DetailView = ({ title, subtitle, fields, editUrl, backUrl, actions }: Deta
            {actions.map(action => {
              const variantClass = action.variant === 'primary' ? 'uk-btn-primary' : action.variant === 'danger' ? 'uk-btn-destructive' : 'uk-btn-default';
              return (
-               <button 
-                 type="button"
-                 class={`uk-btn ${variantClass}`}
-                 hx-post={action.url}
-                 hx-target="#page-content"
-                 hx-confirm={action.variant === 'danger' ? 'Are you sure?' : undefined}
-               >
-                 {action.label}
-               </button>
-             );
+                <button 
+                  type="button"
+                  class={`uk-btn ${variantClass}`}
+                  hx-post={action.url}
+                  hx-target="#page-content"
+                  data-confirm={action.variant === 'danger' ? 'arm' : undefined}
+                >
+                  {action.label}
+                </button>
+              );
            })}
          </div>
        </div>

@@ -258,6 +258,26 @@ document.addEventListener('htmx:beforeRequest', function(e) {
   }
   if (ind) { ind.textContent = 'Saving…'; ind.className = 'save-indicator save-pending'; ind.style.opacity = '1'; }
 });
+
+document.body.addEventListener('htmx:confirm', function(e) {
+  var btn = e.detail.elt;
+  if (btn.getAttribute('data-confirm') !== 'arm') return;
+  if (btn.classList.contains('delete-armed')) return;
+  e.preventDefault();
+  var orig = btn.textContent;
+  btn.textContent = 'Confirm';
+  btn.classList.add('delete-armed');
+  btn._disarmTimer = setTimeout(function() {
+    btn.textContent = orig;
+    btn.classList.remove('delete-armed');
+  }, 4000);
+});
+
+document.body.addEventListener('click', function(e) {
+  var btn = e.target.closest('.delete-armed');
+  if (!btn) return;
+  if (btn._disarmTimer) clearTimeout(btn._disarmTimer);
+});
         </script>`}
         <style>{`
           *, *::before, *::after { box-sizing: border-box; }
@@ -314,6 +334,8 @@ document.addEventListener('htmx:beforeRequest', function(e) {
 
           .delete-btn { color: #dc2626; background: none; border: 1px solid #fca5a5; padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; }
           .delete-btn:hover { background: #fef2f2; border-color: #dc2626; }
+          .delete-btn.delete-armed { background: #dc2626; color: #fff; border-color: #dc2626; font-weight: 600; }
+          .delete-btn.delete-armed:hover { background: #b91c1c; }
 
           .mobile-menu-btn { display: flex; align-items: center; justify-content: center; background: none; border: none; color: #1a1a2e; padding: 8px; cursor: pointer; position: fixed; top: 12px; left: 12px; z-index: 100; }
 
