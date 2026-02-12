@@ -106,7 +106,7 @@ app.get('/territories', async (c) => {
   const db = c.env.DB;
   const territories = await db.prepare(`
     SELECT id, name, service_area_type, scheduling_policy, is_active
-    FROM territories ORDER BY name
+    FROM territories WHERE is_active = 1 ORDER BY name
   `).all();
   
   const rows = (territories.results || []).map(t => ({
@@ -415,7 +415,7 @@ app.get('/services/new', async (c) => {
     { name: 'name', label: 'Name', required: true },
     { name: 'description', label: 'Description', type: 'textarea' },
     { name: 'category_id', label: 'Category', type: 'select', options: (categories.results || []).map(c => ({ value: c.id as string, label: c.name as string })) },
-    { name: 'base_price_cents', label: 'Base Price (cents)', type: 'number', required: true, min: 0 },
+    { name: 'base_price', label: 'Base Price ($)', type: 'number', required: true, min: 0, step: 0.01 },
     { name: 'base_duration_minutes', label: 'Duration (minutes)', type: 'number', required: true, min: 1 },
     { name: 'auto_assign_enabled', label: 'Auto-assign Enabled', type: 'checkbox' },
     { name: 'auto_assign_method', label: 'Auto-assign Method', type: 'select', value: 'balanced', options: [
@@ -447,7 +447,7 @@ app.post('/services', async (c) => {
     body.name,
     body.description || null,
     body.category_id || null,
-    parseInt(body.base_price_cents as string, 10) || 0,
+    Math.round(parseFloat(body.base_price as string || '0') * 100),
     parseInt(body.base_duration_minutes as string, 10) || 60,
     body.auto_assign_enabled === 'on' ? 1 : 0,
     body.auto_assign_method || 'balanced',
@@ -478,7 +478,7 @@ app.post('/services/:id', async (c) => {
       body.name,
       body.description || null,
       body.category_id || null,
-      parseInt(body.base_price_cents as string, 10) || 0,
+      Math.round(parseFloat(body.base_price as string || '0') * 100),
       parseInt(body.base_duration_minutes as string, 10) || 60,
       body.auto_assign_enabled === 'on' ? 1 : 0,
       body.auto_assign_method || 'balanced',
@@ -498,7 +498,7 @@ app.post('/services/:id', async (c) => {
     body.name,
     body.description || null,
     body.category_id || null,
-    parseInt(body.base_price_cents as string, 10) || 0,
+    Math.round(parseFloat(body.base_price as string || '0') * 100),
     parseInt(body.base_duration_minutes as string, 10) || 60,
     body.auto_assign_enabled === 'on' ? 1 : 0,
     body.auto_assign_method || 'balanced',
@@ -684,17 +684,23 @@ app.post('/services/:id/skills', async (c) => {
 app.get('/customers', async (c) => {
   const db = c.env.DB;
   const customers = await db.prepare(`
-    SELECT id, first_name, last_name, email, phone
-    FROM customers ORDER BY created_at DESC LIMIT 50
+    SELECT c.id, c.first_name, c.last_name, c.email, c.phone,
+           t.name as territory_name
+    FROM customers c
+    LEFT JOIN jobs j ON j.customer_id = c.id
+    LEFT JOIN territories t ON j.territory_id = t.id
+    GROUP BY c.id
+    ORDER BY c.created_at DESC LIMIT 50
   `).all();
   
   return c.html(TableView({
     title: 'Customers',
-    columns: ['Name', 'Email', 'Phone'],
+    columns: ['Name', 'Email', 'Phone', 'Territory'],
     rows: (customers.results || []).map(cust => ({
       name: `${cust.first_name} ${cust.last_name}`,
       email: cust.email || '-',
-      phone: cust.phone || '-'
+      phone: cust.phone || '-',
+      territory: cust.territory_name || '-'
     })),
     rawIds: (customers.results || []).map(cust => cust.id as string),
     createUrl: '/admin/customers/new',
@@ -747,17 +753,27 @@ app.get('/customers/:id', async (c) => {
 app.get('/customers/:id/edit', async (c) => {
   const db = c.env.DB;
   const id = c.req.param('id');
-  const customer = await db.prepare('SELECT * FROM customers WHERE id = ?').bind(id).first();
+  const [customer, address, territory] = await Promise.all([
+    db.prepare('SELECT * FROM customers WHERE id = ?').bind(id).first(),
+    db.prepare('SELECT * FROM customer_addresses WHERE customer_id = ? ORDER BY is_default DESC, created_at DESC LIMIT 1').bind(id).first(),
+    db.prepare('SELECT t.name FROM jobs j JOIN territories t ON j.territory_id = t.id WHERE j.customer_id = ? ORDER BY j.created_at DESC LIMIT 1').bind(id).first<{ name: string }>()
+  ]);
   
   if (!customer) {
     return c.redirect('/admin/customers');
   }
+
+  const addressLine = address
+    ? [address.line_1, address.city, address.state, address.postal_code].filter(Boolean).join(', ')
+    : '';
   
   const fields: FormField[] = [
     { name: 'first_name', label: 'First Name', required: true, value: customer.first_name as string },
     { name: 'last_name', label: 'Last Name', required: true, value: customer.last_name as string },
     { name: 'email', label: 'Email', type: 'email', value: customer.email as string },
-    { name: 'phone', label: 'Phone', type: 'tel', value: customer.phone as string }
+    { name: 'phone', label: 'Phone', type: 'tel', value: customer.phone as string },
+    ...(addressLine ? [{ name: '_address', label: 'Address', value: addressLine, readonly: true } as FormField] : []),
+    ...(territory ? [{ name: '_territory', label: 'Territory', value: territory.name, readonly: true } as FormField] : [])
   ];
   
   return c.html(FormView({
@@ -812,7 +828,7 @@ app.get('/team', async (c) => {
   const db = c.env.DB;
   const team = await db.prepare(`
     SELECT id, first_name, last_name, email, role, is_active
-    FROM team_members ORDER BY last_name, first_name
+    FROM team_members WHERE is_active = 1 ORDER BY last_name, first_name
   `).all();
   
   const rows = (team.results || []).map(t => ({
@@ -1738,7 +1754,7 @@ app.get('/invoices/new', async (c) => {
   const fields: FormField[] = [
     { name: 'customer_id', label: 'Customer', type: 'select', required: true, options: (customers.results || []).map(c => ({ value: c.id as string, label: `${c.first_name} ${c.last_name}` })) },
     { name: 'job_id', label: 'Job (optional)', type: 'select', options: (jobs.results || []).map(j => ({ value: j.id as string, label: `${j.customer_name} - ${j.scheduled_date}` })) },
-    { name: 'amount_cents', label: 'Amount (cents)', type: 'number', required: true, min: 0 },
+    { name: 'amount', label: 'Amount ($)', type: 'number', required: true, min: 0, step: 0.01 },
     { name: 'due_date', label: 'Due Date', type: 'date' },
     { name: 'status', label: 'Status', type: 'select', required: true, value: 'pending', options: [
       { value: 'pending', label: 'Pending' },
@@ -1768,7 +1784,7 @@ app.post('/invoices', async (c) => {
     id,
     body.customer_id,
     body.job_id || null,
-    parseInt(body.amount_cents as string, 10) || 0,
+    Math.round(parseFloat(body.amount as string || '0') * 100),
     body.due_date || null,
     body.status || 'pending'
   ).run();
@@ -1799,7 +1815,7 @@ app.get('/invoices/:id/edit', async (c) => {
   const fields: FormField[] = [
     { name: 'customer_id', label: 'Customer', type: 'select', required: true, value: invoice.customer_id as string, options: (customers.results || []).map(c => ({ value: c.id as string, label: `${c.first_name} ${c.last_name}` })) },
     { name: 'job_id', label: 'Job (optional)', type: 'select', value: invoice.job_id as string, options: (jobs.results || []).map(j => ({ value: j.id as string, label: `${j.customer_name} - ${j.scheduled_date}` })) },
-    { name: 'amount_cents', label: 'Amount (cents)', type: 'number', required: true, min: 0, value: invoice.amount_cents as number },
+    { name: 'amount', label: 'Amount ($)', type: 'number', required: true, min: 0, step: 0.01, value: ((invoice.amount_cents as number) / 100).toFixed(2) },
     { name: 'due_date', label: 'Due Date', type: 'date', value: invoice.due_date as string },
     { name: 'status', label: 'Status', type: 'select', required: true, value: invoice.status as string, options: [
       { value: 'pending', label: 'Pending' },
@@ -1831,7 +1847,7 @@ app.post('/invoices/:id', async (c) => {
   `).bind(
     body.customer_id,
     body.job_id || null,
-    parseInt(body.amount_cents as string, 10) || 0,
+    Math.round(parseFloat(body.amount as string || '0') * 100),
     body.due_date || null,
     body.status || 'pending',
     id
@@ -1913,7 +1929,7 @@ app.get('/recurring/new', async (c) => {
     ]},
     { name: 'scheduled_start_time', label: 'Start Time', type: 'time' },
     { name: 'duration_minutes', label: 'Duration (minutes)', type: 'number', required: true, value: 60, min: 1 },
-    { name: 'total_price_cents', label: 'Total Price (cents)', type: 'number', required: true, value: 0, min: 0 },
+    { name: 'total_price', label: 'Total Price ($)', type: 'number', required: true, value: '0.00', min: 0, step: 0.01 },
     { name: 'is_active', label: 'Active', type: 'checkbox', value: true }
   ];
   
@@ -1930,7 +1946,7 @@ app.post('/recurring', async (c) => {
   const body = await c.req.parseBody();
   const id = generateId();
   
-  const totalPriceCents = parseInt(body.total_price_cents as string, 10) || 0;
+  const totalPriceCents = Math.round(parseFloat(body.total_price as string || '0') * 100);
   
   await db.prepare(`
     INSERT INTO recurring_bookings (id, customer_id, service_id, territory_id, frequency, day_of_week, 
@@ -1993,7 +2009,7 @@ app.get('/recurring/:id/edit', async (c) => {
     ]},
     { name: 'scheduled_start_time', label: 'Start Time', type: 'time', value: recurring.scheduled_start_time as string },
     { name: 'duration_minutes', label: 'Duration (minutes)', type: 'number', required: true, value: recurring.duration_minutes as number, min: 1 },
-    { name: 'total_price_cents', label: 'Total Price (cents)', type: 'number', required: true, value: recurring.total_price_cents as number, min: 0 },
+    { name: 'total_price', label: 'Total Price ($)', type: 'number', required: true, value: ((recurring.total_price_cents as number) / 100).toFixed(2), min: 0, step: 0.01 },
     { name: 'is_active', label: 'Active', type: 'checkbox', value: Boolean(recurring.is_active) }
   ];
   
@@ -2012,7 +2028,7 @@ app.post('/recurring/:id', async (c) => {
   const id = c.req.param('id');
   const body = await c.req.parseBody();
   
-  const totalPriceCents = parseInt(body.total_price_cents as string, 10) || 0;
+  const totalPriceCents = Math.round(parseFloat(body.total_price as string || '0') * 100);
   
   await db.prepare(`
     UPDATE recurring_bookings 
@@ -2205,7 +2221,7 @@ app.get('/coupons/new', (c) => {
       { value: 'percentage', label: 'Percentage' },
       { value: 'fixed', label: 'Fixed Amount' }
     ]},
-    { name: 'discount_value', label: 'Discount Value (percentage or cents)', type: 'number', required: true, min: 0 },
+    { name: 'discount_value', label: 'Discount Value (% or $)', type: 'number', required: true, min: 0, step: 0.01 },
     { name: 'max_uses', label: 'Max Uses (leave empty for unlimited)', type: 'number', min: 1 },
     { name: 'valid_from', label: 'Valid From', type: 'date' },
     { name: 'valid_until', label: 'Valid Until', type: 'date' },

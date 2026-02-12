@@ -17,6 +17,7 @@ interface FormField {
   min?: number;
   max?: number;
   step?: number;
+  readonly?: boolean;
 }
 
 interface TableViewProps {
@@ -151,6 +152,12 @@ const TableView = ({ title, columns, rows, createUrl, detailUrlPrefix, deleteUrl
 );
 
 const renderField = (field: FormField) => {
+  if (field.readonly) {
+    return (
+      <p class="text-sm py-2 px-3 bg-muted/50 rounded-md">{String(field.value || '-')}</p>
+    );
+  }
+
   const baseProps = {
     id: field.name,
     name: field.name,
