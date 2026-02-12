@@ -176,7 +176,7 @@
         .kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-card-icon svg { transform: unset; }
         .kg-toggle-card:not([data-kg-toggle-state="close"]) .kg-toggle-card-icon svg { transform: rotate(180deg); }
         .photo-pile { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; padding: 2rem 0; max-width: 720px; margin: 2rem auto 0; }
-        .photo-pile .card { padding: .6rem; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.15), 0 1px 3px rgba(0,0,0,.1); transition: transform .25s ease, box-shadow .25s ease, z-index 0s; cursor: default; margin: -8px; }
+        .photo-pile .card { padding: .6rem; background: transparent; box-shadow: 0 2px 8px rgba(0,0,0,.15), 0 1px 3px rgba(0,0,0,.1); transition: transform .25s ease, box-shadow .25s ease, z-index 0s; cursor: default; margin: -8px; }
         .photo-pile .card:hover { transform: scale(1.08) rotate(0deg) !important; box-shadow: 0 8px 25px rgba(0,0,0,.25); z-index: 10; }
         .photo-pile .card img { width: 100%; height: auto; display: block; }
         .photo-pile .card:nth-child(1) { transform: rotate(-3deg); }
@@ -189,7 +189,7 @@
         .photo-pile .card:nth-child(8) { transform: rotate(3deg) translateY(5px); }
         .photo-pile .card:nth-child(9) { transform: rotate(-6deg) translateY(-3px); }
         @media (max-width: 600px) { .photo-pile { grid-template-columns: repeat(2, 1fr); padding: 1rem 0; } .photo-pile .card { margin: -4px; } }
-        [data-theme="dark"] .photo-pile .card { background: #313244; box-shadow: 0 2px 8px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.3); }
+        [data-theme="dark"] .photo-pile .card { background: transparent; box-shadow: 0 2px 8px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.3); }
         [data-theme="dark"] .photo-pile .card:hover { box-shadow: 0 8px 25px rgba(0,0,0,.5); }
     </style>
 </head>
