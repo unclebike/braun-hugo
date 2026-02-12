@@ -13,28 +13,13 @@ theme = 'braun-hugo'
     [markup.goldmark.renderer]
       unsafe = true
 
-# Menu configuration
+# Menu: defined in page frontmatter so drafts auto-hide from nav
+# Only "Home" stays here since it has no content file
 [menu]
   [[menu.main]]
     name = "Home"
     url = "/"
     weight = 1
-  [[menu.main]]
-    name = "About"
-    url = "/about/"
-    weight = 2
-  [[menu.main]]
-    name = "Service Packages"
-    url = "/services/"
-    weight = 3
-  [[menu.main]]
-    name = "Become a Member"
-    url = "/membership/"
-    weight = 4
-  [[menu.main]]
-    name = "Contact"
-    url = "/contact/"
-    weight = 5
 
 # Image processing
 [imaging]

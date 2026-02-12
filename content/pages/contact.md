@@ -3,8 +3,11 @@ title: "Message Uncle Bike"
 date: "2025-03-30T21:59:18.000Z"
 draft: false
 tags:
-
 description: ""
+menu:
+  main:
+    name: "Contact"
+    weight: 5
 ---
 
 <div class="kg-card kg-callout-card kg-callout-card-white"><div class="kg-callout-emoji">📬</div><div class="kg-callout-text">We check our messages Monday to Friday. We respond to messages in under 24 hours. Thanks for reaching out. </div></div>

@@ -76,6 +76,20 @@ content:
         label: Draft
         type: boolean
         default: false
+      - name: menu
+        label: Navigation Menu
+        type: object
+        fields:
+          - name: main
+            label: Main Menu
+            type: object
+            fields:
+              - name: name
+                label: Menu Label
+                type: string
+              - name: weight
+                label: Menu Order
+                type: number
       - name: tags
         label: Tags
         type: string
