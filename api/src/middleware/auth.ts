@@ -15,7 +15,11 @@ declare module 'hono' {
 
 export const PUBLIC_PATHS = [
   '/health',
+  // Public static assets served via the ASSETS binding.
+  // Keep both forms to be resilient to any path matching quirks.
+  '/fonts',
   '/fonts/',
+  '/images',
   '/images/',
   '/v1/scheduling/service_area_check',
   '/v1/scheduling/timeslots',
@@ -23,14 +27,19 @@ export const PUBLIC_PATHS = [
   '/v1/coupons/validate',
   '/v1/bookings/create',
   '/v1/messages/submit',
+  '/webhooks/twilio',
   '/webhooks/twilio/',
+  '/widget',
   '/widget/',
 ];
 
 function isPublicPath(path: string): boolean {
-  return PUBLIC_PATHS.some(publicPath => 
-    path === publicPath || path.startsWith(publicPath + '/') || path.startsWith(publicPath)
-  );
+  return PUBLIC_PATHS.some((publicPath) => {
+    if (path === publicPath) return true;
+    // Prefix match with a boundary: '/widget' should match '/widget/..' but not '/widgetize'.
+    const prefix = publicPath.endsWith('/') ? publicPath.slice(0, -1) : publicPath;
+    return path.startsWith(`${prefix}/`);
+  });
 }
 
 async function verifyApiKey(db: D1Database, key: string): Promise<boolean> {
