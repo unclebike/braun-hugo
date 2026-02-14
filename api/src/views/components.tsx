@@ -4,7 +4,7 @@ import { Layout } from './layout';
 
 void jsx;
 
-type FieldType = 'text' | 'email' | 'tel' | 'number' | 'textarea' | 'select' | 'checkbox' | 'date' | 'time';
+type FieldType = 'text' | 'email' | 'tel' | 'number' | 'textarea' | 'select' | 'checkbox' | 'date' | 'time' | 'hidden';
 
 interface FormField {
   name: string;
@@ -18,6 +18,7 @@ interface FormField {
   max?: number;
   step?: number;
   readonly?: boolean;
+  attrs?: Record<string, string>;
 }
 
 interface TableViewProps {
@@ -25,6 +26,7 @@ interface TableViewProps {
   columns: string[];
   rows: Record<string, unknown>[];
   createUrl?: string;
+  extraActions?: { label: string; url: string }[];
   detailUrlPrefix?: string;
   deleteUrlPrefix?: string;
   rawIds?: string[];
@@ -62,6 +64,24 @@ const BADGE_STATUSES = new Set([
 
 const isBadgeStatus = (value: unknown): value is string => typeof value === 'string' && BADGE_STATUSES.has(value.toLowerCase());
 
+const isEmptyValue = (value: unknown) => value === null || value === undefined || value === '' || value === '-';
+
+const mobilePriorityScore = (label: string) => {
+  const l = label.toLowerCase();
+  if (/(amount|price|total|value)/.test(l)) return 100;
+  if (/(status|active|state)/.test(l)) return 95;
+  if (/(date|time|booked|created|due)/.test(l)) return 90;
+  if (/(service|frequency|duration|territory|area|type|role)/.test(l)) return 80;
+  if (/(phone|email|from|subject|event)/.test(l)) return 70;
+  return 40;
+};
+
+const stringifyValue = (value: unknown) => {
+  if (typeof value === 'string' || typeof value === 'number') return String(value);
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  return '';
+};
+
 interface FormViewProps {
   title: string;
   fields: FormField[];
@@ -69,13 +89,21 @@ interface FormViewProps {
   cancelUrl: string;
   isEdit?: boolean;
   deleteUrl?: string;
+  error?: string;
 }
 
-const TableView = ({ title, columns, rows, createUrl, detailUrlPrefix, deleteUrlPrefix, rawIds }: TableViewProps) => (
+const TableView = ({ title, columns, rows, createUrl, extraActions, detailUrlPrefix, deleteUrlPrefix, rawIds }: TableViewProps) => (
   <Layout title={title}>
-    <div class="flex items-center justify-between px-8 py-5 bg-white border-b border-border sticky top-0 z-50">
+    <div class="flex items-center justify-between px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
       <h2 class="text-xl font-semibold">{title}</h2>
-      {createUrl && <a href={createUrl} class="uk-btn uk-btn-default" hx-get={createUrl} hx-target="#page-content" hx-select="#page-content" hx-push-url="true">+ Create New</a>}
+      <div class="flex items-center gap-2">
+        {(extraActions || []).map((action) => (
+          <a href={action.url} class="uk-btn uk-btn-default" hx-get={action.url} hx-target="#page-content" hx-select="#page-content" hx-push-url="true" key={action.url}>
+            {action.label}
+          </a>
+        ))}
+        {createUrl && <a href={createUrl} class="uk-btn uk-btn-default" hx-get={createUrl} hx-target="#page-content" hx-select="#page-content" hx-push-url="true">+ Create New</a>}
+      </div>
     </div>
     <div class="p-8">
       <div class="uk-card uk-card-body">
@@ -86,8 +114,91 @@ const TableView = ({ title, columns, rows, createUrl, detailUrlPrefix, deleteUrl
               {createUrl && <a href={createUrl} class="uk-btn uk-btn-default" hx-get={createUrl} hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Create your first</a>}
             </div>
           ) : (
-            <div class="uk-overflow-auto">
-              <table class="uk-table uk-table-divider uk-table-hover uk-table-sm w-full text-sm">
+            <>
+              <div class="grid gap-3 md:hidden">
+                {rows.map((row: Record<string, unknown>, i: number) => {
+                  const displayId = typeof row.id === 'string' ? row.id : '';
+                  const actualId = rawIds ? rawIds[i] : displayId;
+                  const values = Object.values(row);
+                  const detailUrl = detailUrlPrefix ? `${detailUrlPrefix}/${actualId}` : null;
+                  const entries = values.map((value, index) => ({
+                    index,
+                    label: columns[index] || 'Field',
+                    value,
+                  }));
+                  const primary = entries[0];
+                  const statusEntry = entries.find((entry, index) => index > 0 && isBadgeStatus(entry.value));
+                  const compactMeta = entries
+                    .filter((entry) => entry.index !== 0 && entry !== statusEntry && !isEmptyValue(entry.value))
+                    .sort((a, b) => mobilePriorityScore(b.label) - mobilePriorityScore(a.label))
+                    .slice(0, 2);
+                  return (
+                    <article class="border border-border rounded-md p-3 bg-background" key={i}>
+                      <div class="flex items-start justify-between gap-2.5">
+                        <div class="min-w-0 flex-1">
+                          {detailUrl ? (
+                            <a
+                              href={detailUrl}
+                              hx-get={detailUrl}
+                              hx-target="#page-content"
+                              hx-select="#page-content"
+                              hx-push-url="true"
+                              class="uk-link font-medium text-primary hover:underline leading-tight block truncate"
+                              data-uk-tooltip={typeof primary?.value === 'string' && primary.value.length === 8 ? `title: ${actualId}` : undefined}
+                            >
+                              {primary?.value}
+                            </a>
+                          ) : (
+                            <p class="font-medium leading-tight truncate">{primary?.value as string | number | boolean | null | undefined}</p>
+                          )}
+                        </div>
+                        {statusEntry && <span class="shrink-0"><StatusBadge status={String(statusEntry.value).toLowerCase()} /></span>}
+                      </div>
+
+                      {compactMeta.length > 0 && (
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+                          {compactMeta.map((entry) => (
+                            <div class="min-w-0" key={entry.index}>
+                              <p class="text-[10px] uppercase tracking-wide text-muted-foreground truncate">{entry.label}</p>
+                              <p class="text-xs font-medium truncate">{stringifyValue(entry.value) || '-'}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {!statusEntry && isBadgeStatus(primary?.value) && (
+                        <div class="mt-2">
+                          <StatusBadge status={String(primary.value).toLowerCase()} />
+                        </div>
+                      )}
+
+                      {compactMeta.length === 0 && entries[1] && !isEmptyValue(entries[1].value) && (
+                        <p class="text-xs text-muted-foreground mt-2 truncate">{entries[1].label}: {stringifyValue(entries[1].value)}</p>
+                      )}
+
+                      <div class="flex items-center gap-2 mt-3">
+                        {detailUrl && (
+                          <a href={detailUrl} class="uk-btn uk-btn-default uk-btn-sm" hx-get={detailUrl} hx-target="#page-content" hx-select="#page-content" hx-push-url="true">View</a>
+                        )}
+                        {deleteUrlPrefix && (
+                          <button
+                            type="button"
+                            class="delete-btn"
+                            data-confirm="arm"
+                            hx-post={`${deleteUrlPrefix}/${actualId}/delete`}
+                            hx-target="closest article"
+                            hx-swap="delete swap:300ms"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+              <div class="uk-overflow-auto hidden md:block">
+                <table class="uk-table uk-table-divider uk-table-hover uk-table-sm w-full text-sm">
               <thead>
                 <tr class="border-b border-border">
                   {columns.map((col: string) => <th class="text-left py-3 px-4 font-medium text-muted-foreground" key={col}>{col}</th>)}
@@ -142,8 +253,9 @@ const TableView = ({ title, columns, rows, createUrl, detailUrlPrefix, deleteUrl
                   );
                 })}
               </tbody>
-              </table>
-            </div>
+                </table>
+              </div>
+            </>
           )}
         </section>
       </div>
@@ -163,6 +275,7 @@ const renderField = (field: FormField) => {
     name: field.name,
     required: field.required,
     placeholder: field.placeholder,
+    ...(field.attrs || {}),
   };
 
   switch (field.type) {
@@ -212,7 +325,10 @@ const renderField = (field: FormField) => {
          />
        );
 
-     default:
+     case 'hidden':
+       return <input type="hidden" {...baseProps} value={field.value ?? ''} />;
+
+      default:
        return (
          <input 
            type={field.type || 'text'} 
@@ -224,7 +340,7 @@ const renderField = (field: FormField) => {
   }
 };
 
-const FormView = ({ title, fields, submitUrl, cancelUrl, isEdit, deleteUrl }: FormViewProps) => (
+const FormView = ({ title, fields, submitUrl, cancelUrl, isEdit, deleteUrl, error }: FormViewProps) => (
   <Layout title={title}>
     <div class="flex items-center justify-between px-8 py-5 bg-white border-b border-border">
       <h2 class="text-xl font-semibold">{title}</h2>
@@ -233,8 +349,16 @@ const FormView = ({ title, fields, submitUrl, cancelUrl, isEdit, deleteUrl }: Fo
        <div class="uk-card uk-card-body" style="max-width: 720px;">
         <section>
           <form class="form" hx-post={submitUrl} hx-target="#page-content" hx-select="#page-content" hx-push-url={cancelUrl}>
+            {error && (
+              <div class="mb-4 rounded-md border px-3 py-2 text-sm" style="border-color: #fecaca; background: #fff1f2; color: #b91c1c;">
+                {error}
+              </div>
+            )}
             <div class="grid gap-4 sm:grid-cols-2">
               {fields.map((field) => {
+                if (field.type === 'hidden') {
+                  return <div key={field.name}>{renderField(field)}</div>;
+                }
                 if (field.type === 'checkbox') {
                   const isChecked = Boolean(field.value);
                   return (
@@ -249,6 +373,9 @@ const FormView = ({ title, fields, submitUrl, cancelUrl, isEdit, deleteUrl }: Fo
                   <div class={`grid gap-2${wide ? ' sm:col-span-2' : ''}`} key={field.name}>
                     <label for={field.name} class="uk-form-label">{field.label}{field.required && ' *'}</label>
                     {renderField(field)}
+                    {field.name === 'address_line_1' && (
+                      <div id="address-results" class="mt-2" style="position: relative;"></div>
+                    )}
                   </div>
                 );
               })}

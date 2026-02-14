@@ -1,5 +1,9 @@
 import { Hono } from 'hono';
 import { checkServiceArea } from '../geo/service-area';
+import { calculateAdjustedPrice } from '../scheduling/pricing';
+import { normalizePhoneE164, sendJobSms } from '../services/twilio';
+import type { TemplateVars } from '../services/twilio';
+import { buildServiceBaseLine, normalizeLine } from '../utils/line-items';
 
 const app = new Hono<{ Bindings: { DB: D1Database } }>();
 
@@ -67,19 +71,34 @@ app.post('/create', async (c) => {
       customer = await db.prepare('SELECT id FROM customers WHERE phone = ? ORDER BY created_at DESC LIMIT 1').bind(body.phone.trim()).first<{ id: string }>();
     }
 
+    const phoneE164 = normalizePhoneE164(typeof body.phone === 'string' ? body.phone : null);
+    const smsConsent = body.sms_consent === true || body.sms_consent === 1 ? 1 : 0;
+
     let customerId = customer?.id;
     if (!customerId) {
       customerId = crypto.randomUUID();
       await db.prepare(
-        `INSERT INTO customers (id, first_name, last_name, email, phone, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
+        `INSERT INTO customers (id, first_name, last_name, email, phone, phone_e164, sms_consent, sms_consent_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
       ).bind(
         customerId,
         body.first_name,
         body.last_name,
         body.email || null,
-        body.phone || null
+        body.phone || null,
+        phoneE164,
+        smsConsent,
+        smsConsent ? new Date().toISOString() : null
       ).run();
+    } else if (smsConsent || phoneE164) {
+      await db.prepare(
+        `UPDATE customers SET
+         phone_e164 = COALESCE(?, phone_e164),
+         sms_consent = CASE WHEN ? = 1 THEN 1 ELSE sms_consent END,
+         sms_consent_at = CASE WHEN ? = 1 AND sms_consent = 0 THEN datetime('now') ELSE sms_consent_at END,
+         updated_at = datetime('now')
+         WHERE id = ?`
+      ).bind(phoneE164, smsConsent, smsConsent, customerId).run();
     }
 
     const addressId = crypto.randomUUID();
@@ -104,26 +123,47 @@ app.post('/create', async (c) => {
     let totalPrice = Number(service.base_price_cents || 0);
     let totalDuration = Number(body.duration_minutes || service.base_duration_minutes || 60);
 
+    const jobLineItems = [buildServiceBaseLine(service.name, Number(service.base_price_cents || 0))];
+
     if (selectedModifierIds.length > 0) {
       const modifierRows = await db.prepare(
-        `SELECT id, price_adjustment_cents, duration_adjustment_minutes
+        `SELECT id, name, price_adjustment_cents, duration_adjustment_minutes
          FROM service_modifiers
          WHERE service_id = ?
-           AND id IN (${selectedModifierIds.map(() => '?').join(', ')})`
-      ).bind(serviceId, ...selectedModifierIds).all<{ id: string; price_adjustment_cents: number; duration_adjustment_minutes: number }>();
+            AND id IN (${selectedModifierIds.map(() => '?').join(', ')})`
+      ).bind(serviceId, ...selectedModifierIds).all<{ id: string; name: string; price_adjustment_cents: number; duration_adjustment_minutes: number }>();
 
       for (const modifier of modifierRows.results || []) {
-        totalPrice += Number(modifier.price_adjustment_cents || 0);
+        const delta = Number(modifier.price_adjustment_cents || 0);
+        totalPrice += delta;
         totalDuration += Number(modifier.duration_adjustment_minutes || 0);
+        jobLineItems.push(normalizeLine(modifier.name || 'Modifier', 1, delta, 'modifier', jobLineItems[0].id, 0));
       }
+    }
+
+    const pricing = await calculateAdjustedPrice(
+      db,
+      serviceId,
+      totalPrice,
+      territoryId,
+      String(body.scheduled_date || ''),
+      String(body.scheduled_start_time || ''),
+    );
+    totalPrice = pricing.total_price;
+    for (const adjustment of pricing.rule_adjustments as Array<Record<string, unknown>>) {
+      const delta = Number(adjustment.delta || 0);
+      if (!delta) continue;
+      const kind = String(adjustment.rule_type || 'rule').replace(/_/g, ' ');
+      const direction = delta > 0 ? '+' : '-';
+      jobLineItems.push(normalizeLine(`Rule (${kind}) ${direction}`, 1, delta, 'rule', jobLineItems[0].id, 0));
     }
 
     const jobId = crypto.randomUUID();
     await db.prepare(
-      `INSERT INTO jobs
-       (id, customer_id, service_id, territory_id, customer_address_id, scheduled_date, scheduled_start_time,
-        duration_minutes, base_price_cents, total_price_cents, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'created', datetime('now'), datetime('now'))`
+       `INSERT INTO jobs
+        (id, customer_id, service_id, territory_id, customer_address_id, scheduled_date, scheduled_start_time,
+         duration_minutes, base_price_cents, total_price_cents, line_items_json, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'created', datetime('now'), datetime('now'))`
     ).bind(
       jobId,
       customerId,
@@ -134,10 +174,33 @@ app.post('/create', async (c) => {
       body.scheduled_start_time,
       totalDuration,
       service.base_price_cents,
-      totalPrice
+      totalPrice,
+      JSON.stringify(jobLineItems),
     ).run();
 
     const job = await db.prepare('SELECT * FROM jobs WHERE id = ?').bind(jobId).first();
+
+    const templateVars: TemplateVars = {
+      first_name: typeof body.first_name === 'string' ? body.first_name : '',
+      last_name: typeof body.last_name === 'string' ? body.last_name : '',
+      service_name: service.name,
+      date: typeof body.scheduled_date === 'string' ? body.scheduled_date : '',
+      time: typeof body.scheduled_start_time === 'string' ? body.scheduled_start_time : '',
+      total: (totalPrice / 100).toFixed(2),
+    };
+
+    const baseUrl = new URL(c.req.url).origin;
+    c.executionCtx.waitUntil(
+      sendJobSms({
+        db,
+        jobId,
+        customerId,
+        eventType: 'booking.confirmed',
+        vars: templateVars,
+        statusCallbackUrl: `${baseUrl}/webhooks/twilio/status`,
+      })
+    );
+
     return c.json(job, 201);
   } catch (error) {
     console.error('booking create error', error);

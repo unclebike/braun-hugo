@@ -50,10 +50,37 @@ const haversineKm = (lat1: number, lng1: number, lat2: number, lng2: number): nu
 
 const toGeofencePoint = (value: unknown): GeofencePoint | null => {
   if (Array.isArray(value) && value.length >= 2) {
-    const lng = Number(value[0]);
-    const lat = Number(value[1]);
-    if (Number.isFinite(lat) && Number.isFinite(lng)) {
-      return { lat, lng };
+    const a = Number(value[0]);
+    const b = Number(value[1]);
+    if (Number.isFinite(a) && Number.isFinite(b)) {
+      // Historically we have stored both [lng, lat] and [lat, lng].
+      // Leaflet's LatLng is (lat, lng) and our admin UI currently serializes [lat, lng].
+      // Range-based detection alone is ambiguous for many North American longitudes
+      // (e.g. -77 is valid for both lat and lng), so we also use a sign heuristic.
+      const absA = Math.abs(a);
+      const absB = Math.abs(b);
+
+      // If one value is clearly longitude (> 90), it's unambiguous.
+      if (absA > 90 && absA <= 180 && absB <= 90) {
+        return { lat: b, lng: a };
+      }
+      if (absB > 90 && absB <= 180 && absA <= 90) {
+        return { lat: a, lng: b };
+      }
+
+      // If exactly one is negative, assume negative is longitude and positive is latitude.
+      // This matches our typical service areas (Canada/US): lat > 0, lng < 0.
+      if ((a < 0 && b > 0) || (a > 0 && b < 0)) {
+        const lat = a > 0 ? a : b;
+        const lng = a < 0 ? a : b;
+        if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+          return { lat, lng };
+        }
+      }
+
+      // Ambiguous ranges (both could be lat/lng). Default to [lat, lng]
+      // because that's what our current admin UI emits.
+      return { lat: a, lng: b };
     }
   }
 

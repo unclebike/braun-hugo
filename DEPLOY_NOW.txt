@@ -1,92 +1,34 @@
-═══════════════════════════════════════════════════════════════════════════════
-   READY TO DEPLOY TO CLOUDFLARE PAGES - book.unclebike.xyz
-═══════════════════════════════════════════════════════════════════════════════
+DEPLOY QUICK REFERENCE
+======================
 
-✅ EVERYTHING IS READY:
-   - Code committed and pushed to GitHub (main branch)
-   - Hugo builds successfully (63 pages)
-   - Build configuration verified
-   - Placeholder images added
-   - All Uncle Bike Ghost content migrated
+This repo has TWO deploy targets:
 
-QUICK DEPLOYMENT STEPS (5 minutes):
-═══════════════════════════════════════════════════════════════════════════════
+1) API Worker (api/)
+2) Public site (Cloudflare Pages)
 
-   1. Go to: https://dash.cloudflare.com
+Use the matching command for your change.
 
-2. Log in (create free account if needed)
+API WORKER DEPLOY
+-----------------
 
-3. Click "Workers & Pages" in sidebar
+cd api
+CLOUDFLARE_API_TOKEN=... npx wrangler deploy
 
-4. Click "Create Application" → "Pages"
+PAGES DEPLOY (MANUAL, FROM LOCAL)
+---------------------------------
 
-5. Click "Connect to Git"
+# from repo root
+hugo --minify && npx pagefind --site public
+CLOUDFLARE_API_TOKEN=... npm exec --yes wrangler@3.114.17 -- pages deploy public --project-name theme-unclebike-xyz --branch main --commit-dirty=true
 
-6. Select GitHub → Authorize → Select "unclebike/braun-hugo"
+PREFERRED PRODUCTION FLOW
+-------------------------
 
-7. Fill in these settings:
-   Project name: theme-unclebike-xyz
-   Production branch: main
-   Build command: npm install -g hugo && hugo --minify && npx pagefind --site public
-   Build output directory: public
+- Commit and push to main.
+- Let Cloudflare Pages deploy automatically from Git.
 
-8. Add environment variables (click "Add environment variables"):
-   HUGO_VERSION = 0.121.0
-   HUGO_ENV = production
-   NODE_ENV = production
+CANONICAL REFERENCES
+--------------------
 
-9. Click "Save and Deploy"
-
-10. Wait 1-2 minutes for build to complete (watch the logs)
-
-AFTER FIRST DEPLOYMENT:
-═══════════════════════════════════════════════════════════════════════════════
-
-1. Click "Settings" in Pages project
-
-2. Click "Domains" 
-
-3. Click "Add custom domain"
-
-4. Enter: book.unclebike.xyz
-
-5. Click "Activate domain"
-
-6. Add CNAME record to your DNS provider:
-   Name: theme.unclebike.xyz
-   Type: CNAME
-   Value: theme-unclebike-xyz.pages.dev
-
-7. Wait 5-15 minutes for DNS to propagate
-
-8. Visit: https://theme.unclebike.xyz ✅ LIVE!
-
-WHAT YOU'LL GET:
-═══════════════════════════════════════════════════════════════════════════════
-
-✅ Site live at book.unclebike.xyz
-✅ Free HTTPS/SSL certificate (automatic)
-✅ Global CDN for fast speeds
-✅ Auto-deploys on every GitHub push
-✅ Automatic build logs
-✅ Deployment history & rollbacks
-
-REPOSITORY INFO:
-═══════════════════════════════════════════════════════════════════════════════
-
-Repository: https://github.com/unclebike/braun-hugo
-Branch: main
-Status: All 63 pages ready
-Last commit: Cloudflare Pages deployment guides
-
-SUPPORT:
-═══════════════════════════════════════════════════════════════════════════════
-
-If you need help:
-- Cloudflare Pages Docs: https://developers.cloudflare.com/pages/
-- Check CLOUDFLARE_PAGES_SETUP.md for detailed walkthrough
-- Check DEPLOYMENT.md for troubleshooting guide
-
-═══════════════════════════════════════════════════════════════════════════════
-                    Ready to go live! 🚀
-═══════════════════════════════════════════════════════════════════════════════
+- Full runbook: DEPLOYMENT.md
+- Bootstrap/setup only: CLOUDFLARE_PAGES_SETUP.md

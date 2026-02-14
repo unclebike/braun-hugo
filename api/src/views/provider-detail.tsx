@@ -33,7 +33,7 @@ export const ProviderDetailPage = ({ member, weeklyHours, dateOverrides, skills,
 
   return (
     <Layout title={`${member.first_name} ${member.last_name}`}>
-      <div class="flex items-center justify-between px-8 py-5 bg-white border-b border-border sticky top-0 z-50">
+      <div class="flex items-center justify-between px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
         <div class="flex items-center gap-3">
           <h2 class="text-xl font-semibold">{member.first_name} {member.last_name}</h2>
           <span class={member.is_active ? 'uk-label uk-label-primary' : 'uk-label'}>{member.is_active ? 'active' : 'inactive'}</span>

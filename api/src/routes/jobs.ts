@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { buildServiceBaseLine, parsePriceLines, subtotalFromLines } from '../utils/line-items';
 
 const app = new Hono<{ Bindings: { DB: D1Database } }>();
 
@@ -9,17 +10,38 @@ const asStringArray = (value: unknown): string[] => {
 };
 
 const maybeAutoCreateInvoice = async (db: D1Database, jobId: string): Promise<void> => {
-  const job = await db.prepare('SELECT customer_id, total_price_cents FROM jobs WHERE id = ?').bind(jobId).first<{ customer_id: string; total_price_cents: number }>();
+  const job = await db.prepare('SELECT customer_id, total_price_cents, line_items_json FROM jobs WHERE id = ?').bind(jobId).first<{ customer_id: string; total_price_cents: number; line_items_json: string | null }>();
   if (!job) return;
   const existing = await db.prepare('SELECT id FROM invoices WHERE job_id = ?').bind(jobId).first();
   if (existing) return;
 
+  const lastInvoice = await db.prepare("SELECT invoice_number FROM invoices WHERE invoice_number LIKE 'INV-%' ORDER BY invoice_number DESC LIMIT 1")
+    .first<{ invoice_number: string | null }>();
+  const lastNumber = lastInvoice?.invoice_number
+    ? Number.parseInt(lastInvoice.invoice_number.replace('INV-', ''), 10)
+    : 0;
+  const invoiceNumber = `INV-${String((Number.isFinite(lastNumber) ? lastNumber : 0) + 1).padStart(6, '0')}`;
+
+  const storedLines = parsePriceLines(job.line_items_json);
+  const effectiveLines = storedLines.length > 0 ? storedLines : [buildServiceBaseLine('Service', job.total_price_cents)];
+  const subtotal = subtotalFromLines(effectiveLines);
+
   const due = new Date();
   due.setDate(due.getDate() + 14);
   await db.prepare(
-    `INSERT INTO invoices (id, job_id, customer_id, amount_cents, due_date, status, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, 'pending', datetime('now'), datetime('now'))`
-  ).bind(crypto.randomUUID(), jobId, job.customer_id, job.total_price_cents, due.toISOString().split('T')[0]).run();
+    `INSERT INTO invoices (id, invoice_number, job_id, customer_id, currency, amount_cents, subtotal_cents, tax_cents, discount_cents, total_cents, line_items_json, due_date, status, created_at, updated_at)
+     VALUES (?, ?, ?, ?, 'CAD', ?, ?, 0, 0, ?, ?, ?, 'pending', datetime('now'), datetime('now'))`
+  ).bind(
+    crypto.randomUUID(),
+    invoiceNumber,
+    jobId,
+    job.customer_id,
+    subtotal,
+    subtotal,
+    subtotal,
+    JSON.stringify(effectiveLines),
+    due.toISOString().split('T')[0],
+  ).run();
 };
 
 app.get('/', async (c) => {
@@ -129,8 +151,8 @@ app.post('/', async (c) => {
     await db.prepare(
       `INSERT INTO jobs
        (id, customer_id, service_id, territory_id, customer_address_id, scheduled_date, scheduled_start_time,
-        duration_minutes, base_price_cents, total_price_cents, custom_service_name, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
+        duration_minutes, base_price_cents, total_price_cents, line_items_json, custom_service_name, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
     ).bind(
       id,
       body.customer_id,
@@ -142,6 +164,7 @@ app.post('/', async (c) => {
       body.duration_minutes || 60,
       body.base_price_cents || 0,
       body.total_price_cents || body.base_price_cents || 0,
+      JSON.stringify([buildServiceBaseLine(String(body.custom_service_name || 'Service'), Number(body.total_price_cents || body.base_price_cents || 0))]),
       body.custom_service_name || null,
       body.status || 'created'
     ).run();
@@ -195,6 +218,23 @@ app.patch('/:id', async (c) => {
       if (body[key] !== undefined) {
         fields.push(`${key} = ?`);
         values.push(body[key]);
+      }
+    }
+
+    if (body.total_price_cents !== undefined || body.custom_service_name !== undefined) {
+      const current = await db.prepare('SELECT total_price_cents, custom_service_name, line_items_json FROM jobs WHERE id = ?').bind(id).first<{
+        total_price_cents: number;
+        custom_service_name: string | null;
+        line_items_json: string | null;
+      }>();
+      if (current) {
+        const customLines = parsePriceLines(current.line_items_json).filter((line) => line.is_custom === 1);
+        const total = body.total_price_cents !== undefined ? Number(body.total_price_cents || 0) : Number(current.total_price_cents || 0);
+        const serviceName = body.custom_service_name !== undefined
+          ? String(body.custom_service_name || 'Service')
+          : (current.custom_service_name || 'Service');
+        fields.push('line_items_json = ?');
+        values.push(JSON.stringify([buildServiceBaseLine(serviceName, total), ...customLines]));
       }
     }
 

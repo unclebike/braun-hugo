@@ -30,7 +30,7 @@
                 </div>
                 {{ partial "components/theme-toggle" . }}
                 <button class="gh-search gh-icon-btn" aria-label="Search this site">{{ partial "icons/search" . }}</button>
-                <button class="gh-burger"></button>
+                <button class="gh-burger" type="button" aria-label="Toggle navigation menu" aria-controls="gh-head-menu" aria-expanded="false"></button>
             </div>
 
             <div class="head-action-social">
@@ -45,7 +45,7 @@
                 {{ partial "components/theme-toggle" (dict "isDesktopOnly" true) }}
             </div>
             
-            <nav class="head-menu{{ if not .Site.Params.show_navigation_icons }} no-icons{{ end }}">
+            <nav id="gh-head-menu" class="head-menu{{ if not .Site.Params.show_navigation_icons }} no-icons{{ end }}">
                 {{ partial "navigation" (dict "isSecondary" false "Site" .Site "Page" .) }}
             </nav>
 
@@ -54,7 +54,7 @@
             <div class="head-member-actions">
                 <div class="gh-head-members">
                     {{ if eq .Site.Params.navigation_buttons "Subscription" }}
-                        <a class="gh-head-link button button-primary button-head" id="zenbooker-trigger" href="{{ .Site.Params.zenbooker_url }}">Book Online</a>
+                        <a class="gh-head-link button button-primary button-head zbw-book-btn" id="zenbooker-trigger" data-zbw-open="true" href="{{ .Site.Params.navigation_buttons_link }}">Book Online</a>
                     {{ else }}
                         <a class="button button-primary button-head" href="{{ .Site.Params.navigation_buttons_link }}">{{ .Site.Params.navigation_buttons_text }}</a>
                     {{ end }}

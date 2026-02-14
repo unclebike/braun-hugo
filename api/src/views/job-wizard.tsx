@@ -1,6 +1,7 @@
 /** @jsx jsx */
 import { jsx } from 'hono/jsx';
 import { Layout } from './layout';
+import { formatTorontoDate } from '../utils/datetime';
 
 void jsx;
 
@@ -56,9 +57,7 @@ const hasStep = (props: NewJobProps | WizardFlowProps): props is WizardFlowProps
 };
 
 const formatDateChip = (date: string) => {
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return date;
-  return d.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' });
+  return formatTorontoDate(date, { weekday: 'short', month: 'short', day: 'numeric' }) || date;
 };
 
 const queryFromQuickProps = (props: NewJobProps) => {
@@ -439,7 +438,7 @@ export const JobWizardPage = (props: NewJobProps | WizardFlowProps) => {
   const title = hasStep(props) ? `New Job - Step ${props.step}` : 'Create Job';
   return (
     <Layout title={title}>
-      <div class="flex items-center justify-between px-8 py-5 bg-white border-b border-border sticky top-0 z-50">
+      <div class="flex items-center justify-between px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
         <h2 class="text-xl font-semibold">{title}</h2>
         <a href="/admin/jobs" class="uk-btn uk-btn-default uk-btn-sm" hx-get="/admin/jobs" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Back</a>
       </div>

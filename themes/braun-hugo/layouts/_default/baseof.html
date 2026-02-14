@@ -43,7 +43,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="/images/ghost/icon/favicon.bdae2e.svg">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="{{ .Site.Title }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/apple-splash-1179x2556.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/apple-splash-1290x2796.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/apple-splash-1170x2532.png">
+    <link rel="apple-touch-startup-image" media="screen and (min-device-width: 1024px) and (orientation: portrait)" href="/splash/apple-splash-2048x2732.png">
     
     <script>
         document.documentElement.classList.remove('no-js');
@@ -316,6 +326,9 @@
           console.log('Booking completed:', booking);
         }
       };
+      if (document.getElementById('zenbooker-trigger')) {
+        window.ZenbookerPopupConfig.floatingButton = false;
+      }
     </script>
     <script src="https://api.unclebike.xyz/widget/popup.js" defer></script>
     <script>
@@ -328,6 +341,84 @@
         btn.style.opacity = entries[0].isIntersecting ? '0' : '1';
         btn.style.pointerEvents = entries[0].isIntersecting ? 'none' : 'auto';
       }, { threshold: 0 }).observe(header);
+    })();
+    (function() {
+      var burger = document.querySelector('.gh-burger');
+      if (!burger) return;
+      var syncExpanded = function() {
+        burger.setAttribute('aria-expanded', document.body.classList.contains('is-head-open') ? 'true' : 'false');
+      };
+      syncExpanded();
+      burger.addEventListener('click', function() {
+        setTimeout(syncExpanded, 0);
+      });
+      new MutationObserver(syncExpanded).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    })();
+    (function() {
+      if (!('serviceWorker' in navigator)) return;
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').catch(function() {});
+      });
+    })();
+    (function() {
+      if (!navigator.storage || !navigator.storage.persisted || !navigator.storage.persist) return;
+      var requestPersist = function() {
+        navigator.storage.persisted().then(function(isPersistent) {
+          if (isPersistent) return;
+          if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+            navigator.storage.persist().catch(function() {});
+            return;
+          }
+          if (navigator.storage.estimate) {
+            navigator.storage.estimate().then(function(estimate) {
+              var usage = Number(estimate.usage || 0);
+              var quota = Number(estimate.quota || 0);
+              if (quota > 0 && usage / quota > 0.75) {
+                navigator.storage.persist().catch(function() {});
+              }
+            }).catch(function() {});
+          }
+        }).catch(function() {});
+      };
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(requestPersist, { timeout: 2500 });
+      } else {
+        setTimeout(requestPersist, 1200);
+      }
+    })();
+    (function() {
+      var ua = navigator.userAgent || '';
+      var isIOS = /iphone|ipad|ipod/i.test(ua);
+      var isSafari = /safari/i.test(ua) && !/crios|fxios|edgios|opr\//i.test(ua);
+      var isStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+      if (!isIOS || !isSafari || isStandalone) return;
+      var key = 'ios-pwa-tip-dismissed-until';
+      var dismissedUntil = Number(localStorage.getItem(key) || 0);
+      if (dismissedUntil > Date.now()) return;
+
+      var showTip = function() {
+        if (document.getElementById('ios-install-tip')) return;
+        var tip = document.createElement('aside');
+        tip.id = 'ios-install-tip';
+        tip.setAttribute('role', 'dialog');
+        tip.setAttribute('aria-label', 'Install app tip');
+        tip.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:10002;background:#0f172a;color:#e2e8f0;border-radius:14px;padding:12px 14px;box-shadow:0 12px 28px rgba(2,6,23,.35);font-size:14px;line-height:1.4;';
+        tip.innerHTML = '<strong style="display:block;margin-bottom:4px;color:#fff;">Install Uncle Bike</strong>' +
+          '<span>In Safari, tap Share, then <em>Add to Home Screen</em> for faster booking and offline access.</span>' +
+          '<div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end;">' +
+          '<button type="button" id="ios-tip-later" style="border:1px solid #334155;background:transparent;color:#e2e8f0;border-radius:999px;padding:6px 10px;">Later</button>' +
+          '<button type="button" id="ios-tip-gotit" style="border:0;background:#2563eb;color:#fff;border-radius:999px;padding:6px 10px;">Got it</button>' +
+          '</div>';
+        document.body.appendChild(tip);
+        var hideForDays = function(days) {
+          localStorage.setItem(key, String(Date.now() + days * 86400000));
+          tip.remove();
+        };
+        document.getElementById('ios-tip-later').addEventListener('click', function() { hideForDays(3); });
+        document.getElementById('ios-tip-gotit').addEventListener('click', function() { hideForDays(14); });
+      };
+
+      setTimeout(showTip, 6000);
     })();
     document.querySelectorAll('.kg-toggle-heading').forEach(function(h) {
       h.addEventListener('click', function() {

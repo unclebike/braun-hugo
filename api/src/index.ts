@@ -18,9 +18,10 @@ import territoriesRoutes from './routes/territories';
 import transactionsRoutes from './routes/transactions';
 import messagesRoutes from './routes/messages';
 import webhooksRoutes from './routes/webhooks';
+import twilioWebhooksRoutes from './routes/twilio-webhooks';
 import { BOOKING_WIDGET_DEMO, BOOKING_WIDGET_JS, BOOKING_WIDGET_POPUP } from './widget/embed';
 
-const app = new Hono<{ Bindings: { DB: D1Database } }>();
+const app = new Hono<{ Bindings: { DB: D1Database; ASSETS: any } }>();
 
 app.onError((err, c) => {
   console.error('Unhandled error:', err.message, err.stack);
@@ -29,6 +30,13 @@ app.onError((err, c) => {
 
 app.use('/v1/*', cors());
 app.use('/widget/*', cors());
+app.get('/fonts/*', (c) => c.env.ASSETS.fetch(c.req.raw));
+app.get('/images/*', (c) => c.env.ASSETS.fetch(c.req.raw));
+app.use('/admin/*', async (c, next) => {
+  await next();
+  c.header('Cache-Control', 'no-cache, no-store, must-revalidate');
+  c.header('Pragma', 'no-cache');
+});
 app.use('*', authMiddleware);
 
 app.get('/health', (c) => {
@@ -101,6 +109,60 @@ api.route('/bookings', bookingsRoutes);
 api.route('/messages', messagesRoutes);
 
 app.route('/v1', api);
+app.route('/webhooks/twilio', twilioWebhooksRoutes);
 app.route('/admin', adminRoutes);
 
-export default app;
+async function sendReminders(db: D1Database) {
+  const { sendJobSms, isTwilioEnabled } = await import('./services/twilio');
+  if (!(await isTwilioEnabled(db))) return;
+
+  const now = new Date();
+  const eastern = new Date(now.toLocaleString('en-US', { timeZone: 'America/Toronto' }));
+  const todayStr = eastern.toISOString().split('T')[0];
+
+  const tomorrow = new Date(eastern);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+  const jobs = await db.prepare(
+    `SELECT j.id, j.customer_id, j.scheduled_date, j.scheduled_start_time, j.total_price_cents,
+            c.first_name, c.last_name,
+            COALESCE(s.name, j.custom_service_name, 'Service') as service_name
+     FROM jobs j
+     JOIN customers c ON c.id = j.customer_id
+     LEFT JOIN services s ON s.id = j.service_id
+     WHERE j.status IN ('created', 'assigned')
+       AND j.scheduled_date IN (?, ?)
+       AND c.sms_consent = 1
+       AND c.sms_opted_out = 0
+       AND c.phone_e164 IS NOT NULL`
+  ).bind(todayStr, tomorrowStr).all();
+
+  for (const job of jobs.results || []) {
+    const eventType = job.scheduled_date === todayStr ? 'reminder.morning_of' : 'reminder.day_before';
+    const vars = {
+      first_name: job.first_name as string,
+      last_name: job.last_name as string,
+      service_name: job.service_name as string,
+      date: job.scheduled_date as string,
+      time: job.scheduled_start_time as string,
+      total: ((job.total_price_cents as number) / 100).toFixed(2),
+    };
+
+    await sendJobSms({
+      db,
+      jobId: job.id as string,
+      customerId: job.customer_id as string,
+      eventType,
+      vars,
+      skipQuietHours: true,
+    });
+  }
+}
+
+export default {
+  fetch: app.fetch,
+  async scheduled(event: ScheduledEvent, env: { DB: D1Database }, ctx: ExecutionContext) {
+    ctx.waitUntil(sendReminders(env.DB));
+  },
+};

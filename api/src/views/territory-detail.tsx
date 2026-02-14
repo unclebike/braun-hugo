@@ -55,15 +55,15 @@ const parseOperatingHours = (raw: string) => {
 export const ZipPanel = ({ tid, zipCodes }: { tid: string; zipCodes: string[] }) => {
   return (
     <div>
-      <form hx-post={`/admin/territories/${tid}/area`} hx-target="#page-content" hx-select="#page-content">
+      <form class="autosave" hx-post={`/admin/territories/${tid}/area`} hx-swap="none" hx-trigger="input delay:800ms, change delay:800ms">
         <input type="hidden" name="service_area_type" value="zip" />
-        <div class="grid gap-2">
+        <div class="flex items-center justify-between mb-2">
           <label class="uk-form-label" for="zip-codes">ZIP/Postal Codes</label>
+          <span class="save-indicator"></span>
+        </div>
+        <div class="grid gap-2">
           <textarea id="zip-codes" name="zip_codes" class="uk-textarea" rows={4} placeholder="K8N1A1, K8N1A2">{zipCodes.join(', ')}</textarea>
           <p class="text-sm text-muted-foreground">Comma-separated list.</p>
-        </div>
-        <div class="mt-4">
-          <button type="submit" class="uk-btn uk-btn-default">Save Service Area</button>
         </div>
       </form>
     </div>
@@ -78,8 +78,9 @@ export const RadiusPanel = ({ tid, areaData }: { tid: string; areaData: Record<s
 
   return (
     <div>
-      <form hx-post={`/admin/territories/${tid}/area`} hx-target="#page-content" hx-select="#page-content">
+      <form id="radius-form" class="autosave" hx-post={`/admin/territories/${tid}/area`} hx-swap="none" hx-trigger="change delay:500ms" hx-sync="this:queue last">
         <input type="hidden" name="service_area_type" value="radius" />
+        <span class="save-indicator"></span>
         <div class="grid gap-3 sm:grid-cols-2 mb-4">
           <div class="grid gap-2 sm:col-span-2">
             <label class="uk-form-label" for="center-address-search">Address Search</label>
@@ -107,10 +108,7 @@ export const RadiusPanel = ({ tid, areaData }: { tid: string; areaData: Record<s
             <input id="radius-miles" name="radius_miles" type="number" min={1} step={0.1} class="uk-input" value={miles.toString()} />
           </div>
         </div>
-        <div id="radius-map" style="height: 300px; border: 1px solid #ddd; border-radius: 8px;" data-lat={lat.toString()} data-lng={lng.toString()} data-miles={miles.toString()}></div>
-        <div class="mt-4">
-          <button type="submit" class="uk-btn uk-btn-default">Save Service Area</button>
-        </div>
+        <div id="radius-map" style="height: 300px; border: 1px solid var(--border); border-radius: 8px;" data-lat={lat.toString()} data-lng={lng.toString()} data-miles={miles.toString()}></div>
       </form>
     </div>
   );
@@ -121,18 +119,16 @@ export const GeofencePanel = ({ tid, areaData }: { tid: string; areaData: Record
 
   return (
     <div>
-      <form hx-post={`/admin/territories/${tid}/area`} hx-target="#page-content" hx-select="#page-content">
+      <form id="geofence-form" class="autosave" hx-post={`/admin/territories/${tid}/area`} hx-swap="none" hx-trigger="change delay:500ms" hx-sync="this:queue last">
         <input type="hidden" name="service_area_type" value="geofence" />
         <div class="flex items-center gap-2 mb-3">
           <button id="gf-draw-btn" type="button" class="uk-btn uk-btn-default uk-btn-sm">Draw Polygon</button>
           <button id="clear-geofence-btn" type="button" class="uk-btn uk-btn-default uk-btn-sm">Clear</button>
           <span id="gf-count" class="text-sm text-muted-foreground">{polygon.length} pts</span>
+          <span class="save-indicator"></span>
         </div>
-        <div id="geofence-map" style="height: 320px; border: 1px solid #ddd; border-radius: 8px;" data-points={JSON.stringify(polygon)}></div>
+        <div id="geofence-map" style="height: 320px; border: 1px solid var(--border); border-radius: 8px;" data-points={JSON.stringify(polygon)}></div>
         <input id="polygon-json-hidden" type="hidden" name="polygon_json" value={polygon.length ? JSON.stringify(polygon) : ''} />
-        <div class="mt-4">
-          <button type="submit" class="uk-btn uk-btn-default">Save Service Area</button>
-        </div>
       </form>
     </div>
   );
@@ -149,7 +145,7 @@ export const TerritoryDetailPage = ({ territory, services, providers, isNew }: T
 
   return (
     <Layout title={isNew ? 'Create Territory' : territory.name || 'Territory'}>
-      <div class="flex items-center justify-between px-8 py-5 bg-white border-b border-border sticky top-0 z-50">
+      <div class="flex items-center justify-between px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
         <h2 class="text-xl font-semibold">{isNew ? 'Create Territory' : territory.name || 'Territory'}</h2>
         <a href="/admin/territories" class="uk-btn uk-btn-default uk-btn-sm" hx-get="/admin/territories" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Back</a>
       </div>
@@ -206,7 +202,7 @@ export const TerritoryDetailPage = ({ territory, services, providers, isNew }: T
                       hx-get={`/admin/territories/${territory.id}/area-panel/${selectedType}`}
                       hx-target="#area-panel"
                       hx-swap="innerHTML"
-                      hx-on:change={`this.setAttribute('hx-get','/admin/territories/${territory.id}/area-panel/' + this.value)`}
+                      hx-trigger="change"
                     >
                       <option value="zip" selected={selectedType === 'zip'}>ZIP / Postal Codes</option>
                       <option value="radius" selected={selectedType === 'radius'}>Radius</option>
@@ -227,8 +223,11 @@ export const TerritoryDetailPage = ({ territory, services, providers, isNew }: T
           {!isNew && (
             <div class="uk-card uk-card-body">
               <section>
-                <h3 class="text-base font-semibold mb-4">Operating Hours</h3>
-                <form hx-post={`/admin/territories/${territory.id}/hours`} hx-target="#page-content" hx-select="#page-content">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-base font-semibold">Operating Hours</h3>
+                  <span class="save-indicator"></span>
+                </div>
+                <form class="autosave" hx-post={`/admin/territories/${territory.id}/hours`} hx-swap="none" hx-trigger="change delay:500ms" hx-sync="this:queue last">
                   <div class="grid gap-3">
                     {HOURS.map((d) => {
                       const row = operatingHours[d.key] || null;
@@ -244,9 +243,6 @@ export const TerritoryDetailPage = ({ territory, services, providers, isNew }: T
                         </div>
                       );
                     })}
-                  </div>
-                  <div class="mt-4">
-                    <button type="submit" class="uk-btn uk-btn-default">Save Hours</button>
                   </div>
                 </form>
               </section>
@@ -270,6 +266,7 @@ export const TerritoryDetailPage = ({ territory, services, providers, isNew }: T
                         class="uk-checkbox"
                         checked={s.assigned}
                         hx-post={`/admin/territories/${territory.id}/services/${s.id}/toggle`}
+                        hx-trigger="change"
                         hx-swap="none"
                       />
                     </label>
@@ -296,6 +293,7 @@ export const TerritoryDetailPage = ({ territory, services, providers, isNew }: T
                         class="uk-checkbox"
                         checked={p.assigned}
                         hx-post={`/admin/territories/${territory.id}/providers/${p.id}/toggle`}
+                        hx-trigger="change"
                         hx-swap="none"
                       />
                     </label>

@@ -57,7 +57,7 @@ const formatRuleDetails = (rule: ServiceDetailPageProps['priceRules'][number]) =
 export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, requiredSkills, allSkills, territories }: ServiceDetailPageProps) => {
   return (
     <Layout title={service.name || 'Service'}>
-      <div class="flex items-center justify-between px-8 py-5 bg-white border-b border-border sticky top-0 z-50">
+      <div class="flex items-center justify-between px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
         <div class="flex items-center gap-3">
           <h2 class="text-xl font-semibold">{service.name || 'Service'}</h2>
           <span class={service.is_active ? 'uk-label uk-label-primary' : 'uk-label'}>{service.is_active ? 'active' : 'inactive'}</span>
@@ -103,8 +103,8 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
                     </select>
                   </div>
                   <div class="grid gap-2">
-                    <label class="uk-form-label" for="service-price">Base Price (cents)</label>
-                    <input id="service-price" name="base_price_cents" type="number" min={0} class="uk-input" value={service.base_price_cents} />
+                    <label class="uk-form-label" for="service-price">Base Price ($)</label>
+                    <input id="service-price" name="base_price" type="number" min={0} step={0.01} class="uk-input" value={(service.base_price_cents / 100).toFixed(2)} />
                   </div>
                   <div class="grid gap-2">
                     <label class="uk-form-label" for="service-duration">Duration (minutes)</label>
@@ -149,7 +149,7 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
                     {modifiers.map((mod) => (
                       <tr key={mod.id}>
                         <td>{mod.name}</td>
-                        <td>{mod.price_adjustment_cents}</td>
+                        <td>${(mod.price_adjustment_cents / 100).toFixed(2)}</td>
                         <td>{mod.duration_adjustment_minutes} min</td>
                         <td>{mod.is_required ? 'Yes' : 'No'}</td>
                         <td>
@@ -193,8 +193,8 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
                     <input id="mod-description" name="description" class="uk-input" />
                   </div>
                   <div class="grid gap-2">
-                    <label class="uk-form-label" for="mod-price">Price adjustment (cents)</label>
-                    <input id="mod-price" name="price_adjustment_cents" type="number" class="uk-input" value="0" />
+                    <label class="uk-form-label" for="mod-price">Price Adjustment ($)</label>
+                    <input id="mod-price" name="price_adjustment" type="number" step={0.01} class="uk-input" value="0" />
                   </div>
                   <div class="grid gap-2">
                     <label class="uk-form-label" for="mod-duration">Duration adjustment (minutes)</label>
@@ -225,7 +225,7 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
                     {priceRules.map((rule) => (
                       <tr key={rule.id}>
                         <td>{rule.rule_type}</td>
-                        <td>{rule.direction} {rule.adjustment_value} {rule.adjustment_type === 'percentage' ? '%' : 'cents'}</td>
+                        <td>{rule.direction} {rule.adjustment_type === 'percentage' ? `${rule.adjustment_value}%` : `$${(rule.adjustment_value / 100).toFixed(2)}`}</td>
                         <td>{formatRuleDetails(rule)}</td>
                         <td>
                           <button
@@ -269,8 +269,8 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
                     </select>
                   </div>
                   <div class="grid gap-2">
-                    <label class="uk-form-label" for="adjustment-value">Adjustment Value</label>
-                    <input id="adjustment-value" name="adjustment_value" type="number" class="uk-input" value="0" />
+                    <label class="uk-form-label" for="adjustment-value">Adjustment Value ($ or %)</label>
+                    <input id="adjustment-value" name="adjustment_value" type="number" step={0.01} class="uk-input" value="0" />
                   </div>
                   <div class="grid gap-2">
                     <label class="uk-form-label" for="direction">Direction</label>

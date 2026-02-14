@@ -1,10 +1,17 @@
 import { Hono } from 'hono';
+import { normalizePhoneE164 } from '../services/twilio';
 
 const app = new Hono<{ Bindings: { DB: D1Database } }>();
 
 const asArray = (value: unknown): Array<Record<string, unknown>> => {
   if (Array.isArray(value)) return value.filter((v): v is Record<string, unknown> => Boolean(v && typeof v === 'object'));
   return [];
+};
+
+const normalizeEmail = (value: unknown): string | null => {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim().toLowerCase();
+  return trimmed || null;
 };
 
 app.get('/', async (c) => {
@@ -59,11 +66,22 @@ app.post('/', async (c) => {
     const db = c.env.DB;
     const body = await c.req.json<Record<string, unknown>>();
     const id = crypto.randomUUID();
+    const email = normalizeEmail(body.email);
+    const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
+    const phoneE164 = normalizePhoneE164(phone || null);
+
+    const duplicate = await db.prepare(
+      `SELECT id FROM customers
+       WHERE (? IS NOT NULL AND LOWER(email) = ?)
+          OR (? IS NOT NULL AND phone_e164 = ?)
+       LIMIT 1`
+    ).bind(email, email, phoneE164, phoneE164).first();
+    if (duplicate) return c.json({ error: 'Customer already exists' }, 409);
 
     await db.prepare(
-      `INSERT INTO customers (id, first_name, last_name, email, phone, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
-    ).bind(id, body.first_name, body.last_name, body.email || null, body.phone || null).run();
+      `INSERT INTO customers (id, first_name, last_name, email, phone, phone_e164, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
+    ).bind(id, body.first_name, body.last_name, email, phone || null, phoneE164).run();
 
     for (const address of asArray(body.customer_addresses)) {
       await db.prepare(
@@ -100,11 +118,36 @@ app.patch('/:id', async (c) => {
     const fields: string[] = [];
     const values: unknown[] = [];
 
+    const normalizedEmail = body.email !== undefined ? normalizeEmail(body.email) : undefined;
+    const normalizedPhone = body.phone !== undefined && typeof body.phone === 'string' ? body.phone.trim() : undefined;
+    const normalizedPhoneE164 = normalizedPhone !== undefined ? normalizePhoneE164(normalizedPhone || null) : undefined;
+
+    const duplicate = await db.prepare(
+      `SELECT id FROM customers
+       WHERE id != ?
+         AND ((? IS NOT NULL AND LOWER(email) = ?) OR (? IS NOT NULL AND phone_e164 = ?))
+       LIMIT 1`
+    ).bind(
+      id,
+      normalizedEmail !== undefined ? normalizedEmail : null,
+      normalizedEmail !== undefined ? normalizedEmail : null,
+      normalizedPhoneE164 !== undefined ? normalizedPhoneE164 : null,
+      normalizedPhoneE164 !== undefined ? normalizedPhoneE164 : null,
+    ).first();
+    if (duplicate) return c.json({ error: 'Customer already exists' }, 409);
+
     for (const key of ['first_name', 'last_name', 'email', 'phone']) {
       if (body[key] !== undefined) {
         fields.push(`${key} = ?`);
-        values.push(body[key]);
+        if (key === 'email') values.push(normalizedEmail ?? null);
+        else if (key === 'phone') values.push(normalizedPhone ?? null);
+        else values.push(body[key]);
       }
+    }
+
+    if (normalizedPhoneE164 !== undefined) {
+      fields.push('phone_e164 = ?');
+      values.push(normalizedPhoneE164);
     }
 
     if (fields.length > 0) {

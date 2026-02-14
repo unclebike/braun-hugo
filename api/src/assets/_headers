@@ -1,0 +1,7 @@
+/fonts/*
+  Content-Type: application/x-font-opentype
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+/*
+  Cache-Control: public, max-age=3600

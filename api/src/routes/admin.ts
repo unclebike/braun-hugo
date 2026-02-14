@@ -1,24 +1,204 @@
 // biome-ignore assist/source/organizeImports: keep imports stable for this file
 import { type Context, Hono } from 'hono';
 import { checkServiceArea } from '../geo/service-area';
+import { sendJobSms, sendDirectSms, normalizePhoneE164, getTwilioConfig, isTwilioEnabled, ensureSmsInboxMessage } from '../services/twilio';
+import type { TemplateVars } from '../services/twilio';
+import { buildServiceBaseLine, normalizeLine, parseEditableText, parsePriceLines, subtotalFromLines, type PriceLineItem } from '../utils/line-items';
 import { type FormField, FormView, TableView } from '../views/components';
 import { BrandingPage } from '../views/branding';
-import { MessageDetailPage } from '../views/message-detail';
+import { MessageDetailPage, SmsHistoryList, SmsThreadPanel } from '../views/message-detail';
+import type { SmsLogRow } from '../views/message-detail';
 import { Dashboard } from '../views/dashboard';
-import { JobDetailPage } from '../views/job-detail';
+import { JobDetailPage, SmsThreadCard } from '../views/job-detail';
 import { AddressSearchResults, CustomerSearchResults, JobWizardPage, JobWizardSwapBundle, parseWizardState, type NewJobProps, type WizardState } from '../views/job-wizard';
 import { ProviderDetailPage } from '../views/provider-detail';
 import { ServiceDetailPage } from '../views/service-detail';
 import { GeofencePanel, RadiusPanel, TerritoryDetailPage, ZipPanel } from '../views/territory-detail';
+import { SmsSettingsPage } from '../views/sms-settings';
+import { InvoiceDetailPage } from '../views/invoice-detail';
+import { formatTorontoDate } from '../utils/datetime';
 
 type WizardCustomer = { id: string; first_name: string; last_name: string; email?: string; phone?: string };
 type WizardService = { id: string; name: string; description?: string; base_price_cents: number; base_duration_minutes: number };
+type InboxJobOption = { id: string; label: string };
+
+
+const parseJsonObject = (raw: string | null | undefined): Record<string, unknown> | null => {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed as Record<string, unknown>;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+};
+
+const toTaskTitle = (text: string) => {
+  const compact = text.replace(/\s+/g, ' ').trim();
+  if (!compact) return '';
+  if (compact.length <= 72) return compact;
+  return `${compact.slice(0, 69).trimEnd()}...`;
+};
+
+const getCompletedSmsTaskIds = async (db: D1Database, jobId: string | null): Promise<string[]> => {
+  if (!jobId) return [];
+  const job = await db.prepare('SELECT notes_json FROM jobs WHERE id = ?').bind(jobId).first<{ notes_json: string | null }>();
+  if (!job?.notes_json) return [];
+
+  const completed = new Set<string>();
+  try {
+    const notes = JSON.parse(job.notes_json) as unknown;
+    if (!Array.isArray(notes)) return [];
+
+    for (const note of notes) {
+      if (!note || typeof note !== 'object' || Array.isArray(note)) continue;
+      const noteRecord = note as Record<string, unknown>;
+      if (!noteRecord.completed) continue;
+      const source = noteRecord.source;
+      if (!source || typeof source !== 'object' || Array.isArray(source)) continue;
+      const sourceRecord = source as Record<string, unknown>;
+      if (sourceRecord.type !== 'sms') continue;
+      if (typeof sourceRecord.sms_log_id === 'string' && sourceRecord.sms_log_id.trim()) {
+        completed.add(sourceRecord.sms_log_id);
+      }
+    }
+  } catch {
+    return [];
+  }
+
+  return Array.from(completed);
+};
 
 type AdminContext = Context<{ Bindings: { DB: D1Database; MAPBOX_ACCESS_TOKEN?: string } }>;
 
 const app = new Hono<{ Bindings: { DB: D1Database; MAPBOX_ACCESS_TOKEN?: string } }>();
 
 const generateId = () => crypto.randomUUID();
+
+const normalizeEmail = (value: string | null | undefined) => {
+  const trimmed = (value || '').trim();
+  return trimmed ? trimmed.toLowerCase() : null;
+};
+
+const parseMoneyToCents = (value: unknown): number => {
+  if (typeof value === 'number' && Number.isFinite(value)) return Math.max(0, Math.round(value));
+  if (typeof value !== 'string') return 0;
+  const cleaned = value.trim().replace(/[$,]/g, '');
+  const parsed = Number.parseFloat(cleaned);
+  if (!Number.isFinite(parsed)) return 0;
+  return Math.max(0, Math.round(parsed * 100));
+};
+
+const formatCents = (value: number) => `$${(value / 100).toFixed(2)}`;
+
+const nextInvoiceNumber = async (db: D1Database) => {
+  const row = await db.prepare("SELECT invoice_number FROM invoices WHERE invoice_number LIKE 'INV-%' ORDER BY invoice_number DESC LIMIT 1")
+    .first<{ invoice_number: string | null }>();
+  const suffix = row?.invoice_number ? Number.parseInt(row.invoice_number.replace('INV-', ''), 10) : 0;
+  const next = Number.isFinite(suffix) ? suffix + 1 : 1;
+  return `INV-${String(next).padStart(6, '0')}`;
+};
+
+const parseInvoiceLineItems = parseEditableText;
+
+const recomputeJobTotals = async (db: D1Database, jobId: string): Promise<void> => {
+  const job = await db.prepare('SELECT line_items_json FROM jobs WHERE id = ?').bind(jobId).first<{ line_items_json: string | null }>();
+  if (!job) return;
+  const lines = parsePriceLines(job.line_items_json);
+  const total = subtotalFromLines(lines);
+  const base = lines.find((line) => line.kind === 'service')?.total_cents || total;
+  await db.prepare("UPDATE jobs SET base_price_cents = ?, total_price_cents = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(base, total, jobId)
+    .run();
+};
+
+const syncInvoiceFromJob = async (db: D1Database, jobId: string): Promise<void> => {
+  const [job, invoice] = await Promise.all([
+    db.prepare('SELECT line_items_json FROM jobs WHERE id = ?').bind(jobId).first<{ line_items_json: string | null }>(),
+    db.prepare('SELECT id, tax_cents, discount_cents FROM invoices WHERE job_id = ? AND status IN (\'pending\', \'sent\') ORDER BY created_at DESC LIMIT 1').bind(jobId).first<{ id: string; tax_cents: number; discount_cents: number }>(),
+  ]);
+  if (!job || !invoice) return;
+  const lines = parsePriceLines(job.line_items_json);
+  const subtotal = subtotalFromLines(lines);
+  const total = Math.max(0, subtotal + Number(invoice.tax_cents || 0) - Number(invoice.discount_cents || 0));
+  await db.prepare(
+    `UPDATE invoices
+     SET line_items_json = ?, subtotal_cents = ?, amount_cents = ?, total_cents = ?, updated_at = datetime('now')
+     WHERE id = ?`
+  ).bind(JSON.stringify(lines), subtotal, total, total, invoice.id).run();
+};
+
+const writeInvoiceLines = async (db: D1Database, invoiceId: string, lines: PriceLineItem[]): Promise<void> => {
+  const invoice = await db.prepare('SELECT tax_cents, discount_cents FROM invoices WHERE id = ?').bind(invoiceId).first<{ tax_cents: number; discount_cents: number }>();
+  if (!invoice) return;
+  const subtotal = subtotalFromLines(lines);
+  const total = Math.max(0, subtotal + Number(invoice.tax_cents || 0) - Number(invoice.discount_cents || 0));
+  await db.prepare(
+    `UPDATE invoices
+     SET line_items_json = ?, subtotal_cents = ?, amount_cents = ?, total_cents = ?, updated_at = datetime('now')
+     WHERE id = ?`
+  ).bind(JSON.stringify(lines), subtotal, total, total, invoiceId).run();
+};
+
+const parseImportedCustomers = (raw: string): Array<{ first_name: string; last_name: string; email: string | null; phone: string | null }> => {
+  const text = raw.trim();
+  if (!text) return [];
+  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  if (lines.length === 0) return [];
+
+  const looksLikeCsvHeader = /first.?name|last.?name|email|phone|name/i.test(lines[0]);
+  if (looksLikeCsvHeader) {
+    const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+    const findIndex = (keys: string[]) => {
+      for (const key of keys) {
+        const idx = headers.indexOf(key);
+        if (idx >= 0) return idx;
+      }
+      return -1;
+    };
+    const firstNameIndex = findIndex(['first_name', 'firstname', 'first name']);
+    const lastNameIndex = findIndex(['last_name', 'lastname', 'last name']);
+    const nameIndex = findIndex(['name', 'full_name', 'full name']);
+    const emailIndex = findIndex(['email', 'email_address', 'email address']);
+    const phoneIndex = findIndex(['phone', 'phone_number', 'phone number', 'mobile']);
+
+    return lines.slice(1).map((line) => {
+      const cols = line.split(',').map((cell) => cell.trim());
+      const fullName = nameIndex >= 0 ? (cols[nameIndex] || '') : '';
+      const explicitFirst = firstNameIndex >= 0 ? (cols[firstNameIndex] || '') : '';
+      const explicitLast = lastNameIndex >= 0 ? (cols[lastNameIndex] || '') : '';
+      const nameParts = fullName.split(/\s+/).filter(Boolean);
+      const first_name = explicitFirst || nameParts[0] || '';
+      const last_name = explicitLast || nameParts.slice(1).join(' ') || '';
+      return {
+        first_name,
+        last_name,
+        email: emailIndex >= 0 ? normalizeEmail(cols[emailIndex] || null) : null,
+        phone: phoneIndex >= 0 ? (cols[phoneIndex] || null) : null,
+      };
+    }).filter((entry) => entry.first_name && entry.last_name);
+  }
+
+  return lines.map((line) => {
+    const emailMatch = line.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+    const phoneMatch = line.match(/(\+?\d[\d\s().-]{7,}\d)/);
+    const cleaned = line
+      .replace(emailMatch?.[0] || '', '')
+      .replace(phoneMatch?.[0] || '', '')
+      .replace(/[<>]/g, ' ')
+      .trim();
+    const parts = cleaned.split(/\s+/).filter(Boolean);
+    return {
+      first_name: parts[0] || '',
+      last_name: parts.slice(1).join(' ') || '',
+      email: normalizeEmail(emailMatch?.[0] || null),
+      phone: phoneMatch?.[0]?.trim() || null,
+    };
+  }).filter((entry) => entry.first_name && entry.last_name);
+};
 
 app.get('/', async (c) => {
   const db = c.env.DB;
@@ -35,7 +215,8 @@ app.get('/', async (c) => {
     activeProviders,
     pendingInvoices,
     upcomingJobs,
-    recentBookings
+    recentBookings,
+    recentMessages
   ] = await Promise.all([
     db.prepare(`
       SELECT COUNT(*) as count FROM jobs 
@@ -75,11 +256,19 @@ app.get('/', async (c) => {
     
     db.prepare(`
       SELECT j.id, c.first_name || ' ' || c.last_name as customer_name,
-             s.name as service_name, j.created_at, j.total_price_cents
+             s.name as service_name, t.name as territory_name, j.status, j.created_at, j.total_price_cents
       FROM jobs j
       JOIN customers c ON j.customer_id = c.id
       LEFT JOIN services s ON j.service_id = s.id
+      LEFT JOIN territories t ON j.territory_id = t.id
       ORDER BY j.created_at DESC
+      LIMIT 10
+    `).all(),
+    
+    db.prepare(`
+      SELECT id, first_name, last_name, email, subject, is_read, created_at
+      FROM messages
+      ORDER BY created_at DESC
       LIMIT 10
     `).all()
   ]);
@@ -96,7 +285,8 @@ app.get('/', async (c) => {
   const dashboardHtml = Dashboard({ 
     stats,
     upcomingJobs: upcomingJobs.results || [],
-    recentBookings: recentBookings.results || []
+    recentBookings: recentBookings.results || [],
+    recentMessages: recentMessages.results || []
   });
   
   return c.html(dashboardHtml);
@@ -301,7 +491,7 @@ app.post('/territories/:id/area', async (c) => {
   }
   
   await db.prepare("UPDATE territories SET service_area_type = ?, service_area_data = ?, updated_at = datetime('now') WHERE id = ?").bind(areaType, areaData, id).run();
-  return c.redirect(`/admin/territories/${id}`);
+  return c.body('', 200);
 });
 
 app.post('/territories/:id/hours', async (c) => {
@@ -320,7 +510,7 @@ app.post('/territories/:id/hours', async (c) => {
   }
   
   await db.prepare("UPDATE territories SET operating_hours = ?, updated_at = datetime('now') WHERE id = ?").bind(JSON.stringify(hours), id).run();
-  return c.redirect(`/admin/territories/${id}`);
+  return c.body('', 200);
 });
 
 app.post('/territories/:id/services', async (c) => {
@@ -642,7 +832,7 @@ app.post('/services/:id/modifiers', async (c) => {
   
   await db.prepare('INSERT INTO service_modifiers (id, service_id, name, description, price_adjustment_cents, duration_adjustment_minutes, is_required, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').bind(
     generateId(), serviceId, body.name, body.description || null,
-    parseInt(body.price_adjustment_cents as string, 10) || 0,
+    Math.round(parseFloat(body.price_adjustment as string || '0') * 100),
     parseInt(body.duration_adjustment_minutes as string, 10) || 0,
     body.is_required === 'on' ? 1 : 0,
     (maxOrder?.max_order || 0) + 1
@@ -658,7 +848,10 @@ app.post('/services/:id/rules', async (c) => {
   
   await db.prepare('INSERT INTO price_adjustment_rules (id, service_id, rule_type, adjustment_type, adjustment_value, direction, days_of_week, start_time, end_time, min_hours_ahead, max_hours_ahead, territory_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').bind(
     generateId(), serviceId, body.rule_type, body.adjustment_type,
-    parseInt(body.adjustment_value as string, 10) || 0, body.direction,
+    body.adjustment_type === 'flat'
+      ? Math.round(parseFloat(body.adjustment_value as string || '0') * 100)
+      : parseFloat(body.adjustment_value as string || '0'),
+    body.direction,
     body.days_of_week || null, body.start_time || null, body.end_time || null,
     body.min_hours_ahead ? parseInt(body.min_hours_ahead as string, 10) : null,
     body.max_hours_ahead ? parseInt(body.max_hours_ahead as string, 10) : null,
@@ -685,8 +878,10 @@ app.get('/customers', async (c) => {
   const db = c.env.DB;
   const customers = await db.prepare(`
     SELECT c.id, c.first_name, c.last_name, c.email, c.phone,
+           ca.line_1, ca.city, ca.state, ca.postal_code,
            t.name as territory_name
     FROM customers c
+    LEFT JOIN customer_addresses ca ON ca.customer_id = c.id AND ca.is_default = 1
     LEFT JOIN jobs j ON j.customer_id = c.id
     LEFT JOIN territories t ON j.territory_id = t.id
     GROUP BY c.id
@@ -695,31 +890,52 @@ app.get('/customers', async (c) => {
   
   return c.html(TableView({
     title: 'Customers',
-    columns: ['Name', 'Email', 'Phone', 'Territory'],
+    columns: ['Name', 'Email', 'Phone', 'Address', 'Territory'],
     rows: (customers.results || []).map(cust => ({
       name: `${cust.first_name} ${cust.last_name}`,
       email: cust.email || '-',
       phone: cust.phone || '-',
+      address: cust.line_1 ? `${cust.line_1}${cust.city ? `, ${cust.city}` : ''}${cust.state ? `, ${cust.state}` : ''} ${cust.postal_code || ''}`.trim() : '-',
       territory: cust.territory_name || '-'
     })),
     rawIds: (customers.results || []).map(cust => cust.id as string),
     createUrl: '/admin/customers/new',
+    extraActions: [{ label: 'Import', url: '/admin/customers/import' }],
     detailUrlPrefix: '/admin/customers',
     deleteUrlPrefix: '/admin/customers'
   }));
 });
 
 app.get('/customers/new', (c) => {
+  const error = c.req.query('error') || undefined;
   const fields: FormField[] = [
     { name: 'first_name', label: 'First Name', required: true },
     { name: 'last_name', label: 'Last Name', required: true },
     { name: 'email', label: 'Email', type: 'email' },
-    { name: 'phone', label: 'Phone', type: 'tel' }
+    { name: 'phone', label: 'Phone', type: 'tel' },
+    {
+      name: 'address_line_1',
+      label: 'Address',
+      placeholder: 'Start typing address',
+      attrs: {
+        'hx-get': '/admin/api/address/search',
+        'hx-trigger': 'input changed delay:300ms',
+        'hx-target': '#address-results',
+        autocomplete: 'off',
+      }
+    },
+    { name: 'address_line_2', label: 'Address Line 2' },
+    { name: 'address_city', label: 'City' },
+    { name: 'address_state', label: 'Province / State' },
+    { name: 'address_postal', label: 'Postal Code' },
+    { name: 'address_lat', label: 'Latitude', type: 'hidden' },
+    { name: 'address_lng', label: 'Longitude', type: 'hidden' }
   ];
   
   return c.html(FormView({
     title: 'Create Customer',
     fields,
+    error,
     submitUrl: '/admin/customers',
     cancelUrl: '/admin/customers'
   }));
@@ -729,18 +945,111 @@ app.post('/customers', async (c) => {
   const db = c.env.DB;
   const body = await c.req.parseBody();
   const id = generateId();
+  const email = normalizeEmail(typeof body.email === 'string' ? body.email : null);
+  const phoneRaw = typeof body.phone === 'string' ? body.phone.trim() : '';
+  const phoneE164 = normalizePhoneE164(phoneRaw || null);
+
+  const duplicate = await db.prepare(
+    `SELECT id, first_name, last_name FROM customers
+     WHERE (? IS NOT NULL AND LOWER(email) = ?)
+        OR (? IS NOT NULL AND phone_e164 = ?)
+     LIMIT 1`
+  ).bind(email, email, phoneE164, phoneE164).first<{ id: string; first_name: string; last_name: string }>();
+
+  if (duplicate) {
+    const q = new URLSearchParams({ error: `A customer already exists: ${duplicate.first_name} ${duplicate.last_name}.` });
+    return c.redirect(`/admin/customers/new?${q.toString()}`);
+  }
   
   await db.prepare(`
-    INSERT INTO customers (id, first_name, last_name, email, phone)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO customers (id, first_name, last_name, email, phone, phone_e164)
+    VALUES (?, ?, ?, ?, ?, ?)
   `).bind(
     id,
     body.first_name,
     body.last_name,
-    body.email || null,
-    body.phone || null
+    email,
+    phoneRaw || null,
+    phoneE164
   ).run();
+
+  const line1 = typeof body.address_line_1 === 'string' ? body.address_line_1.trim() : '';
+  const city = typeof body.address_city === 'string' ? body.address_city.trim() : '';
+  const state = typeof body.address_state === 'string' ? body.address_state.trim() : '';
+  const postal = typeof body.address_postal === 'string' ? body.address_postal.trim() : '';
+  if (line1 && city && state && postal) {
+    await db.prepare(`
+      INSERT INTO customer_addresses (id, customer_id, line_1, line_2, city, state, postal_code, lat, lng, is_default)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+    `).bind(
+      generateId(),
+      id,
+      line1,
+      (typeof body.address_line_2 === 'string' && body.address_line_2.trim()) ? body.address_line_2.trim() : null,
+      city,
+      state,
+      postal,
+      (typeof body.address_lat === 'string' && body.address_lat.trim()) ? Number.parseFloat(body.address_lat) : null,
+      (typeof body.address_lng === 'string' && body.address_lng.trim()) ? Number.parseFloat(body.address_lng) : null,
+    ).run();
+  }
   
+  return c.redirect('/admin/customers');
+});
+
+app.get('/customers/import', (c) => {
+  const error = c.req.query('error') || undefined;
+  const fields: FormField[] = [
+    {
+      name: 'source_text',
+      label: 'Paste Contacts (CSV or one contact per line)',
+      type: 'textarea',
+      required: true,
+      placeholder: 'first_name,last_name,email,phone\nJane,Doe,jane@example.com,613-555-0101\n\nOR\n\nJane Doe jane@example.com 613-555-0101'
+    }
+  ];
+  return c.html(FormView({
+    title: 'Import Customers',
+    fields,
+    error,
+    submitUrl: '/admin/customers/import',
+    cancelUrl: '/admin/customers'
+  }));
+});
+
+app.post('/customers/import', async (c) => {
+  const db = c.env.DB;
+  const body = await c.req.parseBody();
+  const source = typeof body.source_text === 'string' ? body.source_text : '';
+  const parsed = parseImportedCustomers(source);
+  if (parsed.length === 0) {
+    const q = new URLSearchParams({ error: 'No valid contacts found. Use CSV headers or one contact per line.' });
+    return c.redirect(`/admin/customers/import?${q.toString()}`);
+  }
+
+  for (const entry of parsed) {
+    const phoneE164 = normalizePhoneE164(entry.phone || null);
+    const existing = await db.prepare(
+      `SELECT id FROM customers
+       WHERE (? IS NOT NULL AND LOWER(email) = ?)
+          OR (? IS NOT NULL AND phone_e164 = ?)
+       LIMIT 1`
+    ).bind(entry.email, entry.email, phoneE164, phoneE164).first();
+    if (existing) continue;
+
+    await db.prepare(
+      `INSERT INTO customers (id, first_name, last_name, email, phone, phone_e164)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    ).bind(
+      generateId(),
+      entry.first_name,
+      entry.last_name,
+      entry.email,
+      entry.phone,
+      phoneE164,
+    ).run();
+  }
+
   return c.redirect('/admin/customers');
 });
 
@@ -753,6 +1062,7 @@ app.get('/customers/:id', async (c) => {
 app.get('/customers/:id/edit', async (c) => {
   const db = c.env.DB;
   const id = c.req.param('id');
+  const error = c.req.query('error') || undefined;
   const [customer, address, territory] = await Promise.all([
     db.prepare('SELECT * FROM customers WHERE id = ?').bind(id).first(),
     db.prepare('SELECT * FROM customer_addresses WHERE customer_id = ? ORDER BY is_default DESC, created_at DESC LIMIT 1').bind(id).first(),
@@ -763,22 +1073,36 @@ app.get('/customers/:id/edit', async (c) => {
     return c.redirect('/admin/customers');
   }
 
-  const addressLine = address
-    ? [address.line_1, address.city, address.state, address.postal_code].filter(Boolean).join(', ')
-    : '';
-  
   const fields: FormField[] = [
     { name: 'first_name', label: 'First Name', required: true, value: customer.first_name as string },
     { name: 'last_name', label: 'Last Name', required: true, value: customer.last_name as string },
     { name: 'email', label: 'Email', type: 'email', value: customer.email as string },
     { name: 'phone', label: 'Phone', type: 'tel', value: customer.phone as string },
-    ...(addressLine ? [{ name: '_address', label: 'Address', value: addressLine, readonly: true } as FormField] : []),
+    {
+      name: 'address_line_1',
+      label: 'Address',
+      value: (address?.line_1 as string) || '',
+      placeholder: 'Start typing address',
+      attrs: {
+        'hx-get': '/admin/api/address/search',
+        'hx-trigger': 'input changed delay:300ms',
+        'hx-target': '#address-results',
+        autocomplete: 'off',
+      }
+    },
+    { name: 'address_line_2', label: 'Address Line 2', value: (address?.line_2 as string) || '' },
+    { name: 'address_city', label: 'City', value: (address?.city as string) || '' },
+    { name: 'address_state', label: 'Province / State', value: (address?.state as string) || '' },
+    { name: 'address_postal', label: 'Postal Code', value: (address?.postal_code as string) || '' },
+    { name: 'address_lat', label: 'Latitude', type: 'hidden', value: String(address?.lat || '') },
+    { name: 'address_lng', label: 'Longitude', type: 'hidden', value: String(address?.lng || '') },
     ...(territory ? [{ name: '_territory', label: 'Territory', value: territory.name, readonly: true } as FormField] : [])
   ];
   
   return c.html(FormView({
     title: 'Edit Customer',
     fields,
+    error,
     submitUrl: `/admin/customers/${id}`,
     cancelUrl: '/admin/customers',
     isEdit: true,
@@ -790,18 +1114,56 @@ app.post('/customers/:id', async (c) => {
   const db = c.env.DB;
   const id = c.req.param('id');
   const body = await c.req.parseBody();
+  const email = normalizeEmail(typeof body.email === 'string' ? body.email : null);
+  const phoneRaw = typeof body.phone === 'string' ? body.phone.trim() : '';
+  const phoneE164 = normalizePhoneE164(phoneRaw || null);
+
+  const duplicate = await db.prepare(
+    `SELECT id, first_name, last_name FROM customers
+     WHERE id != ?
+       AND ((? IS NOT NULL AND LOWER(email) = ?) OR (? IS NOT NULL AND phone_e164 = ?))
+     LIMIT 1`
+  ).bind(id, email, email, phoneE164, phoneE164).first<{ id: string; first_name: string; last_name: string }>();
+
+  if (duplicate) {
+    const q = new URLSearchParams({ error: `A customer already exists: ${duplicate.first_name} ${duplicate.last_name}.` });
+    return c.redirect(`/admin/customers/${id}/edit?${q.toString()}`);
+  }
   
   await db.prepare(`
     UPDATE customers 
-    SET first_name = ?, last_name = ?, email = ?, phone = ?, updated_at = datetime('now')
+    SET first_name = ?, last_name = ?, email = ?, phone = ?, phone_e164 = ?, updated_at = datetime('now')
     WHERE id = ?
   `).bind(
     body.first_name,
     body.last_name,
-    body.email || null,
-    body.phone || null,
+    email,
+    phoneRaw || null,
+    phoneE164,
     id
   ).run();
+
+  const line1 = typeof body.address_line_1 === 'string' ? body.address_line_1.trim() : '';
+  const city = typeof body.address_city === 'string' ? body.address_city.trim() : '';
+  const state = typeof body.address_state === 'string' ? body.address_state.trim() : '';
+  const postal = typeof body.address_postal === 'string' ? body.address_postal.trim() : '';
+  await db.prepare('DELETE FROM customer_addresses WHERE customer_id = ? AND is_default = 1').bind(id).run();
+  if (line1 && city && state && postal) {
+    await db.prepare(`
+      INSERT INTO customer_addresses (id, customer_id, line_1, line_2, city, state, postal_code, lat, lng, is_default)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+    `).bind(
+      generateId(),
+      id,
+      line1,
+      (typeof body.address_line_2 === 'string' && body.address_line_2.trim()) ? body.address_line_2.trim() : null,
+      city,
+      state,
+      postal,
+      (typeof body.address_lat === 'string' && body.address_lat.trim()) ? Number.parseFloat(body.address_lat) : null,
+      (typeof body.address_lng === 'string' && body.address_lng.trim()) ? Number.parseFloat(body.address_lng) : null,
+    ).run();
+  }
   
   return c.redirect('/admin/customers');
 });
@@ -1268,8 +1630,8 @@ app.post('/jobs/quick-create', async (c) => {
   await db
     .prepare(`
       INSERT INTO jobs (id, customer_id, service_id, territory_id, customer_address_id, scheduled_date, scheduled_start_time,
-                        duration_minutes, base_price_cents, total_price_cents, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        duration_minutes, base_price_cents, total_price_cents, line_items_json, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
     .bind(
       jobId,
@@ -1282,6 +1644,7 @@ app.post('/jobs/quick-create', async (c) => {
       duration,
       priceCents,
       priceCents,
+      JSON.stringify([buildServiceBaseLine('Service', priceCents)]),
       providerId ? 'assigned' : 'created'
     )
     .run();
@@ -1306,12 +1669,19 @@ app.get('/api/customers/search', async (c) => {
 });
 
 app.get('/api/address/search', async (c) => {
-  const q = c.req.query('q') || c.req.query('center_address_q') || '';
+  const q = c.req.query('q')
+    || c.req.query('center_address_q')
+    || c.req.query('address_line1')
+    || c.req.query('address_line_1')
+    || '';
   const targetPrefix = c.req.query('center_address_q') ? 'radius' : undefined;
   if (q.length < 4) return c.html('');
   
   try {
     const token = c.env?.MAPBOX_ACCESS_TOKEN || '';
+    if (!token) {
+      return c.html('<div class="search-results"><div class="search-item text-muted-foreground">Mapbox is not configured.</div></div>');
+    }
     const res = await fetch(`https://api.mapbox.com/search/geocode/v6/forward?q=${encodeURIComponent(q)}&country=ca&limit=5&access_token=${token}`);
     const data = await res.json() as {
       features?: Array<{
@@ -1343,16 +1713,30 @@ app.get('/api/address/search', async (c) => {
 app.post('/api/customers/create-for-job', async (c) => {
   const db = c.env.DB;
   const body = await c.req.parseBody();
-  const id = generateId();
-  
-  await db.prepare('INSERT INTO customers (id, first_name, last_name, email, phone) VALUES (?, ?, ?, ?, ?)').bind(
-    id, body.first_name, body.last_name, body.email || null, body.phone || null
-  ).run();
+  const email = normalizeEmail(typeof body.email === 'string' ? body.email : null);
+  const phoneRaw = typeof body.phone === 'string' ? body.phone.trim() : '';
+  const phoneE164 = normalizePhoneE164(phoneRaw || null);
+
+  const existing = await db.prepare(
+    `SELECT id, first_name, last_name, email, phone FROM customers
+     WHERE (? IS NOT NULL AND LOWER(email) = ?)
+        OR (? IS NOT NULL AND phone_e164 = ?)
+     LIMIT 1`
+  ).bind(email, email, phoneE164, phoneE164).first<{ id: string; first_name: string; last_name: string; email: string | null; phone: string | null }>();
+
+  const id = existing?.id || generateId();
+  if (!existing) {
+    await db.prepare('INSERT INTO customers (id, first_name, last_name, email, phone, phone_e164) VALUES (?, ?, ?, ?, ?, ?)').bind(
+      id, body.first_name, body.last_name, email, phoneRaw || null, phoneE164
+    ).run();
+  }
   
   return c.html(JobWizardPage({
     step: 1,
     state: {},
-    customer: { id, first_name: body.first_name as string, last_name: body.last_name as string, email: body.email as string, phone: body.phone as string }
+    customer: existing
+      ? { id: existing.id, first_name: existing.first_name, last_name: existing.last_name, email: existing.email || '', phone: existing.phone || '' }
+      : { id, first_name: body.first_name as string, last_name: body.last_name as string, email: email || '', phone: phoneRaw }
   }));
 });
 
@@ -1488,11 +1872,12 @@ app.post('/jobs/create', async (c) => {
   const duration = state.service_duration ? parseInt(String(state.service_duration), 10) : 60;
   
   await db.prepare(`
-    INSERT INTO jobs (id, customer_id, service_id, territory_id, scheduled_date, scheduled_start_time, duration_minutes, base_price_cents, total_price_cents, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO jobs (id, customer_id, service_id, territory_id, scheduled_date, scheduled_start_time, duration_minutes, base_price_cents, total_price_cents, line_items_json, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     jobId, state.customer_id, state.service_id || null, state.territory_id,
     state.date, state.time, duration, priceCents, priceCents,
+    JSON.stringify([buildServiceBaseLine('Service', priceCents)]),
     state.provider_id ? 'assigned' : 'created'
   ).run();
   
@@ -1512,14 +1897,31 @@ app.get('/jobs/:id', async (c) => {
   const job = await db.prepare('SELECT * FROM jobs WHERE id = ?').bind(id).first();
   if (!job) return c.redirect('/admin/jobs');
   
-  const [customer, service, territory, jobProviders, teamProviders, notes] = await Promise.all([
-    job.customer_id ? db.prepare('SELECT id, first_name, last_name, email, phone FROM customers WHERE id = ?').bind(job.customer_id).first() : null,
+  const notesJson = (job.notes_json as string) || '[]';
+  const parsedLineItems = parsePriceLines((job.line_items_json as string) || '[]');
+  
+  const [customer, service, territory, jobProviders, teamProviders] = await Promise.all([
+    job.customer_id ? db.prepare('SELECT id, first_name, last_name, email, phone, phone_e164 FROM customers WHERE id = ?').bind(job.customer_id).first() : null,
     job.service_id ? db.prepare('SELECT id, name, description FROM services WHERE id = ?').bind(job.service_id).first() : null,
     job.territory_id ? db.prepare('SELECT id, name FROM territories WHERE id = ?').bind(job.territory_id).first() : null,
     db.prepare('SELECT tm.id, tm.first_name, tm.last_name FROM job_providers jp JOIN team_members tm ON jp.team_member_id = tm.id WHERE jp.job_id = ?').bind(id).all(),
-    db.prepare("SELECT id, first_name, last_name FROM team_members WHERE role = 'provider' ORDER BY last_name, first_name").all(),
-    db.prepare('SELECT id, content, created_at FROM job_notes WHERE job_id = ? ORDER BY created_at DESC').bind(id).all()
+    db.prepare("SELECT id, first_name, last_name FROM team_members WHERE role = 'provider' ORDER BY last_name, first_name").all()
   ]);
+
+  const customerPhone = (customer as { phone_e164?: string | null; phone?: string | null } | null)?.phone_e164
+    || normalizePhoneE164((customer as { phone?: string | null } | null)?.phone || null);
+  const smsThreadMessage = await db.prepare(
+    `SELECT id, is_read, updated_at, body,
+            CASE WHEN json_extract(metadata, '$.job_id') = ? THEN 0 ELSE 1 END as sort_priority
+     FROM messages
+     WHERE source = 'sms'
+       AND (
+         json_extract(metadata, '$.job_id') = ?
+         OR phone = ?
+       )
+     ORDER BY sort_priority ASC, updated_at DESC
+     LIMIT 1`
+  ).bind(id, id, customerPhone || '').first<{ id: string; is_read: number; updated_at: string; body: string | null }>();
 
   const assignedProviderId = (jobProviders.results || [])[0]?.id as string | undefined;
 
@@ -1534,6 +1936,11 @@ app.get('/jobs/:id', async (c) => {
     custom_service_name?: string | null;
     created_at: string;
   };
+
+  const notes = JSON.parse(notesJson) as Array<{ text: string; timestamp: string; completed: number }>;
+  const lineItems = parsedLineItems.length > 0
+    ? parsedLineItems
+    : [buildServiceBaseLine((service as { name?: string } | null)?.name || (job.custom_service_name as string) || 'Service', Number(job.total_price_cents || 0))];
   
   return c.html(JobDetailPage({
     job: jobModel,
@@ -1546,20 +1953,150 @@ app.get('/jobs/:id', async (c) => {
       last_name: p.last_name as string,
     })),
     assignedProviderId: assignedProviderId || null,
-    notes: (notes.results || []).map(n => ({
-      id: n.id as string,
-      content: n.content as string,
-      created_at: n.created_at as string,
-    }))
+    notes,
+    lineItems,
+    smsThreadMessage: smsThreadMessage
+      ? {
+        id: smsThreadMessage.id,
+        is_read: smsThreadMessage.is_read,
+        updated_at: smsThreadMessage.updated_at,
+        body: smsThreadMessage.body,
+      }
+      : null,
   }));
 });
 
-app.post('/jobs/:id/notes', async (c) => {
+app.post('/jobs/:id/line-items/add', async (c) => {
+  const db = c.env.DB;
+  const jobId = c.req.param('id');
+  const body = await c.req.parseBody();
+  const job = await db.prepare('SELECT line_items_json FROM jobs WHERE id = ?').bind(jobId).first<{ line_items_json: string | null }>();
+  if (!job) return c.redirect('/admin/jobs');
+
+  const description = typeof body.description === 'string' ? body.description.trim() : '';
+  const quantity = Math.max(1, Number.parseFloat(String(body.quantity || '1')) || 1);
+  const unitPriceCents = parseMoneyToCents(body.unit_price);
+  if (!description) return c.redirect(`/admin/jobs/${jobId}`);
+
+  const lines = parsePriceLines(job.line_items_json);
+  lines.push(normalizeLine(description, quantity, unitPriceCents, 'custom', null, 1));
+  await db.prepare("UPDATE jobs SET line_items_json = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(JSON.stringify(lines), jobId)
+    .run();
+  await recomputeJobTotals(db, jobId);
+  await syncInvoiceFromJob(db, jobId);
+
+  return c.redirect(`/admin/jobs/${jobId}`);
+});
+
+app.post('/jobs/:id/line-items/delete', async (c) => {
+  const db = c.env.DB;
+  const jobId = c.req.param('id');
+  const body = await c.req.parseBody();
+  const lineId = typeof body.lineId === 'string' ? body.lineId : '';
+  if (!lineId) return c.redirect(`/admin/jobs/${jobId}`);
+
+  const job = await db.prepare('SELECT line_items_json FROM jobs WHERE id = ?').bind(jobId).first<{ line_items_json: string | null }>();
+  if (!job) return c.redirect('/admin/jobs');
+  const lines = parsePriceLines(job.line_items_json).filter((line) => !(line.id === lineId && line.is_custom === 1));
+  await db.prepare("UPDATE jobs SET line_items_json = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(JSON.stringify(lines), jobId)
+    .run();
+  await recomputeJobTotals(db, jobId);
+  await syncInvoiceFromJob(db, jobId);
+
+  return c.redirect(`/admin/jobs/${jobId}`);
+});
+
+app.get('/jobs/:id/sms-thread-card', async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param('id');
+
+  const job = await db.prepare('SELECT customer_id FROM jobs WHERE id = ?').bind(id).first<{ customer_id: string | null }>();
+  const customer = job?.customer_id
+    ? await db.prepare('SELECT phone, phone_e164 FROM customers WHERE id = ?').bind(job.customer_id).first<{ phone: string | null; phone_e164: string | null }>()
+    : null;
+  const customerPhone = customer?.phone_e164 || normalizePhoneE164(customer?.phone || null);
+
+  const smsThreadMessage = await db.prepare(
+    `SELECT id, is_read, updated_at, body,
+            CASE WHEN json_extract(metadata, '$.job_id') = ? THEN 0 ELSE 1 END as sort_priority
+     FROM messages
+     WHERE source = 'sms'
+       AND (
+         json_extract(metadata, '$.job_id') = ?
+         OR phone = ?
+       )
+     ORDER BY sort_priority ASC, updated_at DESC
+     LIMIT 1`
+  ).bind(id, id, customerPhone || '').first<{ id: string; is_read: number; updated_at: string; body: string | null }>();
+
+  c.header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  c.header('Pragma', 'no-cache');
+  c.header('Expires', '0');
+
+  return c.html(SmsThreadCard({
+    jobId: id,
+    smsThreadMessage: smsThreadMessage
+      ? {
+        id: smsThreadMessage.id,
+        is_read: smsThreadMessage.is_read,
+        updated_at: smsThreadMessage.updated_at,
+        body: smsThreadMessage.body,
+      }
+      : null,
+  }));
+});
+
+app.post('/jobs/:id/notes/add', async (c) => {
   const db = c.env.DB;
   const jobId = c.req.param('id');
   const body = await c.req.parseBody();
   
-  await db.prepare('INSERT INTO job_notes (id, job_id, content) VALUES (?, ?, ?)').bind(generateId(), jobId, body.content).run();
+  const job = await db.prepare('SELECT notes_json FROM jobs WHERE id = ?').bind(jobId).first<{ notes_json: string }>();
+  const notes = job?.notes_json ? JSON.parse(job.notes_json) : [];
+  
+  notes.push({
+    text: body.text,
+    timestamp: new Date().toISOString(),
+    completed: 0
+  });
+  
+  await db.prepare('UPDATE jobs SET notes_json = ?, updated_at = datetime("now") WHERE id = ?').bind(JSON.stringify(notes), jobId).run();
+  
+  return c.redirect(`/admin/jobs/${jobId}`);
+});
+
+app.post('/jobs/:id/notes/toggle', async (c) => {
+  const db = c.env.DB;
+  const jobId = c.req.param('id');
+  const body = await c.req.parseBody();
+  const noteIndex = parseInt(body.noteIndex as string, 10);
+  
+  const job = await db.prepare('SELECT notes_json FROM jobs WHERE id = ?').bind(jobId).first<{ notes_json: string }>();
+  const notes = job?.notes_json ? JSON.parse(job.notes_json) : [];
+  
+  if (notes[noteIndex]) {
+    notes[noteIndex].completed = notes[noteIndex].completed ? 0 : 1;
+  }
+  
+  await db.prepare('UPDATE jobs SET notes_json = ?, updated_at = datetime("now") WHERE id = ?').bind(JSON.stringify(notes), jobId).run();
+  
+  return c.redirect(`/admin/jobs/${jobId}`);
+});
+
+app.post('/jobs/:id/notes/delete', async (c) => {
+  const db = c.env.DB;
+  const jobId = c.req.param('id');
+  const body = await c.req.parseBody();
+  const noteIndex = parseInt(body.noteIndex as string, 10);
+  
+  const job = await db.prepare('SELECT notes_json FROM jobs WHERE id = ?').bind(jobId).first<{ notes_json: string }>();
+  const notes = job?.notes_json ? JSON.parse(job.notes_json) : [];
+  
+  notes.splice(noteIndex, 1);
+  
+  await db.prepare('UPDATE jobs SET notes_json = ?, updated_at = datetime("now") WHERE id = ?').bind(JSON.stringify(notes), jobId).run();
   
   return c.redirect(`/admin/jobs/${jobId}`);
 });
@@ -1581,26 +2118,106 @@ app.post('/jobs/:id/status', async (c) => {
   
   await db.prepare(`UPDATE jobs SET ${updates.join(', ')} WHERE id = ?`).bind(...binds).run();
   
-  if (status === 'complete') {
-    const job = await db.prepare(
-      'SELECT customer_id, total_price_cents FROM jobs WHERE id = ?'
-    ).bind(jobId).first<{ customer_id: string; total_price_cents: number }>();
-    
-    if (job) {
+  const jobData = await db.prepare(
+    `SELECT j.customer_id, j.total_price_cents, j.scheduled_date, j.scheduled_start_time, j.line_items_json,
+            c.first_name, c.last_name, c.email, c.phone_e164,
+            COALESCE(s.name, j.custom_service_name, 'Service') as service_name
+     FROM jobs j
+     JOIN customers c ON c.id = j.customer_id
+     LEFT JOIN services s ON s.id = j.service_id
+     WHERE j.id = ?`
+  ).bind(jobId).first<{
+    customer_id: string; total_price_cents: number; scheduled_date: string; scheduled_start_time: string; line_items_json: string | null;
+    first_name: string; last_name: string; email: string | null; phone_e164: string | null; service_name: string;
+  }>();
+
+  if (jobData) {
+    if (status === 'complete') {
       const existingInvoice = await db.prepare(
         'SELECT id FROM invoices WHERE job_id = ?'
       ).bind(jobId).first();
       
       if (!existingInvoice) {
         const invoiceId = generateId();
+        const invoiceNumber = await nextInvoiceNumber(db);
         const dueDate = new Date();
         dueDate.setDate(dueDate.getDate() + 14);
+        const jobLines = parsePriceLines(jobData.line_items_json);
+        const effectiveLines = jobLines.length > 0 ? jobLines : [buildServiceBaseLine(jobData.service_name, jobData.total_price_cents)];
+        const subtotal = subtotalFromLines(effectiveLines);
         
         await db.prepare(`
-          INSERT INTO invoices (id, job_id, customer_id, amount_cents, due_date, status)
-          VALUES (?, ?, ?, ?, ?, 'pending')
-        `).bind(invoiceId, jobId, job.customer_id, job.total_price_cents, dueDate.toISOString().split('T')[0]).run();
+          INSERT INTO invoices (id, invoice_number, job_id, customer_id, currency, amount_cents, subtotal_cents, tax_cents, discount_cents, total_cents, line_items_json, due_date, status)
+          VALUES (?, ?, ?, ?, 'CAD', ?, ?, 0, 0, ?, ?, ?, 'pending')
+        `).bind(
+          invoiceId,
+          invoiceNumber,
+          jobId,
+          jobData.customer_id,
+          subtotal,
+          subtotal,
+          subtotal,
+          JSON.stringify(effectiveLines),
+          dueDate.toISOString().split('T')[0],
+        ).run();
       }
+    }
+
+    let providerName = '';
+    if (['assigned', 'enroute'].includes(status)) {
+      const provider = await db.prepare(
+        `SELECT tm.first_name, tm.last_name FROM job_providers jp
+         JOIN team_members tm ON tm.id = jp.team_member_id
+         WHERE jp.job_id = ? LIMIT 1`
+      ).bind(jobId).first<{ first_name: string; last_name: string }>();
+      if (provider) providerName = `${provider.first_name} ${provider.last_name}`.trim();
+    }
+
+    const statusEventMap: Record<string, string> = {
+      assigned: 'status.assigned',
+      enroute: 'status.enroute',
+      in_progress: 'status.in_progress',
+      complete: 'status.complete',
+      cancelled: 'status.cancelled',
+    };
+
+    const eventType = statusEventMap[status];
+    if (eventType) {
+      const baseUrl = new URL(c.req.url).origin;
+      const inboxMessageId = jobData.phone_e164
+        ? await ensureSmsInboxMessage({
+          db,
+          phoneE164: jobData.phone_e164,
+          customerId: jobData.customer_id,
+          jobId,
+          firstName: jobData.first_name,
+          lastName: jobData.last_name,
+          email: jobData.email,
+        })
+        : null;
+
+      const templateVars: TemplateVars = {
+        first_name: jobData.first_name,
+        last_name: jobData.last_name,
+        service_name: jobData.service_name,
+        date: jobData.scheduled_date,
+        time: jobData.scheduled_start_time,
+        provider_name: providerName || 'your technician',
+        total: (jobData.total_price_cents / 100).toFixed(2),
+      };
+
+      c.executionCtx.waitUntil(
+        sendJobSms({
+          db,
+          jobId,
+          customerId: jobData.customer_id,
+          eventType,
+          vars: templateVars,
+          messageId: inboxMessageId,
+          statusCallbackUrl: `${baseUrl}/webhooks/twilio/status`,
+          skipQuietHours: true,
+        })
+      );
     }
   }
   
@@ -1616,8 +2233,8 @@ app.post('/jobs', async (c) => {
   
   await db.prepare(`
     INSERT INTO jobs (id, customer_id, service_id, territory_id, scheduled_date, scheduled_start_time, 
-                      duration_minutes, base_price_cents, total_price_cents, custom_service_name, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                      duration_minutes, base_price_cents, total_price_cents, line_items_json, custom_service_name, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     id,
     body.customer_id,
@@ -1628,6 +2245,7 @@ app.post('/jobs', async (c) => {
     parseInt(body.duration_minutes as string, 10) || 60,
     totalPriceCents,
     totalPriceCents,
+    JSON.stringify([buildServiceBaseLine(String(body.custom_service_name || 'Service'), totalPriceCents)]),
     body.custom_service_name || null,
     body.status || 'created'
   ).run();
@@ -1647,14 +2265,18 @@ app.post('/jobs/:id', async (c) => {
   const section = body._section as string | undefined;
   if (section === 'details') {
     const duration = parseInt(body.duration_minutes as string, 10) || 60;
-    const basePriceCents = parseInt(body.base_price_cents as string, 10) || 0;
-    const totalPriceCents = parseInt(body.total_price_cents as string, 10) || 0;
+    const basePriceCents = Math.round(parseFloat(body.base_price as string || '0') * 100);
+    const totalPriceCents = Math.round(parseFloat(body.total_price as string || '0') * 100);
     const providerId = (body.provider_id as string | undefined) || '';
+
+    const existing = await db.prepare('SELECT custom_service_name, line_items_json FROM jobs WHERE id = ?').bind(id).first<{ custom_service_name: string | null; line_items_json: string | null }>();
+    const customLines = parsePriceLines(existing?.line_items_json || '[]').filter((line) => line.is_custom === 1);
+    const generated = buildServiceBaseLine((existing?.custom_service_name || 'Service'), totalPriceCents);
 
     await db.prepare(`
       UPDATE jobs
       SET scheduled_date = ?, scheduled_start_time = ?, duration_minutes = ?,
-          base_price_cents = ?, total_price_cents = ?, updated_at = datetime('now')
+          base_price_cents = ?, total_price_cents = ?, line_items_json = ?, updated_at = datetime('now')
       WHERE id = ?
     `).bind(
       body.scheduled_date,
@@ -1662,6 +2284,7 @@ app.post('/jobs/:id', async (c) => {
       duration,
       basePriceCents,
       totalPriceCents,
+      JSON.stringify([generated, ...customLines]),
       id
     ).run();
 
@@ -1675,10 +2298,13 @@ app.post('/jobs/:id', async (c) => {
 
   // Backward-compat for legacy full edit forms.
   const totalPriceCents = parseInt(body.total_price_cents as string, 10) || 0;
+  const existing = await db.prepare('SELECT line_items_json FROM jobs WHERE id = ?').bind(id).first<{ line_items_json: string | null }>();
+  const customLines = parsePriceLines(existing?.line_items_json || '[]').filter((line) => line.is_custom === 1);
+  const baseLine = buildServiceBaseLine(String(body.custom_service_name || 'Service'), totalPriceCents);
   await db.prepare(`
     UPDATE jobs 
     SET customer_id = ?, service_id = ?, territory_id = ?, scheduled_date = ?, scheduled_start_time = ?,
-        duration_minutes = ?, total_price_cents = ?, custom_service_name = ?, status = ?, updated_at = datetime('now')
+        duration_minutes = ?, total_price_cents = ?, line_items_json = ?, custom_service_name = ?, status = ?, updated_at = datetime('now')
     WHERE id = ?
   `).bind(
     body.customer_id,
@@ -1688,6 +2314,7 @@ app.post('/jobs/:id', async (c) => {
     body.scheduled_start_time,
     parseInt(body.duration_minutes as string, 10) || 60,
     totalPriceCents,
+    JSON.stringify([baseLine, ...customLines]),
     body.custom_service_name || null,
     body.status || 'created',
     id
@@ -1719,8 +2346,9 @@ app.post('/jobs/:id/delete', async (c) => {
 app.get('/invoices', async (c) => {
   const db = c.env.DB;
   const invoices = await db.prepare(`
-    SELECT i.id, c.first_name || ' ' || c.last_name as customer_name,
-           i.amount_cents, i.status, i.created_at
+    SELECT i.id, i.invoice_number, i.customer_id,
+           TRIM(COALESCE(c.first_name, '') || ' ' || COALESCE(c.last_name, '')) as customer_name,
+           i.total_cents, i.currency, i.status, i.due_date, i.created_at
     FROM invoices i
     JOIN customers c ON i.customer_id = c.id
     ORDER BY i.created_at DESC
@@ -1729,13 +2357,16 @@ app.get('/invoices', async (c) => {
   
   return c.html(TableView({
     title: 'Invoices',
-    columns: ['Customer', 'Amount', 'Status', 'Created'],
+    columns: ['Invoice #', 'Customer', 'Total', 'Status', 'Due', 'Created'],
     rows: (invoices.results || []).map(i => ({
-      customer: i.customer_name,
-      amount: `$${((i.amount_cents as number) / 100).toFixed(2)}`,
+      invoice: i.invoice_number || i.id,
+      customer: (typeof i.customer_name === 'string' && i.customer_name.trim()) ? i.customer_name : `Customer ${i.customer_id}`,
+      total: `${i.currency || 'CAD'} ${formatCents(Number(i.total_cents || 0))}`,
       status: i.status,
-      created: new Date(i.created_at as string).toLocaleDateString()
+      due: i.due_date || '-',
+      created: formatTorontoDate(`${i.created_at as string}Z`, {}) || (i.created_at as string)
     })),
+    rawIds: (invoices.results || []).map(i => i.id as string),
     createUrl: '/admin/invoices/new',
     detailUrlPrefix: '/admin/invoices',
     deleteUrlPrefix: '/admin/invoices'
@@ -1750,12 +2381,23 @@ app.get('/invoices/new', async (c) => {
                 FROM jobs j JOIN customers c ON j.customer_id = c.id 
                 WHERE j.status != 'cancelled' ORDER BY j.scheduled_date DESC LIMIT 100`).all()
   ]);
+
+  const invoiceNumber = await nextInvoiceNumber(db);
   
   const fields: FormField[] = [
+    { name: 'invoice_number', label: 'Invoice Number', required: true, value: invoiceNumber },
     { name: 'customer_id', label: 'Customer', type: 'select', required: true, options: (customers.results || []).map(c => ({ value: c.id as string, label: `${c.first_name} ${c.last_name}` })) },
     { name: 'job_id', label: 'Job (optional)', type: 'select', options: (jobs.results || []).map(j => ({ value: j.id as string, label: `${j.customer_name} - ${j.scheduled_date}` })) },
-    { name: 'amount', label: 'Amount ($)', type: 'number', required: true, min: 0, step: 0.01 },
+    { name: 'currency', label: 'Currency', type: 'select', required: true, value: 'CAD', options: [
+      { value: 'CAD', label: 'CAD' },
+      { value: 'USD', label: 'USD' }
+    ]},
+    { name: 'line_items_text', label: 'Line Items (one per line: description | qty | unit price)', type: 'textarea', placeholder: 'Tune-up | 1 | 125.00\nTire install | 2 | 35.00' },
+    { name: 'tax_amount', label: 'Tax ($)', type: 'number', min: 0, step: 0.01, value: 0 },
+    { name: 'discount_amount', label: 'Discount ($)', type: 'number', min: 0, step: 0.01, value: 0 },
+    { name: 'total_amount', label: 'Total ($)', type: 'number', required: true, min: 0, step: 0.01 },
     { name: 'due_date', label: 'Due Date', type: 'date' },
+    { name: 'notes', label: 'Notes', type: 'textarea', placeholder: 'Payment terms, memo, or internal notes' },
     { name: 'status', label: 'Status', type: 'select', required: true, value: 'pending', options: [
       { value: 'pending', label: 'Pending' },
       { value: 'sent', label: 'Sent' },
@@ -1776,17 +2418,38 @@ app.post('/invoices', async (c) => {
   const db = c.env.DB;
   const body = await c.req.parseBody();
   const id = generateId();
+  let lineItems = parseInvoiceLineItems(typeof body.line_items_text === 'string' ? body.line_items_text : null);
+  if (lineItems.length === 0 && body.job_id) {
+    const job = await db.prepare('SELECT line_items_json FROM jobs WHERE id = ?').bind(body.job_id).first<{ line_items_json: string | null }>();
+    lineItems = parsePriceLines(job?.line_items_json || '[]');
+  }
+  const subtotalCents = lineItems.reduce((sum, item) => sum + item.total_cents, 0);
+  const taxCents = parseMoneyToCents(body.tax_amount);
+  const discountCents = parseMoneyToCents(body.discount_amount);
+  const computedTotalCents = Math.max(0, subtotalCents + taxCents - discountCents);
+  const totalCents = computedTotalCents;
+  const status = typeof body.status === 'string' ? body.status : 'pending';
+  const paidAt = status === 'paid' ? new Date().toISOString() : null;
   
   await db.prepare(`
-    INSERT INTO invoices (id, customer_id, job_id, amount_cents, due_date, status)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO invoices (id, invoice_number, customer_id, job_id, currency, amount_cents, subtotal_cents, tax_cents, discount_cents, total_cents, line_items_json, due_date, status, paid_at, notes)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     id,
+    body.invoice_number || await nextInvoiceNumber(db),
     body.customer_id,
     body.job_id || null,
-    Math.round(parseFloat(body.amount as string || '0') * 100),
+    body.currency || 'CAD',
+    totalCents,
+    subtotalCents,
+    taxCents,
+    discountCents,
+    totalCents,
+    JSON.stringify(lineItems),
     body.due_date || null,
-    body.status || 'pending'
+    status,
+    paidAt,
+    body.notes || null
   ).run();
   
   return c.redirect('/admin/invoices');
@@ -1812,26 +2475,31 @@ app.get('/invoices/:id/edit', async (c) => {
     return c.redirect('/admin/invoices');
   }
   
-  const fields: FormField[] = [
-    { name: 'customer_id', label: 'Customer', type: 'select', required: true, value: invoice.customer_id as string, options: (customers.results || []).map(c => ({ value: c.id as string, label: `${c.first_name} ${c.last_name}` })) },
-    { name: 'job_id', label: 'Job (optional)', type: 'select', value: invoice.job_id as string, options: (jobs.results || []).map(j => ({ value: j.id as string, label: `${j.customer_name} - ${j.scheduled_date}` })) },
-    { name: 'amount', label: 'Amount ($)', type: 'number', required: true, min: 0, step: 0.01, value: ((invoice.amount_cents as number) / 100).toFixed(2) },
-    { name: 'due_date', label: 'Due Date', type: 'date', value: invoice.due_date as string },
-    { name: 'status', label: 'Status', type: 'select', required: true, value: invoice.status as string, options: [
-      { value: 'pending', label: 'Pending' },
-      { value: 'sent', label: 'Sent' },
-      { value: 'paid', label: 'Paid' },
-      { value: 'void', label: 'Void' }
-    ]}
-  ];
-  
-  return c.html(FormView({
-    title: 'Edit Invoice',
-    fields,
-    submitUrl: `/admin/invoices/${id}`,
-    cancelUrl: '/admin/invoices',
-    isEdit: true,
-    deleteUrl: `/admin/invoices/${id}/delete`
+  const lineItems = parsePriceLines(invoice.line_items_json as string | null);
+  return c.html(InvoiceDetailPage({
+    invoice: {
+      id: invoice.id as string,
+      invoice_number: (invoice.invoice_number as string) || '',
+      customer_id: invoice.customer_id as string,
+      job_id: (invoice.job_id as string) || null,
+      currency: ((invoice.currency as string) || 'CAD').toUpperCase(),
+      due_date: (invoice.due_date as string) || null,
+      status: (invoice.status as string) || 'pending',
+      notes: (invoice.notes as string) || null,
+      tax_cents: Number(invoice.tax_cents || 0),
+      discount_cents: Number(invoice.discount_cents || 0),
+    },
+    customers: (customers.results || []).map((row) => ({
+      id: row.id as string,
+      first_name: row.first_name as string,
+      last_name: row.last_name as string,
+    })),
+    jobs: (jobs.results || []).map((row) => ({
+      id: row.id as string,
+      customer_name: row.customer_name as string,
+      scheduled_date: row.scheduled_date as string,
+    })),
+    lineItems,
   }));
 });
 
@@ -1839,21 +2507,76 @@ app.post('/invoices/:id', async (c) => {
   const db = c.env.DB;
   const id = c.req.param('id');
   const body = await c.req.parseBody();
+  const existingInvoice = await db.prepare('SELECT line_items_json FROM invoices WHERE id = ?').bind(id).first<{ line_items_json: string | null }>();
+  if (!existingInvoice) return c.redirect('/admin/invoices');
+  let lineItems = typeof body.line_items_text === 'string'
+    ? parseInvoiceLineItems(body.line_items_text)
+    : parsePriceLines(existingInvoice.line_items_json || '[]');
+  if (lineItems.length === 0 && body.job_id) {
+    const job = await db.prepare('SELECT line_items_json FROM jobs WHERE id = ?').bind(body.job_id).first<{ line_items_json: string | null }>();
+    lineItems = parsePriceLines(job?.line_items_json || '[]');
+  }
+  const subtotalCents = lineItems.reduce((sum, item) => sum + item.total_cents, 0);
+  const taxCents = parseMoneyToCents(body.tax_amount);
+  const discountCents = parseMoneyToCents(body.discount_amount);
+  const computedTotalCents = Math.max(0, subtotalCents + taxCents - discountCents);
+  const totalCents = computedTotalCents;
+  const status = typeof body.status === 'string' ? body.status : 'pending';
+  const paidAt = status === 'paid' ? new Date().toISOString() : null;
   
   await db.prepare(`
     UPDATE invoices 
-    SET customer_id = ?, job_id = ?, amount_cents = ?, due_date = ?, status = ?, updated_at = datetime('now')
+    SET invoice_number = ?, customer_id = ?, job_id = ?, currency = ?, amount_cents = ?, subtotal_cents = ?, tax_cents = ?, discount_cents = ?, total_cents = ?, line_items_json = ?, due_date = ?, status = ?, paid_at = CASE WHEN ? = 'paid' THEN COALESCE(paid_at, ?) ELSE NULL END, notes = ?, updated_at = datetime('now')
     WHERE id = ?
   `).bind(
+    body.invoice_number,
     body.customer_id,
     body.job_id || null,
-    Math.round(parseFloat(body.amount as string || '0') * 100),
+    body.currency || 'CAD',
+    totalCents,
+    subtotalCents,
+    taxCents,
+    discountCents,
+    totalCents,
+    JSON.stringify(lineItems),
     body.due_date || null,
-    body.status || 'pending',
+    status,
+    status,
+    paidAt,
+    body.notes || null,
     id
   ).run();
   
   return c.redirect('/admin/invoices');
+});
+
+app.post('/invoices/:id/line-items/add', async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param('id');
+  const body = await c.req.parseBody();
+  const invoice = await db.prepare('SELECT line_items_json FROM invoices WHERE id = ?').bind(id).first<{ line_items_json: string | null }>();
+  if (!invoice) return c.redirect('/admin/invoices');
+  const description = typeof body.description === 'string' ? body.description.trim() : '';
+  const quantity = Math.max(1, Number.parseFloat(String(body.quantity || '1')) || 1);
+  const unitPriceCents = parseMoneyToCents(body.unit_price);
+  if (!description) return c.redirect(`/admin/invoices/${id}/edit`);
+  const lines = parsePriceLines(invoice.line_items_json);
+  lines.push(normalizeLine(description, quantity, unitPriceCents, 'custom', null, 1));
+  await writeInvoiceLines(db, id, lines);
+  return c.redirect(`/admin/invoices/${id}/edit`);
+});
+
+app.post('/invoices/:id/line-items/delete', async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param('id');
+  const body = await c.req.parseBody();
+  const lineId = typeof body.lineId === 'string' ? body.lineId : '';
+  if (!lineId) return c.redirect(`/admin/invoices/${id}/edit`);
+  const invoice = await db.prepare('SELECT line_items_json FROM invoices WHERE id = ?').bind(id).first<{ line_items_json: string | null }>();
+  if (!invoice) return c.redirect('/admin/invoices');
+  const lines = parsePriceLines(invoice.line_items_json).filter((line) => !(line.id === lineId && line.is_custom === 1));
+  await writeInvoiceLines(db, id, lines);
+  return c.redirect(`/admin/invoices/${id}/edit`);
 });
 
 app.post('/invoices/:id/delete', async (c) => {
@@ -2191,6 +2914,67 @@ app.post('/settings/:key/delete', async (c) => {
   return c.redirect('/admin/settings');
 });
 
+app.get('/sms-settings', async (c) => {
+  const db = c.env.DB;
+  const config = await getTwilioConfig(db);
+  const templates = await db.prepare('SELECT * FROM sms_templates ORDER BY event_type').all();
+
+  const smsStats = await db.prepare(
+    `SELECT
+       COUNT(*) as total,
+       SUM(CASE WHEN direction = 'outbound' THEN 1 ELSE 0 END) as sent,
+       SUM(CASE WHEN direction = 'inbound' THEN 1 ELSE 0 END) as received,
+       SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
+       SUM(segments) as total_segments
+     FROM sms_log`
+  ).first<{ total: number; sent: number; received: number; failed: number; total_segments: number }>();
+
+  return c.html(SmsSettingsPage({
+    config: config ? { accountSid: config.accountSid, authToken: config.authToken, phoneNumber: config.phoneNumber, enabled: config.enabled } : null,
+    templates: (templates.results || []) as { id: string; event_type: string; label: string; body_template: string; is_active: number }[],
+    stats: smsStats || null,
+  }));
+});
+
+app.post('/sms-settings', async (c) => {
+  const db = c.env.DB;
+  const body = await c.req.parseBody();
+
+  const config = {
+    accountSid: (body.account_sid as string || '').trim(),
+    authToken: (body.auth_token as string || '').trim(),
+    phoneNumber: normalizePhoneE164(body.phone_number as string) || (body.phone_number as string || '').trim(),
+    enabled: body.enabled === '1',
+  };
+
+  await db.prepare(
+    "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('twilio_config', ?, datetime('now'))"
+  ).bind(JSON.stringify(config)).run();
+
+  return c.redirect('/admin/sms-settings');
+});
+
+app.post('/sms-templates/:id', async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param('id');
+  const body = await c.req.parseBody();
+
+  const bodyTemplate = (body.body_template as string || '').trim();
+  const isActive = body.is_active === '1' ? 1 : 0;
+
+  if (bodyTemplate) {
+    await db.prepare(
+      "UPDATE sms_templates SET body_template = ?, is_active = ?, updated_at = datetime('now') WHERE id = ?"
+    ).bind(bodyTemplate, isActive, id).run();
+  } else {
+    await db.prepare(
+      "UPDATE sms_templates SET is_active = ?, updated_at = datetime('now') WHERE id = ?"
+    ).bind(isActive, id).run();
+  }
+
+  return c.body('', 200);
+});
+
 app.get('/coupons', async (c) => {
   const db = c.env.DB;
   const coupons = await db.prepare(`
@@ -2499,8 +3283,7 @@ app.get('/inbox', async (c) => {
 
   const rows = (messages.results || []).map((m: Record<string, unknown>) => {
     const name = [m.first_name, m.last_name].filter(Boolean).join(' ') || (m.email as string) || '-';
-    const date = new Date((m.created_at as string) + 'Z');
-    const dateStr = date.toLocaleDateString('en-CA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const dateStr = formatTorontoDate(`${m.created_at as string}Z`, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) || (m.created_at as string);
     return {
       from: m.is_read ? name : `● ${name}`,
       subject: (m.subject as string) || '-',
@@ -2522,6 +3305,72 @@ app.get('/inbox', async (c) => {
   }));
 });
 
+async function getInboxSmsContext(db: D1Database, messageId: string) {
+  const msg = await db.prepare('SELECT phone FROM messages WHERE id = ?').bind(messageId).first<{ phone: string | null }>();
+  const phoneE164 = normalizePhoneE164(msg?.phone);
+
+  let smsHistory: SmsLogRow[] = [];
+  if (phoneE164) {
+    const rows = await db.prepare(
+      `SELECT id, direction, body, status, created_at, segments
+       FROM sms_log
+       WHERE phone_to = ? OR phone_from = ?
+       ORDER BY created_at ASC
+       LIMIT 100`
+    ).bind(phoneE164, phoneE164).all();
+    smsHistory = (rows.results || []) as SmsLogRow[];
+  }
+
+  return { phoneE164, smsHistory };
+}
+
+async function getInboxJobContext(db: D1Database, messageId: string): Promise<{ jobOptions: InboxJobOption[]; selectedJobId: string | null }> {
+  const msg = await db.prepare('SELECT phone, metadata FROM messages WHERE id = ?').bind(messageId).first<{ phone: string | null; metadata: string | null }>();
+  if (!msg) return { jobOptions: [], selectedJobId: null };
+
+  const meta = parseJsonObject(msg.metadata);
+  const metaCustomerId = typeof meta?.customer_id === 'string' && meta.customer_id ? meta.customer_id : null;
+  const metaJobId = typeof meta?.job_id === 'string' && meta.job_id ? meta.job_id : null;
+
+  const phoneE164 = normalizePhoneE164(msg.phone);
+  let customerId = metaCustomerId;
+  if (!customerId && phoneE164) {
+    const customer = await db.prepare(
+      `SELECT id
+       FROM customers
+       WHERE phone_e164 = ? OR phone = ?
+       ORDER BY updated_at DESC
+       LIMIT 1`
+    ).bind(phoneE164, msg.phone || phoneE164).first<{ id: string }>();
+    customerId = customer?.id || null;
+  }
+
+  if (!customerId) {
+    return { jobOptions: [], selectedJobId: null };
+  }
+
+  const jobs = await db.prepare(
+    `SELECT j.id, j.scheduled_date, j.status,
+            COALESCE(s.name, j.custom_service_name, 'Service') as service_name
+     FROM jobs j
+     LEFT JOIN services s ON s.id = j.service_id
+     WHERE j.customer_id = ?
+     ORDER BY j.updated_at DESC
+     LIMIT 20`
+  ).bind(customerId).all<{ id: string; scheduled_date: string; status: string; service_name: string }>();
+
+  const jobOptions = (jobs.results || []).map((job) => ({
+    id: job.id,
+    label: `${job.scheduled_date} • ${job.service_name} • ${job.status.replace('_', ' ')}`,
+  }));
+
+  const selectedJobId = jobOptions.some((job) => job.id === metaJobId)
+    ? metaJobId
+    : (jobOptions[0]?.id || null);
+
+  return { jobOptions, selectedJobId };
+}
+
 app.get('/inbox/:id', async (c) => {
   const db = c.env.DB;
   const id = c.req.param('id');
@@ -2535,6 +3384,11 @@ app.get('/inbox/:id', async (c) => {
     if (msg.status === 'new') msg.status = 'read';
   }
 
+  const twilioEnabled = await isTwilioEnabled(db);
+  const { phoneE164, smsHistory } = await getInboxSmsContext(db, id);
+  const { jobOptions, selectedJobId } = await getInboxJobContext(db, id);
+  const completedTaskSmsIds = await getCompletedSmsTaskIds(db, selectedJobId);
+
   return c.html(MessageDetailPage({
     message: msg as {
       id: string; source: string; status: string;
@@ -2544,7 +3398,158 @@ app.get('/inbox/:id', async (c) => {
       is_read: number; read_at: string | null; replied_at: string | null;
       created_at: string; updated_at: string;
     },
+    smsHistory,
+    twilioEnabled,
+    phoneE164,
+    jobOptions,
+    selectedJobId,
+    completedTaskSmsIds,
   }));
+});
+
+app.get('/inbox/:id/sms-thread', async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param('id');
+  const { smsHistory } = await getInboxSmsContext(db, id);
+  const { jobOptions, selectedJobId } = await getInboxJobContext(db, id);
+  const completedTaskSmsIds = await getCompletedSmsTaskIds(db, selectedJobId);
+  c.header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  c.header('Pragma', 'no-cache');
+  c.header('Expires', '0');
+  return c.html(SmsHistoryList({
+    smsHistory,
+    messageId: id,
+    canCreateTask: jobOptions.length > 0,
+    jobOptions,
+    selectedJobId,
+    completedTaskSmsIds,
+  }));
+});
+
+app.post('/inbox/:id/sms-reply', async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param('id');
+  const body = await c.req.parseBody();
+  const smsBody = (body.sms_body as string || '').trim();
+
+  const { phoneE164 } = await getInboxSmsContext(db, id);
+
+  let sendResult: { success: boolean; error?: string } | null = null;
+
+  if (!smsBody) {
+    sendResult = { success: false, error: 'Message body is required' };
+  } else if (!phoneE164) {
+    sendResult = { success: false, error: 'No valid phone number for this contact' };
+  } else {
+    const result = await sendDirectSms({ db, to: phoneE164, body: smsBody, messageId: id });
+    sendResult = { success: result.success, error: result.error };
+
+    if (result.success) {
+      await db.prepare(
+        "UPDATE messages SET status = 'replied', replied_at = datetime('now'), updated_at = datetime('now') WHERE id = ?"
+      ).bind(id).run();
+    }
+  }
+
+  const twilioEnabled = await isTwilioEnabled(db);
+  const { smsHistory } = await getInboxSmsContext(db, id);
+  const { jobOptions, selectedJobId } = await getInboxJobContext(db, id);
+  const completedTaskSmsIds = await getCompletedSmsTaskIds(db, selectedJobId);
+
+  c.header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  c.header('Pragma', 'no-cache');
+  c.header('Expires', '0');
+  return c.html(SmsThreadPanel({ messageId: id, smsHistory, twilioEnabled, phoneE164, jobOptions, selectedJobId, completedTaskSmsIds, sendResult }));
+});
+
+app.post('/inbox/:id/sms-task', async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param('id');
+  const body = await c.req.parseBody();
+  const smsLogId = (body.sms_log_id as string || '').trim();
+  const jobId = (body.job_id as string || '').trim();
+  const taskTitle = toTaskTitle(body.task_title as string || '');
+
+  const twilioEnabled = await isTwilioEnabled(db);
+  const { phoneE164, smsHistory } = await getInboxSmsContext(db, id);
+  const { jobOptions, selectedJobId } = await getInboxJobContext(db, id);
+
+  let taskResult: { success: boolean; error?: string; message?: string } = { success: false, error: 'Unable to add task' };
+
+  if (!smsLogId) {
+    taskResult = { success: false, error: 'No SMS message selected' };
+  } else if (!taskTitle) {
+    taskResult = { success: false, error: 'Task title is required' };
+  } else if (!jobId) {
+    taskResult = { success: false, error: 'Select a job first' };
+  } else {
+    const sms = await db.prepare(
+      `SELECT id, direction, body, created_at, phone_to, phone_from
+       FROM sms_log
+       WHERE id = ?
+       LIMIT 1`
+    ).bind(smsLogId).first<{ id: string; direction: string; body: string; created_at: string; phone_to: string; phone_from: string }>();
+
+    const job = await db.prepare('SELECT notes_json FROM jobs WHERE id = ?').bind(jobId).first<{ notes_json: string | null }>();
+
+    if (!sms) {
+      taskResult = { success: false, error: 'SMS message not found' };
+    } else if (!job) {
+      taskResult = { success: false, error: 'Job not found' };
+    } else if (phoneE164 && sms.phone_to !== phoneE164 && sms.phone_from !== phoneE164) {
+      taskResult = { success: false, error: 'Selected SMS is not part of this thread' };
+    } else if (sms.direction !== 'inbound') {
+      taskResult = { success: false, error: 'Only customer messages can become tasks' };
+    } else {
+      const smsBody = (sms.body || '').trim();
+      if (!smsBody) {
+        taskResult = { success: false, error: 'Selected message has no text' };
+      } else {
+        const notes = job.notes_json ? JSON.parse(job.notes_json) as Array<Record<string, unknown>> : [];
+        notes.push({
+          text: taskTitle,
+          timestamp: new Date().toISOString(),
+          completed: 0,
+          source: {
+            type: 'sms',
+            sms_log_id: sms.id,
+            message_id: id,
+            excerpt: smsBody,
+            received_at: sms.created_at,
+          },
+        });
+
+        await db.prepare(
+          'UPDATE jobs SET notes_json = ?, updated_at = datetime("now") WHERE id = ?'
+        ).bind(JSON.stringify(notes), jobId).run();
+
+        const messageMetaRow = await db.prepare('SELECT metadata FROM messages WHERE id = ?').bind(id).first<{ metadata: string | null }>();
+        const messageMeta = parseJsonObject(messageMetaRow?.metadata) || {};
+        messageMeta.job_id = jobId;
+        await db.prepare('UPDATE messages SET metadata = ?, updated_at = datetime("now") WHERE id = ?').bind(JSON.stringify(messageMeta), id).run();
+
+        taskResult = { success: true, message: 'Task added to job' };
+      }
+    }
+  }
+
+  c.header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  c.header('Pragma', 'no-cache');
+  c.header('Expires', '0');
+  const activeJobId = jobOptions.some((job) => job.id === jobId) ? jobId : selectedJobId;
+  const completedTaskSmsIds = await getCompletedSmsTaskIds(db, activeJobId);
+  return c.html(
+    SmsThreadPanel({
+      messageId: id,
+      smsHistory,
+      twilioEnabled,
+      phoneE164,
+      jobOptions,
+      selectedJobId: jobId || selectedJobId,
+      completedTaskSmsIds,
+      taskResult,
+    })
+  );
 });
 
 app.post('/inbox/:id/archive', async (c) => {
