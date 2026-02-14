@@ -15,12 +15,15 @@ declare module 'hono' {
 
 export const PUBLIC_PATHS = [
   '/health',
+  '/fonts/',
+  '/images/',
   '/v1/scheduling/service_area_check',
   '/v1/scheduling/timeslots',
   '/v1/services',
   '/v1/coupons/validate',
   '/v1/bookings/create',
   '/v1/messages/submit',
+  '/webhooks/twilio/',
   '/widget/',
 ];
 

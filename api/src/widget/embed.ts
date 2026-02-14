@@ -33,6 +33,7 @@ export const BOOKING_WIDGET_JS = `(function() {
       loading: false,
       error: null,
       summaryExpanded: false,
+      smsConsent: false,
       jobId: null
     };
 
@@ -261,12 +262,15 @@ export const BOOKING_WIDGET_JS = `(function() {
 
   ZenbookerWidget.prototype.formatDate = function(dateStr) {
     var d = new Date(dateStr + 'T12:00:00');
-    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return d.toLocaleDateString('en-US', { timeZone: 'America/Toronto', weekday: 'short', month: 'short', day: 'numeric' });
   };
 
   ZenbookerWidget.prototype.formatDateShort = function(dateStr) {
     var d = new Date(dateStr + 'T12:00:00');
-    return { day: d.toLocaleDateString('en-US', { weekday: 'short' }), date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) };
+    return {
+      day: d.toLocaleDateString('en-US', { timeZone: 'America/Toronto', weekday: 'short' }),
+      date: d.toLocaleDateString('en-US', { timeZone: 'America/Toronto', month: 'short', day: 'numeric' })
+    };
   };
 
   ZenbookerWidget.prototype.formatDuration = function(mins) {
@@ -1044,6 +1048,13 @@ export const BOOKING_WIDGET_JS = `(function() {
     html += '<div class="zbw-form-group"><label>Email *</label><input type="email" class="zbw-input" id="zbw-email" value="' + this.esc(c.email) + '" placeholder="you@example.com" /></div>';
     html += '<div class="zbw-form-group"><label>Phone *</label><input type="tel" class="zbw-input" id="zbw-phone" value="' + this.esc(c.phone) + '" placeholder="(555) 123-4567" /></div>';
 
+    html += '<div class="zbw-form-group" style="margin-top:8px;">';
+    html += '<label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:13px;line-height:1.4;">';
+    html += '<input type="checkbox" id="zbw-sms-consent"' + (this.state.smsConsent ? ' checked' : '') + ' style="margin-top:2px;flex-shrink:0;" />';
+    html += '<span style="color:#666;">I agree to receive SMS updates about my booking (appointment reminders, status changes). Msg & data rates may apply. Reply STOP to opt out.</span>';
+    html += '</label>';
+    html += '</div>';
+
     html += '<button class="zbw-btn zbw-btn-primary" data-action="submitBooking"' + (this.state.loading ? ' disabled' : '') + '>' + (this.state.loading ? 'Booking...' : 'Book Now') + '</button>';
     html += '</div>';
     return html;
@@ -1056,6 +1067,9 @@ export const BOOKING_WIDGET_JS = `(function() {
     var ln = (document.getElementById('zbw-lname') || {}).value || '';
     var em = (document.getElementById('zbw-email') || {}).value || '';
     var ph = (document.getElementById('zbw-phone') || {}).value || '';
+    var smsEl = document.getElementById('zbw-sms-consent');
+    var smsConsent = smsEl ? smsEl.checked : false;
+    this.state.smsConsent = smsConsent;
 
     this.state.contact = { firstName: fn.trim(), lastName: ln.trim(), email: em.trim(), phone: ph.trim() };
 
@@ -1109,6 +1123,7 @@ export const BOOKING_WIDGET_JS = `(function() {
         last_name: ln.trim(),
         email: em.trim(),
         phone: ph.trim() || null,
+        sms_consent: smsConsent,
         address_line1: a.line1,
         address_line2: a.line2 || null,
         city: a.city,
@@ -1317,36 +1332,43 @@ export const BOOKING_WIDGET_JS = `(function() {
       postalInput.focus();
     }
 
-    var addrInput = container.querySelector('#zbw-addr1');
-    if (addrInput) {
-      addrInput.addEventListener('input', function() {
-        var q = addrInput.value.trim();
-        clearTimeout(self._acTimer);
-        if (self._acAbort) { self._acAbort.abort(); self._acAbort = null; }
-        var list = document.getElementById('zbw-ac-list');
-        if (q.length < 3) { if (list) list.innerHTML = ''; return; }
-        self._acTimer = setTimeout(function() {
-          var ctrl = new AbortController();
-          self._acAbort = ctrl;
-          var prox = (self.state.postalLng && self.state.postalLat) ? self.state.postalLng + ',' + self.state.postalLat : 'ip';
-          fetch('https://api.mapbox.com/search/geocode/v6/forward?q=' + encodeURIComponent(q) + '&country=ca&types=address&limit=5&proximity=' + prox + '&access_token=pk.eyJ1IjoidGlsbGV5IiwiYSI6IlFhX1ZUYm8ifQ.Dr4lrivYwl5ZTnuAdMqzVg', { signal: ctrl.signal })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-              if (!list) return;
-              if (!data.features || !data.features.length) { list.innerHTML = ''; return; }
-              list.innerHTML = data.features.map(function(f, i) {
-                var p = f.properties;
-                var ctx = p.context || {};
-                return '<div class="zbw-ac-item" data-ac-idx="' + i + '">' +
-                  '<div class="zbw-ac-main">' + (p.name || '') + '</div>' +
-                  '<div class="zbw-ac-sub">' + (ctx.place ? ctx.place.name + ', ' : '') + (ctx.region ? ctx.region.region_code + ' ' : '') + (ctx.postcode ? ctx.postcode.name : '') + '</div>' +
-                  '</div>';
-              }).join('');
-              self._acFeatures = data.features;
-            })
-            .catch(function() {});
-        }, 300);
-      });
+     var addrInput = container.querySelector('#zbw-addr1');
+     if (addrInput) {
+       addrInput.addEventListener('input', function() {
+         var q = addrInput.value.trim();
+         clearTimeout(self._acTimer);
+         if (self._acAbort) { self._acAbort.abort(); self._acAbort = null; }
+         var list = document.getElementById('zbw-ac-list');
+         if (q.length < 3) { if (list) list.innerHTML = ''; return; }
+         self._acTimer = setTimeout(function() {
+           var token = (window.ZenbookerConfig && window.ZenbookerConfig.mapboxAccessToken) ? String(window.ZenbookerConfig.mapboxAccessToken) : '';
+           if (!token) {
+             if (list) {
+               list.innerHTML = '<div class="zbw-ac-item" style="pointer-events:none;opacity:.8;"><div class="zbw-ac-main">Address autocomplete unavailable</div><div class="zbw-ac-sub">Configure Mapbox token to enable suggestions.</div></div>';
+             }
+             return;
+           }
+           var ctrl = new AbortController();
+           self._acAbort = ctrl;
+           var prox = (self.state.postalLng && self.state.postalLat) ? self.state.postalLng + ',' + self.state.postalLat : 'ip';
+           fetch('https://api.mapbox.com/search/geocode/v6/forward?q=' + encodeURIComponent(q) + '&country=ca&types=address&limit=5&proximity=' + prox + '&access_token=' + encodeURIComponent(token), { signal: ctrl.signal })
+             .then(function(r) { return r.json(); })
+             .then(function(data) {
+               if (!list) return;
+               if (!data.features || !data.features.length) { list.innerHTML = ''; return; }
+               list.innerHTML = data.features.map(function(f, i) {
+                 var p = f.properties;
+                 var ctx = p.context || {};
+                 return '<div class="zbw-ac-item" data-ac-idx="' + i + '">' +
+                   '<div class="zbw-ac-main">' + (p.name || '') + '</div>' +
+                   '<div class="zbw-ac-sub">' + (ctx.place ? ctx.place.name + ', ' : '') + (ctx.region ? ctx.region.region_code + ' ' : '') + (ctx.postcode ? ctx.postcode.name : '') + '</div>' +
+                   '</div>';
+               }).join('');
+               self._acFeatures = data.features;
+             })
+             .catch(function() {});
+         }, 300);
+       });
 
       addrInput.addEventListener('blur', function() {
         setTimeout(function() {
