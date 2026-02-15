@@ -32,6 +32,7 @@ app.use('/v1/*', cors());
 app.use('/widget/*', cors());
 app.get('/fonts/*', (c) => c.env.ASSETS.fetch(c.req.raw));
 app.get('/images/*', (c) => c.env.ASSETS.fetch(c.req.raw));
+app.get('/admin.js', (c) => c.env.ASSETS.fetch(c.req.raw));
 app.use('/admin/*', async (c, next) => {
   await next();
   c.header('Cache-Control', 'no-cache, no-store, must-revalidate');
