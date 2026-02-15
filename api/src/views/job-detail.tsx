@@ -88,6 +88,44 @@ const TaskSourceContext = ({ source }: { source?: JobDetailPageProps['notes'][nu
   );
 };
 
+export const NotesList = ({ jobId, notes }: { jobId: string; notes: JobDetailPageProps['notes'] }) => (
+  <div id="notes-list">
+    {notes.length === 0 ? (
+      <p class="text-sm text-muted-foreground">No tasks yet.</p>
+    ) : (
+      notes.map((note, idx) => (
+        <div key={idx} class={`flex items-start gap-3 p-3 border border-border rounded-md ${note.completed ? 'opacity-60' : ''}`}>
+          <input
+            type="checkbox"
+            class="uk-checkbox mt-1"
+            checked={note.completed ? true : undefined}
+            hx-post={`/admin/jobs/${jobId}/notes/toggle`}
+            hx-vals={JSON.stringify({ noteIndex: idx })}
+            hx-target="#notes-list"
+            hx-swap="innerHTML"
+          />
+          <div class="flex-1 min-w-0">
+            <p class={`text-sm ${note.completed ? 'line-through text-muted-foreground' : ''}`}>{note.text}</p>
+            <p class="text-xs text-muted-foreground mt-1">{new Date(note.timestamp).toLocaleString()}</p>
+            <TaskSourceContext source={note.source} />
+          </div>
+          <button
+            type="button"
+            class="delete-btn uk-btn uk-btn-small"
+            hx-post={`/admin/jobs/${jobId}/notes/delete`}
+            hx-vals={JSON.stringify({ noteIndex: idx })}
+            hx-target="#notes-list"
+            hx-swap="innerHTML"
+            data-confirm="arm"
+          >
+            ✕
+          </button>
+        </div>
+      ))
+    )}
+  </div>
+);
+
 export const SmsThreadCard = ({ jobId, smsThreadMessage }: {
   jobId: string;
   smsThreadMessage: JobDetailPageProps['smsThreadMessage'];
@@ -336,122 +374,56 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                 )}
               </div>
 
-              <form hx-post={`/admin/jobs/${job.id}/line-items/add`} hx-target="#page-content" hx-select="#page-content" class="grid gap-2 sm:grid-cols-4">
-                <input type="text" name="description" class="uk-input sm:col-span-2" placeholder="Custom line description" required />
-                <input type="number" name="quantity" class="uk-input" min={1} step={1} value="1" required />
-                <input type="number" name="unit_price" class="uk-input" min={0} step={0.01} placeholder="Unit price" required />
-                <div class="sm:col-span-4 flex justify-end">
-                  <button type="submit" class="uk-btn uk-btn-default">Add Custom Line</button>
-                </div>
-              </form>
+               <form hx-post={`/admin/jobs/${job.id}/line-items/add`} hx-target="#page-content" hx-select="#page-content" hx-swap="innerHTML" class="grid gap-2 sm:grid-cols-4">
+                 <input type="text" name="description" class="uk-input sm:col-span-2" placeholder="Custom line description" required />
+                 <input type="number" name="quantity" class="uk-input" min={1} step={1} value="1" required />
+                 <input type="number" name="unit_price" class="uk-input" min={0} step={0.01} placeholder="Unit price" required />
+                 <div class="sm:col-span-4 flex justify-end">
+                   <button type="submit" class="uk-btn uk-btn-default">Add Custom Line</button>
+                 </div>
+               </form>
             </section>
           </div>
 
-          <div class="uk-card uk-card-body hidden sm:block">
-            <section>
-              <h3 class="text-base font-semibold mb-4">Task Notes</h3>
-              <div class="grid gap-2 mb-4" id="notes-list">
-                {notes.length === 0 ? (
-                  <p class="text-sm text-muted-foreground">No tasks yet.</p>
-                ) : (
-                  notes.map((note, idx) => (
-                    <div key={idx} class={`flex items-start gap-3 p-3 border border-border rounded-md ${note.completed ? 'opacity-60' : ''}`}>
-                      <input
-                        type="checkbox"
-                        class="uk-checkbox mt-1"
-                        checked={note.completed ? true : undefined}
-                        hx-post={`/admin/jobs/${job.id}/notes/toggle`}
-                        hx-vals={JSON.stringify({ noteIndex: idx })}
-                        hx-target="#page-content"
-                        hx-select="#page-content"
-                        hx-swap="none"
-                      />
-                      <div class="flex-1 min-w-0">
-                        <p class={`text-sm ${note.completed ? 'line-through text-muted-foreground' : ''}`}>{note.text}</p>
-                        <p class="text-xs text-muted-foreground mt-1">{new Date(note.timestamp).toLocaleString()}</p>
-                        <TaskSourceContext source={note.source} />
-                      </div>
-                      <button
-                        type="button"
-                        class="delete-btn uk-btn uk-btn-small"
-                        hx-post={`/admin/jobs/${job.id}/notes/delete`}
-                        hx-vals={JSON.stringify({ noteIndex: idx })}
-                        hx-target="#page-content"
-                        hx-select="#page-content"
-                        data-confirm="arm"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
+           <div class="uk-card uk-card-body hidden sm:block">
+             <section>
+               <h3 class="text-base font-semibold mb-4">Task Notes</h3>
+               <div class="grid gap-2 mb-4">
+                 <NotesList jobId={job.id} notes={notes} />
+               </div>
 
-              <form hx-post={`/admin/jobs/${job.id}/notes/add`} hx-target="#page-content" hx-select="#page-content" class="flex gap-2">
-                <input
-                  type="text"
-                  name="text"
-                  class="uk-input flex-1"
-                  placeholder="Add a task..."
-                  required
-                />
-                <button type="submit" class="uk-btn uk-btn-default">Add</button>
-              </form>
-            </section>
-          </div>
+               <form hx-post={`/admin/jobs/${job.id}/notes/add`} hx-target="#notes-list" hx-swap="innerHTML" class="flex gap-2">
+                 <input
+                   type="text"
+                   name="text"
+                   class="uk-input flex-1"
+                   placeholder="Add a task..."
+                   required
+                 />
+                 <button type="submit" class="uk-btn uk-btn-default">Add</button>
+               </form>
+             </section>
+           </div>
 
-          <details class="uk-card uk-card-body sm:hidden">
-            <summary class="text-base font-semibold cursor-pointer">Task Notes</summary>
-            <section class="pt-4">
-              <div class="grid gap-2 mb-4" id="notes-list">
-                {notes.length === 0 ? (
-                  <p class="text-sm text-muted-foreground">No tasks yet.</p>
-                ) : (
-                  notes.map((note, idx) => (
-                    <div key={idx} class={`flex items-start gap-3 p-3 border border-border rounded-md ${note.completed ? 'opacity-60' : ''}`}>
-                      <input
-                        type="checkbox"
-                        class="uk-checkbox mt-1"
-                        checked={note.completed ? true : undefined}
-                        hx-post={`/admin/jobs/${job.id}/notes/toggle`}
-                        hx-vals={JSON.stringify({ noteIndex: idx })}
-                        hx-target="#page-content"
-                        hx-select="#page-content"
-                        hx-swap="none"
-                      />
-                      <div class="flex-1 min-w-0">
-                        <p class={`text-sm ${note.completed ? 'line-through text-muted-foreground' : ''}`}>{note.text}</p>
-                        <p class="text-xs text-muted-foreground mt-1">{new Date(note.timestamp).toLocaleString()}</p>
-                        <TaskSourceContext source={note.source} />
-                      </div>
-                      <button
-                        type="button"
-                        class="delete-btn uk-btn uk-btn-small"
-                        hx-post={`/admin/jobs/${job.id}/notes/delete`}
-                        hx-vals={JSON.stringify({ noteIndex: idx })}
-                        hx-target="#page-content"
-                        hx-select="#page-content"
-                        data-confirm="arm"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
+           <details class="uk-card uk-card-body sm:hidden">
+             <summary class="text-base font-semibold cursor-pointer">Task Notes</summary>
+             <section class="pt-4">
+               <div class="grid gap-2 mb-4">
+                 <NotesList jobId={job.id} notes={notes} />
+               </div>
 
-              <form hx-post={`/admin/jobs/${job.id}/notes/add`} hx-target="#page-content" hx-select="#page-content" class="grid gap-2 sm:flex">
-                <input
-                  type="text"
-                  name="text"
-                  class="uk-input flex-1"
-                  placeholder="Add a task..."
-                  required
-                />
-                <button type="submit" class="uk-btn uk-btn-default">Add</button>
-              </form>
-            </section>
-          </details>
+                <form hx-post={`/admin/jobs/${job.id}/notes/add`} hx-target="#notes-list" hx-swap="innerHTML" class="grid gap-2 sm:flex">
+                  <input
+                    type="text"
+                    name="text"
+                    class="uk-input flex-1"
+                    placeholder="Add a task..."
+                    required
+                  />
+                  <button type="submit" class="uk-btn uk-btn-default">Add</button>
+                </form>
+             </section>
+           </details>
 
           <div class="uk-card uk-card-body hidden sm:block">
             <section>

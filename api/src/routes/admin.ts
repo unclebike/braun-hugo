@@ -1,3 +1,5 @@
+/** @jsx jsx */
+import { jsx } from 'hono/jsx';
 // biome-ignore assist/source/organizeImports: keep imports stable for this file
 import { type Context, Hono } from 'hono';
 import { checkServiceArea } from '../geo/service-area';
@@ -9,7 +11,7 @@ import { BrandingPage } from '../views/branding';
 import { MessageDetailPage, SmsHistoryList, SmsThreadPanel } from '../views/message-detail';
 import type { SmsLogRow } from '../views/message-detail';
 import { Dashboard } from '../views/dashboard';
-import { JobDetailPage, SmsThreadCard } from '../views/job-detail';
+import { JobDetailPage, SmsThreadCard, NotesList } from '../views/job-detail';
 import { AddressSearchResults, CustomerSearchResults, JobWizardPage, JobWizardSwapBundle, parseWizardState, type NewJobProps, type WizardState } from '../views/job-wizard';
 import { ProviderDetailPage } from '../views/provider-detail';
 import { ServiceDetailPage } from '../views/service-detail';
@@ -17,6 +19,8 @@ import { GeofencePanel, RadiusPanel, TerritoryDetailPage, ZipPanel } from '../vi
 import { SmsSettingsPage } from '../views/sms-settings';
 import { InvoiceDetailPage } from '../views/invoice-detail';
 import { formatTorontoDate } from '../utils/datetime';
+
+void jsx;
 
 type WizardCustomer = { id: string; first_name: string; last_name: string; email?: string; phone?: string };
 type WizardService = { id: string; name: string; description?: string; base_price_cents: number; base_duration_minutes: number };
