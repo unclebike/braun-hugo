@@ -1,8 +1,5 @@
-/** @jsx jsx */
 import { jsx } from 'hono/jsx';
 import { Layout } from './layout';
-
-void jsx;
 
 interface ProviderDetailPageProps {
   member: {

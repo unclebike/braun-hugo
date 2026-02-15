@@ -1,8 +1,5 @@
-/** @jsx jsx */
 import { jsx } from 'hono/jsx';
 import { Layout } from './layout';
-
-void jsx;
 
 const money = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 

@@ -1,7 +1,4 @@
-/** @jsx jsx */
-/** @jsxFrag Fragment */
 import { html } from 'hono/html';
-// biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx, Fragment } from 'hono/jsx';
 
 export const Layout = ({ title, children }: { title: string; children: unknown }) => {
@@ -136,12 +133,12 @@ body.ready { opacity: 1; transition: opacity .15s; }
 })();
 </script>`}
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
-        <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.css" />
-        <script src="https://cdn.jsdelivr.net/npm/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.min.js"></script>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.css" />
+        <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.js"></script>
+        <style>{`.leaflet-container img { max-width: none !important; max-height: none !important; }`}</style>
         {html`<script>
-/* --- Named handlers for proper cleanup --- */
 function _onRadiusMilesInput() { updateRadius(); }
 function _onRadiusLatChange() { updateRadius(); }
 function _onRadiusLngChange() { updateRadius(); }
@@ -177,11 +174,11 @@ function initMaps() {
     setTimeout(function() { map.invalidateSize(); }, 200);
   }
 
-   var gm = document.getElementById('geofence-map');
-   if (gm && !gm._mapInit) {
-     gm._mapInit = true;
-     var pts = [];
-     try { pts = JSON.parse(gm.dataset.points || '[]'); } catch(e) {}
+    var gm = document.getElementById('geofence-map');
+    if (gm && !gm._mapInit) {
+      gm._mapInit = true;
+      var pts = [];
+      try { pts = JSON.parse(gm.dataset.points || '[]'); } catch(e) {}
 
      function normalizePair(a, b) {
        var x = Number(a);
@@ -189,19 +186,13 @@ function initMaps() {
        if (!isFinite(x) || !isFinite(y)) return [44.1628, -77.3832];
        var ax = Math.abs(x);
        var ay = Math.abs(y);
-
-       // Unambiguous: one value is clearly longitude (> 90).
        if (ax > 90 && ax <= 180 && ay <= 90) return [y, x];
        if (ay > 90 && ay <= 180 && ax <= 90) return [x, y];
-
-       // Common case for our territories (CA/US): lat > 0, lng < 0.
        if ((x < 0 && y > 0) || (x > 0 && y < 0)) {
          var lat = x > 0 ? x : y;
          var lng = x < 0 ? x : y;
          if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return [lat, lng];
        }
-
-       // Default: assume [lat, lng] (what Leaflet emits when we save).
        return [x, y];
      }
 
@@ -211,8 +202,8 @@ function initMaps() {
        return [44.1628, -77.3832];
      }
 
-     var center = pts.length > 0 ? toLL(pts[0]) : [44.1628, -77.3832];
-     var map = L.map(gm).setView(center, 12);
+      var center = pts.length > 0 ? toLL(pts[0]) : [44.1628, -77.3832];
+      var map = L.map(gm).setView(center, 12);
      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' }).addTo(map);
      var poly = null;
 
@@ -312,7 +303,6 @@ function updateRadius() {
 document.addEventListener('htmx:beforeCleanupElement', function(e) {
   var el = e.detail.elt;
   if (el.id === 'radius-map' && window._radiusMap) {
-    /* Remove named input listeners to prevent leaks */
     var milesEl = document.getElementById('radius-miles');
     var latEl = document.getElementById('center-lat');
     var lngEl = document.getElementById('center-lng');
@@ -376,8 +366,16 @@ document.addEventListener('htmx:configRequest', function(e) {
   }
 });
 
-document.addEventListener('htmx:afterSettle', function() { setTimeout(initMaps, 50); });
-document.addEventListener('DOMContentLoaded', function() { setTimeout(initMaps, 100); });
+function initMapsWhenReady() {
+  if (document.body.classList.contains('ready')) {
+    initMaps();
+  } else {
+    requestAnimationFrame(initMapsWhenReady);
+  }
+}
+
+document.addEventListener('htmx:afterSettle', initMapsWhenReady);
+document.addEventListener('DOMContentLoaded', initMapsWhenReady);
 
 function scrollSmsThreadToBottom() {
   var scroller = document.getElementById('sms-history-scroll');
