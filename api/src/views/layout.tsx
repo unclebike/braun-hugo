@@ -1,7 +1,4 @@
-/** @jsx jsx */
-/** @jsxFrag Fragment */
 import { html } from 'hono/html';
-// biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx, Fragment } from 'hono/jsx';
 
 export const Layout = ({ title, children }: { title: string; children: unknown }) => {

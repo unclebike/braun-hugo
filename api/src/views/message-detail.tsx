@@ -1,9 +1,6 @@
-/** @jsx jsx */
 import { jsx } from 'hono/jsx';
 import { Layout } from './layout';
 import { formatTorontoDate, formatTorontoTime } from '../utils/datetime';
-
-void jsx;
 
 interface Message {
   id: string;
