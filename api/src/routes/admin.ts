@@ -2068,7 +2068,7 @@ app.post('/jobs/:id/notes/add', async (c) => {
   
   await db.prepare('UPDATE jobs SET notes_json = ?, updated_at = datetime("now") WHERE id = ?').bind(JSON.stringify(notes), jobId).run();
   
-  return c.redirect(`/admin/jobs/${jobId}`);
+  return c.html(NotesList({ jobId, notes }));
 });
 
 app.post('/jobs/:id/notes/toggle', async (c) => {
@@ -2086,7 +2086,7 @@ app.post('/jobs/:id/notes/toggle', async (c) => {
   
   await db.prepare('UPDATE jobs SET notes_json = ?, updated_at = datetime("now") WHERE id = ?').bind(JSON.stringify(notes), jobId).run();
   
-  return c.redirect(`/admin/jobs/${jobId}`);
+  return c.html(NotesList({ jobId, notes }));
 });
 
 app.post('/jobs/:id/notes/delete', async (c) => {
@@ -2102,7 +2102,7 @@ app.post('/jobs/:id/notes/delete', async (c) => {
   
   await db.prepare('UPDATE jobs SET notes_json = ?, updated_at = datetime("now") WHERE id = ?').bind(JSON.stringify(notes), jobId).run();
   
-  return c.redirect(`/admin/jobs/${jobId}`);
+  return c.html(NotesList({ jobId, notes }));
 });
 
 app.post('/jobs/:id/status', async (c) => {

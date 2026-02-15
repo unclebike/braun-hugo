@@ -95,15 +95,16 @@ export const NotesList = ({ jobId, notes }: { jobId: string; notes: JobDetailPag
     ) : (
       notes.map((note, idx) => (
         <div key={idx} class={`flex items-start gap-3 p-3 border border-border rounded-md ${note.completed ? 'opacity-60' : ''}`}>
-          <input
-            type="checkbox"
-            class="uk-checkbox mt-1"
-            checked={note.completed ? true : undefined}
-            hx-post={`/admin/jobs/${jobId}/notes/toggle`}
-            hx-vals={JSON.stringify({ noteIndex: idx })}
-            hx-target="#notes-list"
-            hx-swap="innerHTML"
-          />
+           <input
+             type="checkbox"
+             class="uk-checkbox mt-1"
+             checked={note.completed ? true : undefined}
+             hx-post={`/admin/jobs/${jobId}/notes/toggle`}
+             hx-vals={JSON.stringify({ noteIndex: idx })}
+             hx-target="#notes-list"
+             hx-select="#notes-list"
+             hx-swap="innerHTML"
+           />
           <div class="flex-1 min-w-0">
             <p class={`text-sm ${note.completed ? 'line-through text-muted-foreground' : ''}`}>{note.text}</p>
             <p class="text-xs text-muted-foreground mt-1">{new Date(note.timestamp).toLocaleString()}</p>
@@ -115,6 +116,7 @@ export const NotesList = ({ jobId, notes }: { jobId: string; notes: JobDetailPag
             hx-post={`/admin/jobs/${jobId}/notes/delete`}
             hx-vals={JSON.stringify({ noteIndex: idx })}
             hx-target="#notes-list"
+            hx-select="#notes-list"
             hx-swap="innerHTML"
             data-confirm="arm"
           >
@@ -392,16 +394,16 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                  <NotesList jobId={job.id} notes={notes} />
                </div>
 
-               <form hx-post={`/admin/jobs/${job.id}/notes/add`} hx-target="#notes-list" hx-swap="innerHTML" class="flex gap-2">
-                 <input
-                   type="text"
-                   name="text"
-                   class="uk-input flex-1"
-                   placeholder="Add a task..."
-                   required
-                 />
-                 <button type="submit" class="uk-btn uk-btn-default">Add</button>
-               </form>
+                <form hx-post={`/admin/jobs/${job.id}/notes/add`} hx-target="#notes-list" hx-select="#notes-list" hx-swap="innerHTML" class="flex gap-2">
+                  <input
+                    type="text"
+                    name="text"
+                    class="uk-input flex-1"
+                    placeholder="Add a task..."
+                    required
+                  />
+                  <button type="submit" class="uk-btn uk-btn-default">Add</button>
+                </form>
              </section>
            </div>
 
@@ -412,16 +414,16 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                  <NotesList jobId={job.id} notes={notes} />
                </div>
 
-                <form hx-post={`/admin/jobs/${job.id}/notes/add`} hx-target="#notes-list" hx-swap="innerHTML" class="grid gap-2 sm:flex">
-                  <input
-                    type="text"
-                    name="text"
-                    class="uk-input flex-1"
-                    placeholder="Add a task..."
-                    required
-                  />
-                  <button type="submit" class="uk-btn uk-btn-default">Add</button>
-                </form>
+                 <form hx-post={`/admin/jobs/${job.id}/notes/add`} hx-target="#notes-list" hx-select="#notes-list" hx-swap="innerHTML" class="grid gap-2 sm:flex">
+                   <input
+                     type="text"
+                     name="text"
+                     class="uk-input flex-1"
+                     placeholder="Add a task..."
+                     required
+                   />
+                   <button type="submit" class="uk-btn uk-btn-default">Add</button>
+                 </form>
              </section>
            </details>
 
