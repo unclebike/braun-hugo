@@ -394,27 +394,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                  <NotesList jobId={job.id} notes={notes} />
                </div>
 
-                <form hx-post={`/admin/jobs/${job.id}/notes/add`} hx-target="#notes-list" hx-select="#notes-list" hx-swap="innerHTML" class="flex gap-2">
-                  <input
-                    type="text"
-                    name="text"
-                    class="uk-input flex-1"
-                    placeholder="Add a task..."
-                    required
-                  />
-                  <button type="submit" class="uk-btn uk-btn-default">Add</button>
-                </form>
-             </section>
-           </div>
-
-           <details class="uk-card uk-card-body sm:hidden">
-             <summary class="text-base font-semibold cursor-pointer">Task Notes</summary>
-             <section class="pt-4">
-               <div class="grid gap-2 mb-4">
-                 <NotesList jobId={job.id} notes={notes} />
-               </div>
-
-                 <form hx-post={`/admin/jobs/${job.id}/notes/add`} hx-target="#notes-list" hx-select="#notes-list" hx-swap="innerHTML" class="grid gap-2 sm:flex">
+                 <form hx-post={`/admin/jobs/${job.id}/notes/add`} hx-target="#notes-list" hx-select="#notes-list" hx-swap="innerHTML" class="flex gap-2">
                    <input
                      type="text"
                      name="text"
@@ -425,7 +405,27 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                    <button type="submit" class="uk-btn uk-btn-default">Add</button>
                  </form>
              </section>
-           </details>
+           </div>
+
+            <details class="uk-card uk-card-body sm:hidden" hx-on="htmx:afterSettle: this.open = true">
+              <summary class="text-base font-semibold cursor-pointer">Task Notes</summary>
+              <section class="pt-4">
+                <div class="grid gap-2 mb-4">
+                  <NotesList jobId={job.id} notes={notes} />
+                </div>
+
+                   <form hx-post={`/admin/jobs/${job.id}/notes/add`} hx-target="#notes-list" hx-select="#notes-list" hx-swap="innerHTML" class="grid gap-2 sm:flex">
+                     <input
+                       type="text"
+                       name="text"
+                       class="uk-input flex-1"
+                       placeholder="Add a task..."
+                       required
+                     />
+                     <button type="submit" class="uk-btn uk-btn-default">Add</button>
+                   </form>
+              </section>
+            </details>
 
           <div class="uk-card uk-card-body hidden sm:block">
             <section>
@@ -458,6 +458,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
           </details>
         </div>
       </div>
+
     </Layout>
   );
 };
