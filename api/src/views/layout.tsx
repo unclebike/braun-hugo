@@ -15,6 +15,17 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
         <meta name="theme-color" content="#eff1f5" id="theme-color-meta" />
          {html`<script>
 (function(){
+  function autoThemeFromLocalTime() {
+    // Heuristic: use Mocha in the evening/night unless user explicitly chose.
+    // Assumption: "after 5pm" means 17:00-06:59 local time.
+    try {
+      var h = new Date().getHours();
+      return (h >= 17 || h < 7) ? 'dark' : 'light';
+    } catch (e) {
+      return 'light';
+    }
+  }
+
   function syncThemeColorMeta(){
     try {
       var meta = document.getElementById('theme-color-meta');
@@ -27,12 +38,28 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
 
   // Default to Latte unless user explicitly chose otherwise.
   var s = localStorage.getItem('theme');
-  var t = (s === 'dark' || s === 'light') ? s : 'light';
+  var t = (s === 'dark' || s === 'light') ? s : autoThemeFromLocalTime();
   document.documentElement.setAttribute('data-theme', t);
 
   // Styles load immediately after this script; wait a tick so CSS vars are available.
   requestAnimationFrame(syncThemeColorMeta);
   window.__syncThemeColorMeta = syncThemeColorMeta;
+
+  // If user never chose a theme, automatically switch based on local time.
+  // Keeps manual override stable once set.
+  setInterval(function() {
+    try {
+      var manual = localStorage.getItem('theme');
+      if (manual === 'dark' || manual === 'light') return;
+      var next = autoThemeFromLocalTime();
+      var cur = document.documentElement.getAttribute('data-theme') || 'light';
+      if (next !== cur) {
+        document.documentElement.setAttribute('data-theme', next);
+        syncThemeColorMeta();
+        if (typeof window.updateThemeLabels === 'function') window.updateThemeLabels(next);
+      }
+    } catch (e) {}
+  }, 60 * 1000);
 })();
 </script>
 <style data-fodt>
@@ -1277,6 +1304,7 @@ function updateThemeLabels(t) {
   document.querySelectorAll('.theme-label').forEach(function(el) { el.textContent = t === 'dark' ? 'Light Mode' : 'Dark Mode'; });
 }
 updateThemeLabels(document.documentElement.getAttribute('data-theme') || 'light');
+window.updateThemeLabels = updateThemeLabels;
 requestAnimationFrame(function(){requestAnimationFrame(function(){document.body.classList.add('ready')})});
 </script>`}
       </body>
