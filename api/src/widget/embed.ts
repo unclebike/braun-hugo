@@ -129,7 +129,7 @@ export const BOOKING_WIDGET_JS = `(function() {
 
       '.zbw-form-group{margin-bottom:14px}',
       '.zbw-form-group label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px}',
-      '.zbw-input{width:100%;padding:11px 14px;border:1.5px solid #d1d5db;border-radius:8px;font-size:15px;font-family:var(--zbw-f);color:#1a1a1a;background:#fff;transition:border-color .15s,box-shadow .15s;outline:none}',
+'.zbw-input{width:100%;padding:11px 14px;border:1.5px solid #d1d5db;border-radius:8px;font-size:16px;font-family:var(--zbw-f);color:#1a1a1a;background:#fff;transition:border-color .15s,box-shadow .15s;outline:none}',
       '.zbw-input:focus{border-color:var(--zbw-p);box-shadow:0 0 0 3px ' + p + '1a}',
       '.zbw-input::placeholder{color:#9ca3af}',
       '.zbw-input-error{border-color:#ef4444}',
@@ -593,7 +593,7 @@ export const BOOKING_WIDGET_JS = `(function() {
 
     html += '<div class="zbw-form-group">';
     html += '<label for="zbw-postal">Postal Code</label>';
-    html += '<input type="text" id="zbw-postal" class="zbw-input" maxlength="7" placeholder="K8N 1A1" value="' + this.esc(this.state.postalCode) + '" />';
+    html += '<input type="text" id="zbw-postal" class="zbw-input" maxlength="7" placeholder="K8N 1A1" autocomplete="postal-code" autocapitalize="characters" value="' + this.esc(this.state.postalCode) + '" />';
     html += '</div>';
 
     html += '<button class="zbw-btn zbw-btn-primary" data-action="checkZip"' + (this.state.loading ? ' disabled' : '') + '>';
@@ -983,15 +983,15 @@ export const BOOKING_WIDGET_JS = `(function() {
 
     if (this.state.error) html += '<div class="zbw-error">' + this.esc(this.state.error) + '</div>';
 
-    html += '<div class="zbw-form-group zbw-ac-wrap"><label>Street Address *</label><input type="text" class="zbw-input" id="zbw-addr1" autocomplete="off" value="' + this.esc(a.line1) + '" placeholder="Start typing your address..." /><div id="zbw-ac-list" class="zbw-ac-list"></div></div>';
-    html += '<div class="zbw-form-group"><label>Apt / Unit</label><input type="text" class="zbw-input" id="zbw-addr2" value="' + this.esc(a.line2) + '" /></div>';
+    html += '<div class="zbw-form-group zbw-ac-wrap"><label>Street Address *</label><input type="text" class="zbw-input" id="zbw-addr1" autocomplete="address-line1" value="' + this.esc(a.line1) + '" placeholder="Start typing your address..." /><div id="zbw-ac-list" class="zbw-ac-list"></div></div>';
+    html += '<div class="zbw-form-group"><label>Apt / Unit</label><input type="text" class="zbw-input" id="zbw-addr2" autocomplete="address-line2" value="' + this.esc(a.line2) + '" /></div>';
 
     html += '<div class="zbw-row">';
-    html += '<div class="zbw-form-group"><label>City *</label><input type="text" class="zbw-input" id="zbw-city" value="' + this.esc(a.city) + '" /></div>';
-    html += '<div class="zbw-form-group"><label>Province *</label><input type="text" class="zbw-input" id="zbw-prov" value="' + this.esc(a.province) + '" placeholder="ON" /></div>';
+    html += '<div class="zbw-form-group"><label>City *</label><input type="text" class="zbw-input" id="zbw-city" autocomplete="address-level2" value="' + this.esc(a.city) + '" /></div>';
+    html += '<div class="zbw-form-group"><label>Province *</label><input type="text" class="zbw-input" id="zbw-prov" autocomplete="address-level1" value="' + this.esc(a.province) + '" placeholder="ON" /></div>';
     html += '</div>';
 
-    html += '<div class="zbw-form-group"><label>Postal Code *</label><input type="text" class="zbw-input" id="zbw-postal2" maxlength="7" value="' + this.esc(a.postalCode) + '" /></div>';
+    html += '<div class="zbw-form-group"><label>Postal Code *</label><input type="text" class="zbw-input" id="zbw-postal2" maxlength="7" autocomplete="postal-code" autocapitalize="characters" value="' + this.esc(a.postalCode) + '" /></div>';
 
     html += '<button class="zbw-btn zbw-btn-primary" data-action="confirmAddress">Continue</button>';
     html += '</div>';
@@ -1042,11 +1042,11 @@ export const BOOKING_WIDGET_JS = `(function() {
     if (this.state.error) html += '<div class="zbw-error">' + this.esc(this.state.error) + '</div>';
 
     html += '<div class="zbw-row">';
-    html += '<div class="zbw-form-group"><label>First Name *</label><input type="text" class="zbw-input" id="zbw-fname" value="' + this.esc(c.firstName) + '" /></div>';
-    html += '<div class="zbw-form-group"><label>Last Name *</label><input type="text" class="zbw-input" id="zbw-lname" value="' + this.esc(c.lastName) + '" /></div>';
+    html += '<div class="zbw-form-group"><label>First Name *</label><input type="text" class="zbw-input" id="zbw-fname" autocomplete="given-name" value="' + this.esc(c.firstName) + '" /></div>';
+    html += '<div class="zbw-form-group"><label>Last Name *</label><input type="text" class="zbw-input" id="zbw-lname" autocomplete="family-name" value="' + this.esc(c.lastName) + '" /></div>';
     html += '</div>';
-    html += '<div class="zbw-form-group"><label>Email *</label><input type="email" class="zbw-input" id="zbw-email" value="' + this.esc(c.email) + '" placeholder="you@example.com" /></div>';
-    html += '<div class="zbw-form-group"><label>Phone *</label><input type="tel" class="zbw-input" id="zbw-phone" value="' + this.esc(c.phone) + '" placeholder="(555) 123-4567" /></div>';
+    html += '<div class="zbw-form-group"><label>Email *</label><input type="email" class="zbw-input" id="zbw-email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" value="' + this.esc(c.email) + '" placeholder="you@example.com" /></div>';
+    html += '<div class="zbw-form-group"><label>Phone *</label><input type="tel" class="zbw-input" id="zbw-phone" autocomplete="tel" inputmode="tel" value="' + this.esc(c.phone) + '" placeholder="(555) 123-4567" /></div>';
 
     html += '<div class="zbw-form-group" style="margin-top:8px;">';
     html += '<label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:13px;line-height:1.4;">';
@@ -1334,41 +1334,47 @@ export const BOOKING_WIDGET_JS = `(function() {
 
      var addrInput = container.querySelector('#zbw-addr1');
      if (addrInput) {
-       addrInput.addEventListener('input', function() {
-         var q = addrInput.value.trim();
-         clearTimeout(self._acTimer);
-         if (self._acAbort) { self._acAbort.abort(); self._acAbort = null; }
-         var list = document.getElementById('zbw-ac-list');
-         if (q.length < 3) { if (list) list.innerHTML = ''; return; }
-         self._acTimer = setTimeout(function() {
-           var token = (window.ZenbookerConfig && window.ZenbookerConfig.mapboxAccessToken) ? String(window.ZenbookerConfig.mapboxAccessToken) : '';
-           if (!token) {
-             if (list) {
-               list.innerHTML = '<div class="zbw-ac-item" style="pointer-events:none;opacity:.8;"><div class="zbw-ac-main">Address autocomplete unavailable</div><div class="zbw-ac-sub">Configure Mapbox token to enable suggestions.</div></div>';
-             }
-             return;
-           }
-           var ctrl = new AbortController();
-           self._acAbort = ctrl;
-           var prox = (self.state.postalLng && self.state.postalLat) ? self.state.postalLng + ',' + self.state.postalLat : 'ip';
-           fetch('https://api.mapbox.com/search/geocode/v6/forward?q=' + encodeURIComponent(q) + '&country=ca&types=address&limit=5&proximity=' + prox + '&access_token=' + encodeURIComponent(token), { signal: ctrl.signal })
-             .then(function(r) { return r.json(); })
-             .then(function(data) {
-               if (!list) return;
-               if (!data.features || !data.features.length) { list.innerHTML = ''; return; }
-               list.innerHTML = data.features.map(function(f, i) {
-                 var p = f.properties;
-                 var ctx = p.context || {};
-                 return '<div class="zbw-ac-item" data-ac-idx="' + i + '">' +
-                   '<div class="zbw-ac-main">' + (p.name || '') + '</div>' +
-                   '<div class="zbw-ac-sub">' + (ctx.place ? ctx.place.name + ', ' : '') + (ctx.region ? ctx.region.region_code + ' ' : '') + (ctx.postcode ? ctx.postcode.name : '') + '</div>' +
-                   '</div>';
-               }).join('');
-               self._acFeatures = data.features;
-             })
-             .catch(function() {});
-         }, 300);
-       });
+        addrInput.addEventListener('input', function() {
+          var q = addrInput.value.trim();
+          clearTimeout(self._acTimer);
+          if (self._acAbort) { self._acAbort.abort(); self._acAbort = null; }
+          var list = document.getElementById('zbw-ac-list');
+          if (q.length < 3) { if (list) list.innerHTML = ''; return; }
+          self._acTimer = setTimeout(function() {
+            var ctrl = new AbortController();
+            self._acAbort = ctrl;
+            var prox = (self.state.postalLng && self.state.postalLat) ? self.state.postalLng + ',' + self.state.postalLat : 'ip';
+            var base = String(self.apiUrl || '').replace(/[/]+$/, '');
+            var endpoint = base + '/widget/address/search?q=' + encodeURIComponent(q) + '&proximity=' + encodeURIComponent(prox);
+            fetch(endpoint, { signal: ctrl.signal, headers: { 'Accept': 'application/json' } })
+              .then(function(r) {
+                if (!r.ok) throw new Error('Address lookup failed');
+                return r.json();
+              })
+              .then(function(data) {
+                self._acAbort = null;
+                if (!list) return;
+                var features = Array.isArray(data.features) ? data.features : [];
+                if (!features.length) { list.innerHTML = ''; return; }
+                list.innerHTML = features.map(function(f, i) {
+                  var p = f.properties;
+                  var ctx = p.context || {};
+                  return '<div class="zbw-ac-item" data-ac-idx="' + i + '">' +
+                    '<div class="zbw-ac-main">' + (p.name || '') + '</div>' +
+                    '<div class="zbw-ac-sub">' + (ctx.place ? ctx.place.name + ', ' : '') + (ctx.region ? ctx.region.region_code + ' ' : '') + (ctx.postcode ? ctx.postcode.name : '') + '</div>' +
+                    '</div>';
+                }).join('');
+                self._acFeatures = features;
+              })
+              .catch(function(err) {
+                self._acAbort = null;
+                if (err && err.name === 'AbortError') return;
+                if (list) {
+                  list.innerHTML = '<div class="zbw-ac-item" style="pointer-events:none;opacity:.8;"><div class="zbw-ac-main">Address autocomplete unavailable</div><div class="zbw-ac-sub">Please try again in a moment.</div></div>';
+                }
+              });
+          }, 300);
+        });
 
       addrInput.addEventListener('blur', function() {
         setTimeout(function() {
@@ -1440,13 +1446,13 @@ export const BOOKING_WIDGET_POPUP = `(function() {
       '</div>';
 
     var style = document.createElement('style');
-    style.textContent = '#zbw-popup-overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;display:none;align-items:center;justify-content:center}' +
+    style.textContent = '#zbw-popup-overlay{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center}' +
       '#zbw-popup-overlay.zbw-open{display:flex}' +
       '#zbw-popup-backdrop{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);backdrop-filter:blur(2px)}' +
-      '#zbw-popup-container{position:relative;width:94vw;max-width:900px;max-height:90vh;background:#fff;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,.2);overflow-y:auto;padding:24px;z-index:1}' +
+      '#zbw-popup-container{position:relative;width:94vw;max-width:900px;max-height:min(90dvh,calc(100dvh - 24px));background:#fff;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,.2);overflow-y:auto;padding:24px;z-index:1}' +
       '#zbw-popup-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:28px;cursor:pointer;color:#64748b;z-index:2;line-height:1;padding:4px 8px;border-radius:8px;transition:background .15s}' +
       '#zbw-popup-close:hover{background:#f1f5f9;color:#0f172a}' +
-      '@media(max-width:640px){#zbw-popup-container{width:100vw;max-width:100vw;height:100vh;max-height:100vh;border-radius:0;padding:16px 12px}}' +
+      '@media(max-width:640px){#zbw-popup-container{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border-radius:0;padding:calc(16px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) calc(12px + env(safe-area-inset-left,0px))}}' +
       '[data-theme="dark"] #zbw-popup-backdrop{background:rgba(17,17,27,.7)}' +
       '[data-theme="dark"] #zbw-popup-container{background:#1e1e2e;box-shadow:0 24px 64px rgba(0,0,0,.5)}' +
       '[data-theme="dark"] #zbw-popup-close{color:#a6adc8}' +
@@ -1478,10 +1484,31 @@ export const BOOKING_WIDGET_POPUP = `(function() {
     return overlay;
   }
 
+  function syncPopupViewport() {
+    if (!overlay) return;
+    var vv = window.visualViewport;
+    var viewportHeight = vv ? vv.height : window.innerHeight;
+    var viewportTop = vv ? vv.offsetTop : 0;
+    var keyboardBottomInset = vv ? Math.max(0, window.innerHeight - (vv.height + vv.offsetTop)) : 0;
+    overlay.style.top = viewportTop + 'px';
+    overlay.style.bottom = keyboardBottomInset + 'px';
+    var container = overlay.querySelector('#zbw-popup-container');
+    if (container) {
+      var h = Math.max(260, Math.floor(viewportHeight - 24));
+      container.style.maxHeight = h + 'px';
+    }
+  }
+
   function openPopup() {
     var el = createOverlay();
     el.classList.add('zbw-open');
     document.body.style.overflow = 'hidden';
+    syncPopupViewport();
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', syncPopupViewport);
+      window.visualViewport.addEventListener('scroll', syncPopupViewport);
+    }
+    window.addEventListener('orientationchange', syncPopupViewport);
 
     if (window.zenbookerInstance) {
       window.zenbookerInstance.state.currentStep = 'zip';
@@ -1497,6 +1524,13 @@ export const BOOKING_WIDGET_POPUP = `(function() {
     if (overlay) {
       overlay.classList.remove('zbw-open');
       document.body.style.overflow = '';
+      overlay.style.top = '';
+      overlay.style.bottom = '';
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', syncPopupViewport);
+        window.visualViewport.removeEventListener('scroll', syncPopupViewport);
+      }
+      window.removeEventListener('orientationchange', syncPopupViewport);
     }
   }
 
@@ -1538,11 +1572,11 @@ export const BOOKING_WIDGET_DEMO = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <title>Booking Widget Demo</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f1f5f9; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f1f5f9; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; }
     .demo-header { text-align: center; margin-bottom: 32px; }
     .demo-header h1 { font-size: 28px; color: #0f172a; margin-bottom: 8px; }
     .demo-header p { color: #64748b; font-size: 15px; }

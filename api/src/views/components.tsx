@@ -82,6 +82,52 @@ const stringifyValue = (value: unknown) => {
   return '';
 };
 
+const inferFormHints = (field: FormField): Record<string, string> => {
+  const hints: Record<string, string> = {};
+  const n = field.name.toLowerCase();
+  const t = (field.type || 'text').toLowerCase();
+
+  if (n === 'first_name') hints.autocomplete = 'given-name';
+  if (n === 'last_name') hints.autocomplete = 'family-name';
+
+  if (t === 'email' || n.includes('email')) {
+    hints.autocomplete = hints.autocomplete || 'email';
+    hints.inputmode = 'email';
+    hints.autocapitalize = 'off';
+    hints.spellcheck = 'false';
+  }
+
+  if (t === 'tel' || n.includes('phone') || n.includes('mobile')) {
+    hints.autocomplete = hints.autocomplete || 'tel';
+    hints.inputmode = 'tel';
+    hints.autocapitalize = 'off';
+    hints.spellcheck = 'false';
+  }
+
+  if (n.includes('postal')) {
+    hints.autocomplete = 'postal-code';
+    hints.autocapitalize = 'characters';
+  }
+
+  if (n === 'address_line_1') hints.autocomplete = 'address-line1';
+  if (n === 'address_line_2') hints.autocomplete = 'address-line2';
+  if (n === 'address_city') hints.autocomplete = 'address-level2';
+  if (n === 'address_state') hints.autocomplete = 'address-level1';
+  if (n.includes('country')) hints.autocomplete = 'country-name';
+
+  if (t === 'number') {
+    const isDecimal = field.step !== undefined && Number(field.step) !== 1;
+    hints.inputmode = isDecimal ? 'decimal' : 'numeric';
+  }
+
+  if (n.includes('search') || n === 'q') {
+    hints.autocomplete = 'off';
+    hints.inputmode = 'search';
+  }
+
+  return hints;
+};
+
 interface FormViewProps {
   title: string;
   fields: FormField[];
@@ -275,6 +321,7 @@ const renderField = (field: FormField) => {
     name: field.name,
     required: field.required,
     placeholder: field.placeholder,
+    ...inferFormHints(field),
     ...(field.attrs || {}),
   };
 

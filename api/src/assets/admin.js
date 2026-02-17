@@ -3,6 +3,175 @@ function _onRadiusMilesInput() { updateRadius(); }
 function _onRadiusLatChange() { updateRadius(); }
 function _onRadiusLngChange() { updateRadius(); }
 
+/* --- iOS focus + scroll stabilization --- */
+var _focusScrollTimer = null;
+
+function isIOSDevice() {
+  var ua = navigator.userAgent || '';
+  var touchMac = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+  return /iPad|iPhone|iPod/.test(ua) || touchMac;
+}
+
+function isTextEntryElement(el) {
+  if (!el) return false;
+  var tag = (el.tagName || '').toUpperCase();
+  if (tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  if (tag !== 'INPUT') return false;
+  var type = String(el.type || 'text').toLowerCase();
+  var allow = {
+    text: true,
+    search: true,
+    email: true,
+    tel: true,
+    url: true,
+    password: true,
+    number: true,
+    date: true,
+    time: true,
+    'datetime-local': true,
+    month: true,
+    week: true,
+  };
+  return Boolean(allow[type]);
+}
+
+function getScrollableAncestor(el) {
+  var node = el ? el.parentElement : null;
+  while (node && node !== document.body && node !== document.documentElement) {
+    var style = window.getComputedStyle(node);
+    var canScrollY = /(auto|scroll)/.test(style.overflowY || '') && node.scrollHeight > node.clientHeight;
+    if (canScrollY) return node;
+    node = node.parentElement;
+  }
+  return null;
+}
+
+function centerFocusedField(el) {
+  if (!el || typeof el.getBoundingClientRect !== 'function') return;
+  var scrollParent = getScrollableAncestor(el);
+  if (scrollParent) {
+    var parentRect = scrollParent.getBoundingClientRect();
+    var rect = el.getBoundingClientRect();
+    var nextTop = scrollParent.scrollTop + (rect.top - parentRect.top) - (parentRect.height / 2) + (rect.height / 2);
+    scrollParent.scrollTo({ top: Math.max(0, nextTop), behavior: 'smooth' });
+    return;
+  }
+  try {
+    el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+  } catch {
+    el.scrollIntoView();
+  }
+}
+
+function scheduleFocusCentering(el, delayMs) {
+  if (_focusScrollTimer) clearTimeout(_focusScrollTimer);
+  _focusScrollTimer = setTimeout(function() {
+    centerFocusedField(el);
+    _focusScrollTimer = null;
+  }, delayMs);
+}
+
+function setAttrIfMissing(el, key, value) {
+  if (!el || !key || value == null) return;
+  if (el.hasAttribute(key) && String(el.getAttribute(key) || '').trim() !== '') return;
+  el.setAttribute(key, value);
+}
+
+function inferInputHints(el) {
+  if (!el || !el.tagName) return;
+  var tag = el.tagName.toUpperCase();
+  if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') return;
+  var type = String(el.getAttribute('type') || 'text').toLowerCase();
+  if (type === 'hidden' || type === 'checkbox' || type === 'radio' || type === 'file' || type === 'button' || type === 'submit') return;
+
+  var id = String(el.getAttribute('id') || '').toLowerCase();
+  var name = String(el.getAttribute('name') || '').toLowerCase();
+  var key = (name || id).replace(/-/g, '_');
+
+  if (type === 'email' || key.indexOf('email') !== -1) {
+    setAttrIfMissing(el, 'autocomplete', 'email');
+    setAttrIfMissing(el, 'inputmode', 'email');
+    setAttrIfMissing(el, 'autocapitalize', 'off');
+    setAttrIfMissing(el, 'spellcheck', 'false');
+  }
+
+  if (type === 'tel' || key.indexOf('phone') !== -1 || key.indexOf('mobile') !== -1) {
+    setAttrIfMissing(el, 'autocomplete', 'tel');
+    setAttrIfMissing(el, 'inputmode', 'tel');
+    setAttrIfMissing(el, 'autocapitalize', 'off');
+    setAttrIfMissing(el, 'spellcheck', 'false');
+  }
+
+  if (key === 'first_name') setAttrIfMissing(el, 'autocomplete', 'given-name');
+  if (key === 'last_name') setAttrIfMissing(el, 'autocomplete', 'family-name');
+
+  if (key.indexOf('address_line1') !== -1 || key.indexOf('address_line_1') !== -1 || key.indexOf('street') !== -1) {
+    setAttrIfMissing(el, 'autocomplete', 'address-line1');
+  }
+  if (key.indexOf('address_line2') !== -1 || key.indexOf('address_line_2') !== -1 || key.indexOf('apt') !== -1 || key.indexOf('suite') !== -1 || key.indexOf('unit') !== -1) {
+    setAttrIfMissing(el, 'autocomplete', 'address-line2');
+  }
+  if (key.indexOf('address_city') !== -1 || key === 'city') setAttrIfMissing(el, 'autocomplete', 'address-level2');
+  if (key.indexOf('address_state') !== -1 || key.indexOf('province') !== -1 || key === 'state') setAttrIfMissing(el, 'autocomplete', 'address-level1');
+  if (key.indexOf('country') !== -1) setAttrIfMissing(el, 'autocomplete', 'country-name');
+
+  if (key.indexOf('postal') !== -1 || key.indexOf('zip') !== -1) {
+    setAttrIfMissing(el, 'autocomplete', 'postal-code');
+    setAttrIfMissing(el, 'autocapitalize', 'characters');
+  }
+
+  if (key === 'q' || key.indexOf('search') !== -1) {
+    setAttrIfMissing(el, 'autocomplete', 'off');
+    setAttrIfMissing(el, 'inputmode', 'search');
+    setAttrIfMissing(el, 'autocapitalize', 'off');
+    setAttrIfMissing(el, 'spellcheck', 'false');
+  }
+
+  if (type === 'number') {
+    var step = String(el.getAttribute('step') || '').trim();
+    var mode = step && step !== '1' && step !== '0' ? 'decimal' : 'numeric';
+    setAttrIfMissing(el, 'inputmode', mode);
+  }
+
+  if (type === 'password' || key.indexOf('token') !== -1 || key.indexOf('secret') !== -1) {
+    setAttrIfMissing(el, 'autocomplete', 'off');
+    setAttrIfMissing(el, 'autocapitalize', 'off');
+    setAttrIfMissing(el, 'spellcheck', 'false');
+  }
+}
+
+function applyFormInputHints(scope) {
+  var root = scope && typeof scope.querySelectorAll === 'function' ? scope : document;
+  var fields = root.querySelectorAll('input, textarea, select');
+  for (var i = 0; i < fields.length; i++) {
+    inferInputHints(fields[i]);
+  }
+}
+
+document.addEventListener('focusin', function(e) {
+  var target = e.target;
+  if (!isIOSDevice() || !isTextEntryElement(target)) return;
+  scheduleFocusCentering(target, 90);
+}, true);
+
+document.addEventListener('focusout', function() {
+  if (_focusScrollTimer) {
+    clearTimeout(_focusScrollTimer);
+    _focusScrollTimer = null;
+  }
+}, true);
+
+document.addEventListener('invalid', function(e) {
+  var target = e.target;
+  if (!target || !isTextEntryElement(target)) return;
+  try {
+    target.focus({ preventScroll: true });
+  } catch {
+    target.focus();
+  }
+  if (isIOSDevice()) scheduleFocusCentering(target, 120);
+}, true);
+
 function initMaps() {
   if (typeof L === 'undefined') return;
 
@@ -166,6 +335,92 @@ function updateRadius() {
   if (rf) rf.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
+function setGpsButtonState(btn, label, disabled) {
+  if (!btn) return;
+  if (!btn.dataset.defaultText) btn.dataset.defaultText = btn.textContent || 'Use Current Location';
+  btn.disabled = !!disabled;
+  if (label) btn.textContent = label;
+  if (disabled) btn.setAttribute('aria-busy', 'true');
+  else btn.removeAttribute('aria-busy');
+}
+
+function renderAddressMessage(resultsSelector, message) {
+  var resultsEl = document.querySelector(resultsSelector || '#address-results');
+  if (!resultsEl) return;
+  resultsEl.innerHTML = '<div class="search-results"><div class="search-item text-muted-foreground">' + message + '</div></div>';
+}
+
+function reverseLookupCurrentLocation(lat, lng, inputSelector, resultsSelector) {
+  var url = '/admin/api/address/reverse?lat=' + encodeURIComponent(String(lat)) + '&lng=' + encodeURIComponent(String(lng));
+  return fetch(url, { headers: { 'HX-Request': 'true' } })
+    .then(function(response) {
+      if (!response.ok) throw new Error('Lookup failed');
+      return response.text();
+    })
+    .then(function(html) {
+      var resultsEl = document.querySelector(resultsSelector || '#address-results');
+      if (!resultsEl) return;
+      resultsEl.innerHTML = html;
+      var first = resultsEl.querySelector('.address-result');
+      var input = document.querySelector(inputSelector || '#addr-line1');
+      if (first && input) {
+        var line1 = first.getAttribute('data-line1') || '';
+        if (line1) input.value = line1;
+      }
+    });
+}
+
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('[data-address-gps-btn]');
+  if (!btn) return;
+  e.preventDefault();
+
+  var inputSelector = btn.getAttribute('data-address-input') || '#addr-line1';
+  var resultsSelector = btn.getAttribute('data-address-results') || '#address-results';
+  var latSelector = btn.getAttribute('data-address-lat') || '#addr-lat';
+  var lngSelector = btn.getAttribute('data-address-lng') || '#addr-lng';
+  var latEl = document.querySelector(latSelector);
+  var lngEl = document.querySelector(lngSelector);
+
+  if (!navigator.geolocation) {
+    renderAddressMessage(resultsSelector, 'Geolocation is not supported on this device.');
+    return;
+  }
+
+  setGpsButtonState(btn, 'Locating...', true);
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      var lat = pos && pos.coords ? pos.coords.latitude : null;
+      var lng = pos && pos.coords ? pos.coords.longitude : null;
+      if (lat == null || lng == null) {
+        renderAddressMessage(resultsSelector, 'Could not read your location.');
+        setGpsButtonState(btn, btn.dataset.defaultText, false);
+        return;
+      }
+      if (latEl) latEl.value = String(lat);
+      if (lngEl) lngEl.value = String(lng);
+
+      setGpsButtonState(btn, 'Finding nearby addresses...', true);
+      reverseLookupCurrentLocation(lat, lng, inputSelector, resultsSelector)
+        .catch(function() {
+          renderAddressMessage(resultsSelector, 'Unable to look up nearby addresses.');
+        })
+        .finally(function() {
+          setGpsButtonState(btn, btn.dataset.defaultText, false);
+        });
+    },
+    function(err) {
+      var code = err && typeof err.code === 'number' ? err.code : 0;
+      if (code === 1) renderAddressMessage(resultsSelector, 'Location permission denied. Allow location access and try again.');
+      else if (code === 2) renderAddressMessage(resultsSelector, 'Location unavailable right now.');
+      else if (code === 3) renderAddressMessage(resultsSelector, 'Location request timed out. Try again.');
+      else renderAddressMessage(resultsSelector, 'Could not get your current location.');
+      setGpsButtonState(btn, btn.dataset.defaultText, false);
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+  );
+});
+
 document.addEventListener('htmx:beforeCleanupElement', function(e) {
   var el = e.detail.elt;
   if (el.id === 'radius-map' && window._radiusMap) {
@@ -206,6 +461,8 @@ document.addEventListener('click', function(e) {
   } else {
     var ids = {
       'addr-line1': d.line1,
+      'wizard-address': d.line1,
+      'address_line1': d.line1,
       'addr-city': d.city,
       'addr-state': d.state,
       'addr-postal': d.postal,
@@ -261,6 +518,150 @@ function focusSmsComposerWithRetries() {
   setTimeout(focusSmsComposer, 60);
   setTimeout(focusSmsComposer, 180);
 }
+
+var _smsThreadModalRestore = null;
+var _smsThreadModalPrevOverflow = null;
+
+function isSmsThreadModalOpen() {
+  var overlay = document.getElementById('sms-thread-modal-overlay');
+  return !!(overlay && overlay.getAttribute('data-open') === 'true' && !overlay.hidden);
+}
+
+function lockBodyScrollForModal() {
+  if (_smsThreadModalPrevOverflow) return;
+  _smsThreadModalPrevOverflow = {
+    bodyOverflow: document.body.style.overflow || '',
+    htmlOverflow: document.documentElement.style.overflow || '',
+  };
+  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
+}
+
+function unlockBodyScrollForModal() {
+  if (!_smsThreadModalPrevOverflow) return;
+  document.body.style.overflow = _smsThreadModalPrevOverflow.bodyOverflow;
+  document.documentElement.style.overflow = _smsThreadModalPrevOverflow.htmlOverflow;
+  _smsThreadModalPrevOverflow = null;
+}
+
+function setSmsThreadModalTitle(text) {
+  var overlay = document.getElementById('sms-thread-modal-overlay');
+  if (!overlay) return;
+  var titleEl = overlay.querySelector('#sms-thread-modal-header h3');
+  if (!titleEl) return;
+  titleEl.textContent = text || 'Conversation';
+}
+
+function syncSmsThreadModalTitleFromContent() {
+  var overlay = document.getElementById('sms-thread-modal-overlay');
+  if (!overlay) return;
+  var phoneEl = overlay.querySelector('#sms-thread-modal-content [data-sms-thread-phone]');
+  if (!phoneEl) return;
+  var t = String(phoneEl.textContent || '').trim();
+  if (t) setSmsThreadModalTitle(t);
+}
+
+function openSmsThreadModalOverlay() {
+  var overlay = document.getElementById('sms-thread-modal-overlay');
+  if (!overlay) return false;
+  overlay.hidden = false;
+  overlay.setAttribute('data-open', 'true');
+  lockBodyScrollForModal();
+  return true;
+}
+
+function closeSmsThreadModalOverlay() {
+  var overlay = document.getElementById('sms-thread-modal-overlay');
+  if (!overlay) return;
+  var content = document.getElementById('sms-thread-modal-content');
+  var restored = false;
+
+  if (_smsThreadModalRestore && _smsThreadModalRestore.panel && _smsThreadModalRestore.placeholder) {
+    try {
+      if (document.body.contains(_smsThreadModalRestore.placeholder)) {
+        _smsThreadModalRestore.placeholder.parentNode.insertBefore(_smsThreadModalRestore.panel, _smsThreadModalRestore.placeholder);
+        _smsThreadModalRestore.placeholder.remove();
+        restored = true;
+      }
+    } catch {
+    }
+    _smsThreadModalRestore = null;
+    if (!restored && content) {
+      content.innerHTML = '';
+    }
+  } else if (content) {
+    content.innerHTML = '';
+  }
+
+  overlay.setAttribute('data-open', 'false');
+  overlay.hidden = true;
+  unlockBodyScrollForModal();
+}
+
+function moveSmsThreadPanelIntoModal(panelEl) {
+  var content = document.getElementById('sms-thread-modal-content');
+  var placeholder = null;
+  if (!panelEl || !content) return;
+  if (panelEl.closest && panelEl.closest('#sms-thread-modal-content')) return;
+  if (_smsThreadModalRestore) return;
+
+  placeholder = document.createElement('div');
+  placeholder.setAttribute('data-sms-thread-modal-placeholder', '1');
+  panelEl.parentNode.insertBefore(placeholder, panelEl);
+
+  _smsThreadModalRestore = { panel: panelEl, placeholder: placeholder };
+  content.innerHTML = '';
+  content.appendChild(panelEl);
+
+  syncSmsThreadModalTitleFromContent();
+  requestAnimationFrame(scrollSmsThreadToBottom);
+  requestAnimationFrame(focusSmsComposerWithRetries);
+}
+
+document.addEventListener('click', function(e) {
+  var target = e && e.target ? e.target : null;
+  var closeBtn = target && target.closest ? target.closest('[data-sms-thread-modal-close]') : null;
+  var overlay = target && target.id === 'sms-thread-modal-overlay' ? target : null;
+  if (closeBtn) {
+    e.preventDefault();
+    closeSmsThreadModalOverlay();
+    return;
+  }
+  if (overlay && isSmsThreadModalOpen()) {
+    closeSmsThreadModalOverlay();
+    return;
+  }
+}, true);
+
+document.addEventListener('keydown', function(e) {
+  if (!e || e.key !== 'Escape') return;
+  if (!isSmsThreadModalOpen()) return;
+  closeSmsThreadModalOverlay();
+});
+
+document.addEventListener('click', function(e) {
+  var target = e && e.target ? e.target : null;
+  var opener = target && target.closest ? target.closest('[data-sms-thread-modal-open]') : null;
+  var mode = opener ? String(opener.getAttribute('data-sms-thread-modal-open') || '').trim() : '';
+  var panelEl = null;
+  var content = document.getElementById('sms-thread-modal-content');
+  if (!opener) return;
+  if (!openSmsThreadModalOverlay()) return;
+
+  if (mode === 'move') {
+    panelEl = opener.closest('#sms-thread-panel') || document.getElementById('sms-thread-panel');
+    if (panelEl) {
+      setSmsThreadModalTitle('Conversation');
+      moveSmsThreadPanelIntoModal(panelEl);
+    }
+    return;
+  }
+
+  setSmsThreadModalTitle('Conversation');
+  if (content) {
+    content.innerHTML = '<div class="text-sm text-muted-foreground" style="padding:12px;">Loading conversation…</div>';
+  }
+}, true);
 
 function recalcInvoiceTotal() {
   var lineItems = document.getElementById('line_items_text');
@@ -533,7 +934,16 @@ document.addEventListener('htmx:afterSwap', function(e) {
     }
     return;
   }
+  if (target.id === 'sms-thread-modal-content') {
+    requestAnimationFrame(scrollSmsThreadToBottom);
+    requestAnimationFrame(syncSmsThreadModalTitleFromContent);
+    requestAnimationFrame(focusSmsComposerWithRetries);
+    return;
+  }
   if (target.id === 'page-content') {
+    if (isSmsThreadModalOpen()) {
+      closeSmsThreadModalOverlay();
+    }
     requestAnimationFrame(function() {
       requestAnimationFrame(scrollSmsThreadToBottom);
     });
@@ -544,6 +954,12 @@ document.addEventListener('DOMContentLoaded', function() {
   requestAnimationFrame(function() {
     requestAnimationFrame(scrollSmsThreadToBottom);
   });
+  applyFormInputHints(document);
+});
+
+document.addEventListener('htmx:afterSwap', function(e) {
+  var target = e && e.detail ? e.detail.target : null;
+  applyFormInputHints(target || document);
 });
 
 document.addEventListener('htmx:beforeRequest', function(e) {

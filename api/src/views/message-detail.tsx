@@ -219,13 +219,24 @@ export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164
     <div class="flex items-start justify-between gap-3 pb-3 mb-3" style="border-bottom:1px solid var(--border);">
       <div class="min-w-0">
         <p class="text-[11px] uppercase tracking-wide text-muted-foreground">Thread</p>
-        <h3 class="text-sm font-semibold truncate" style="margin-top:2px;">{phoneE164}</h3>
+        <h3 class="text-sm font-semibold truncate" style="margin-top:2px;" data-sms-thread-phone="1">{phoneE164}</h3>
         <p class="text-xs text-muted-foreground" style="margin-top:2px;">
           {visibleSms.length} message{visibleSms.length === 1 ? '' : 's'}
           {lastSms ? ` • Last ${formatTime(lastSms.created_at)}` : ''}
         </p>
       </div>
-      <span class="uk-label uk-label-secondary shrink-0">Live</span>
+      <div class="flex items-center gap-2 shrink-0">
+        <button
+          type="button"
+          class="uk-btn uk-btn-default uk-btn-sm"
+          data-sms-thread-modal-open="move"
+          aria-label="Open conversation full screen"
+          style="padding:0 10px;"
+        >
+          Full screen
+        </button>
+        <span class="uk-label uk-label-secondary">Live</span>
+      </div>
     </div>
 
     {sendResult && !sendResult.success && (
@@ -245,7 +256,7 @@ export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164
       <p class="text-xs text-muted-foreground mb-3" style="margin-top:0;">No jobs found for this customer yet.</p>
     )}
 
-    <div>
+    <div data-sms-thread-body="1">
       {(visibleSms.length > 0 || sendResult) && (
         <div
           id="sms-history-scroll"
@@ -280,7 +291,7 @@ export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164
           class="uk-textarea"
           rows={3}
           placeholder="Write a reply..."
-          style="resize:vertical;min-height:84px;font-size:14px;"
+          style="resize:vertical;min-height:84px;font-size:16px;"
           maxlength={1600}
           autofocus
           oninput="var c=this.value.length;var s=c<=160?1:Math.ceil(c/153);var n=this.form&&this.form.querySelector('[data-sms-counter]');if(n){n.textContent=c+' chars · '+s+' segment'+(s>1?'s':'');}"

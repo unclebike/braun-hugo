@@ -48,15 +48,15 @@ export const SmsSettingsPage = ({ config, templates, stats }: Props) => (
           <form hx-post="/admin/sms-settings" hx-target="#page-content" hx-select="#page-content" class="grid gap-3">
             <div class="grid gap-1">
               <label class="text-sm font-medium" for="twilio-sid">Account SID</label>
-              <input type="text" name="account_sid" id="twilio-sid" class="uk-input" value={config?.accountSid || ''} placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
+              <input type="text" name="account_sid" id="twilio-sid" class="uk-input" value={config?.accountSid || ''} placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" autocapitalize="off" spellcheck="false" />
             </div>
             <div class="grid gap-1">
               <label class="text-sm font-medium" for="twilio-token">Auth Token</label>
-              <input type="password" name="auth_token" id="twilio-token" class="uk-input" value={config?.authToken || ''} placeholder="Your Twilio auth token" />
+              <input type="password" name="auth_token" id="twilio-token" class="uk-input" value={config?.authToken || ''} placeholder="Your Twilio auth token" autocomplete="off" autocapitalize="off" spellcheck="false" />
             </div>
             <div class="grid gap-1">
               <label class="text-sm font-medium" for="twilio-phone">Phone Number (E.164)</label>
-              <input type="tel" name="phone_number" id="twilio-phone" class="uk-input" value={config?.phoneNumber || ''} placeholder="+18005551234" />
+              <input type="tel" name="phone_number" id="twilio-phone" class="uk-input" value={config?.phoneNumber || ''} placeholder="+18005551234" autocomplete="tel" inputmode="tel" />
             </div>
             <div class="flex items-center gap-2">
               <input type="checkbox" name="enabled" id="twilio-enabled" value="1" checked={!!config?.enabled} class="uk-checkbox" />
@@ -126,6 +126,8 @@ export const SmsSettingsPage = ({ config, templates, stats }: Props) => (
                   id={`tpl-body-${tpl.id}`}
                   class="uk-textarea text-sm"
                   rows={3}
+                  autocapitalize="off"
+                  spellcheck="false"
                   style="font-family:monospace;resize:vertical;"
                   oninput={`var c=this.value.length;var s=c<=160?1:Math.ceil(c/153);this.closest('form').querySelector('.tpl-chars').textContent=c+' chars · '+s+' segment'+(s>1?'s':'');`}
                 >{tpl.body_template}</textarea>

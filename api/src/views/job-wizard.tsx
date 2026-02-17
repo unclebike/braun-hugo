@@ -34,6 +34,11 @@ export interface NewJobProps {
   timeslots: string[];
   providers: Array<{ id: string; first_name: string; last_name: string; role: string; is_available: boolean }>;
   addressLine1?: string;
+  addressCity?: string;
+  addressState?: string;
+  addressPostal?: string;
+  addressLat?: string;
+  addressLng?: string;
   selectedTerritoryId?: string;
   selectedServiceId?: string;
   selectedDate?: string;
@@ -64,6 +69,11 @@ const queryFromQuickProps = (props: NewJobProps) => {
   const query = new URLSearchParams();
   if (props.customer?.id) query.set('customer_id', props.customer.id);
   if (props.addressLine1) query.set('address_line1', props.addressLine1);
+  if (props.addressCity) query.set('address_city', props.addressCity);
+  if (props.addressState) query.set('address_state', props.addressState);
+  if (props.addressPostal) query.set('address_postal', props.addressPostal);
+  if (props.addressLat) query.set('address_lat', props.addressLat);
+  if (props.addressLng) query.set('address_lng', props.addressLng);
   if (props.selectedTerritoryId) query.set('territory_id', props.selectedTerritoryId);
   if (props.selectedServiceId) query.set('service_id', props.selectedServiceId);
   if (props.selectedDate) query.set('date', props.selectedDate);
@@ -111,7 +121,7 @@ const quickCreateBody = (props: NewJobProps) => {
         <div class="grid gap-3 sm:grid-cols-2 items-end">
           <div class="grid gap-2 sm:col-span-2">
             <label class="uk-form-label" for="customer-search">Find Customer</label>
-            <input id="customer-search" name="q" class="uk-input" placeholder="Search name or email" hx-get="/admin/api/customers/search" hx-trigger="input changed delay:300ms" hx-target="#customer-results" autocomplete="off" />
+            <input id="customer-search" name="q" class="uk-input" placeholder="Search name or email" hx-get="/admin/api/customers/search" hx-trigger="input changed delay:300ms" hx-target="#customer-results" autocomplete="off" inputmode="search" autocapitalize="off" spellcheck="false" />
             <div id="customer-results"></div>
           </div>
           <div class="sm:col-span-2 text-sm">
@@ -140,13 +150,26 @@ const quickCreateBody = (props: NewJobProps) => {
           {props.selectedTime && <input type="hidden" name="time" value={props.selectedTime} />}
           {props.selectedProviderId && <input type="hidden" name="provider_id" value={props.selectedProviderId} />}
 
-          <label class="uk-form-label" for="addr-line1">Address</label>
-          <input id="addr-line1" name="address_line1" class="uk-input" value={props.addressLine1 || ''} placeholder="Start typing address" hx-get="/admin/api/address/search" hx-trigger="input changed delay:300ms" hx-target="#address-results" />
-          <input id="addr-city" type="hidden" name="address_city" value="" />
-          <input id="addr-state" type="hidden" name="address_state" value="" />
-          <input id="addr-postal" type="hidden" name="address_postal" value="" />
-          <input id="addr-lat" type="hidden" name="address_lat" value="" />
-          <input id="addr-lng" type="hidden" name="address_lng" value="" />
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <label class="uk-form-label" for="addr-line1">Address</label>
+            <button
+              type="button"
+              class="uk-btn uk-btn-default uk-btn-sm"
+              data-address-gps-btn
+              data-address-input="#addr-line1"
+              data-address-results="#address-results"
+              data-address-lat="#addr-lat"
+              data-address-lng="#addr-lng"
+            >
+              Use Current Location
+            </button>
+          </div>
+          <input id="addr-line1" name="address_line1" class="uk-input" value={props.addressLine1 || ''} placeholder="Start typing address" hx-get="/admin/api/address/search" hx-trigger="input changed delay:300ms" hx-target="#address-results" hx-select=".search-results" hx-push-url="false" autocomplete="address-line1" />
+          <input id="addr-city" type="hidden" name="address_city" value={props.addressCity || ''} />
+          <input id="addr-state" type="hidden" name="address_state" value={props.addressState || ''} />
+          <input id="addr-postal" type="hidden" name="address_postal" value={props.addressPostal || ''} />
+          <input id="addr-lat" type="hidden" name="address_lat" value={props.addressLat || ''} />
+          <input id="addr-lng" type="hidden" name="address_lng" value={props.addressLng || ''} />
           <div id="address-results"></div>
           <button type="submit" class="uk-btn uk-btn-default" style="width: fit-content;">Use Address</button>
         </form>
@@ -157,6 +180,11 @@ const quickCreateBody = (props: NewJobProps) => {
         <form hx-get="/admin/jobs/new" hx-target="#page-content" hx-select="#page-content" hx-push-url="true" class="grid gap-3">
           {props.customer?.id && <input type="hidden" name="customer_id" value={props.customer.id} />}
           {props.addressLine1 && <input type="hidden" name="address_line1" value={props.addressLine1} />}
+          {props.addressCity && <input type="hidden" name="address_city" value={props.addressCity} />}
+          {props.addressState && <input type="hidden" name="address_state" value={props.addressState} />}
+          {props.addressPostal && <input type="hidden" name="address_postal" value={props.addressPostal} />}
+          {props.addressLat && <input type="hidden" name="address_lat" value={props.addressLat} />}
+          {props.addressLng && <input type="hidden" name="address_lng" value={props.addressLng} />}
           {props.selectedServiceId && <input type="hidden" name="service_id" value={props.selectedServiceId} />}
           {props.selectedDate && <input type="hidden" name="date" value={props.selectedDate} />}
           {props.selectedTime && <input type="hidden" name="time" value={props.selectedTime} />}
@@ -175,6 +203,11 @@ const quickCreateBody = (props: NewJobProps) => {
         <form hx-get="/admin/jobs/new" hx-target="#page-content" hx-select="#page-content" hx-push-url="true" class="grid gap-3">
           {props.customer?.id && <input type="hidden" name="customer_id" value={props.customer.id} />}
           {props.addressLine1 && <input type="hidden" name="address_line1" value={props.addressLine1} />}
+          {props.addressCity && <input type="hidden" name="address_city" value={props.addressCity} />}
+          {props.addressState && <input type="hidden" name="address_state" value={props.addressState} />}
+          {props.addressPostal && <input type="hidden" name="address_postal" value={props.addressPostal} />}
+          {props.addressLat && <input type="hidden" name="address_lat" value={props.addressLat} />}
+          {props.addressLng && <input type="hidden" name="address_lng" value={props.addressLng} />}
           {props.selectedTerritoryId && <input type="hidden" name="territory_id" value={props.selectedTerritoryId} />}
           {props.selectedDate && <input type="hidden" name="date" value={props.selectedDate} />}
           {props.selectedTime && <input type="hidden" name="time" value={props.selectedTime} />}
@@ -251,6 +284,11 @@ const quickCreateBody = (props: NewJobProps) => {
         <form hx-get="/admin/jobs/new" hx-target="#page-content" hx-select="#page-content" hx-push-url="true" class="grid gap-3">
           {props.customer?.id && <input type="hidden" name="customer_id" value={props.customer.id} />}
           {props.addressLine1 && <input type="hidden" name="address_line1" value={props.addressLine1} />}
+          {props.addressCity && <input type="hidden" name="address_city" value={props.addressCity} />}
+          {props.addressState && <input type="hidden" name="address_state" value={props.addressState} />}
+          {props.addressPostal && <input type="hidden" name="address_postal" value={props.addressPostal} />}
+          {props.addressLat && <input type="hidden" name="address_lat" value={props.addressLat} />}
+          {props.addressLng && <input type="hidden" name="address_lng" value={props.addressLng} />}
           {props.selectedTerritoryId && <input type="hidden" name="territory_id" value={props.selectedTerritoryId} />}
           {props.selectedServiceId && <input type="hidden" name="service_id" value={props.selectedServiceId} />}
           {props.selectedDate && <input type="hidden" name="date" value={props.selectedDate} />}
@@ -273,6 +311,11 @@ const quickCreateBody = (props: NewJobProps) => {
         <form hx-post="/admin/jobs/quick-create" hx-target="#page-content" hx-select="#page-content" hx-push-url="true" class="grid gap-3">
           <input type="hidden" name="customer_id" value={props.customer?.id || ''} />
           <input type="hidden" name="address_line1" value={props.addressLine1 || ''} />
+          <input type="hidden" name="address_city" value={props.addressCity || ''} />
+          <input type="hidden" name="address_state" value={props.addressState || ''} />
+          <input type="hidden" name="address_postal" value={props.addressPostal || ''} />
+          <input type="hidden" name="address_lat" value={props.addressLat || ''} />
+          <input type="hidden" name="address_lng" value={props.addressLng || ''} />
           <input type="hidden" name="territory_id" value={props.selectedTerritoryId || ''} />
           <input type="hidden" name="service_id" value={props.selectedServiceId || ''} />
           <input type="hidden" name="date" value={props.selectedDate || ''} />
@@ -328,8 +371,21 @@ const wizardFlowBody = (props: WizardFlowProps) => {
               <span class="font-medium">{props.state.customer_name || `${props.customer?.first_name || ''} ${props.customer?.last_name || ''}`.trim() || 'Unknown'}</span>
             </div>
             <div class="grid gap-2">
-              <label class="uk-form-label" for="wizard-address">Address line 1</label>
-              <input id="wizard-address" name="address_line1" class="uk-input" value={props.state.address_line1 || ''} hx-get="/admin/api/address/search" hx-trigger="input changed delay:300ms" hx-target="#address-results" />
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <label class="uk-form-label" for="wizard-address">Address line 1</label>
+                <button
+                  type="button"
+                  class="uk-btn uk-btn-default uk-btn-sm"
+                  data-address-gps-btn
+                  data-address-input="#wizard-address"
+                  data-address-results="#address-results"
+                  data-address-lat="#addr-lat"
+                  data-address-lng="#addr-lng"
+                >
+                  Use Current Location
+                </button>
+              </div>
+              <input id="wizard-address" name="address_line1" class="uk-input" value={props.state.address_line1 || ''} hx-get="/admin/api/address/search" hx-trigger="input changed delay:300ms" hx-target="#address-results" hx-select=".search-results" hx-push-url="false" autocomplete="address-line1" />
               <div id="address-results"></div>
             </div>
             <input id="addr-city" type="hidden" name="address_city" value={props.state.address_city || ''} />

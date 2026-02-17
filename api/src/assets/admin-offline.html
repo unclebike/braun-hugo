@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#2563eb" />
+  <title>Uncle Bike Admin - Offline</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #eff1f5;
+      color: #1f2937;
+      padding: 24px;
+    }
+    .card {
+      width: min(420px, 100%);
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+    }
+    h1 { margin: 0 0 8px; font-size: 1.25rem; }
+    p { margin: 0 0 12px; line-height: 1.45; color: #4b5563; }
+    button {
+      border: 0;
+      border-radius: 10px;
+      background: #2563eb;
+      color: #fff;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>You are offline</h1>
+    <p>Uncle Bike Admin cannot reach the server right now.</p>
+    <p>Reconnect to the internet and reload to continue managing jobs.</p>
+    <button type="button" onclick="location.reload()">Retry</button>
+  </main>
+</body>
+</html>
