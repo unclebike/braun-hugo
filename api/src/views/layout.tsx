@@ -12,12 +12,16 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <title>{title} - Zenbooker Admin</title>
         <link rel="manifest" href="/admin/manifest.webmanifest" />
-        <meta name="theme-color" content="#dc8a78" />
-        {html`<script>
+        <meta name="theme-color" content="#eff1f5" id="theme-color-meta" />
+         {html`<script>
 (function(){
   var s = localStorage.getItem('theme');
   var t = s || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
   document.documentElement.setAttribute('data-theme', t);
+  try {
+    var meta = document.getElementById('theme-color-meta');
+    if (meta) meta.setAttribute('content', t === 'dark' ? '#1e1e2e' : '#eff1f5');
+  } catch (e) {}
 })();
 </script>
 <style data-fodt>
@@ -1250,6 +1254,10 @@ function toggleTheme() {
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('theme', next);
   updateThemeLabels(next);
+  try {
+    var meta = document.getElementById('theme-color-meta');
+    if (meta) meta.setAttribute('content', next === 'dark' ? '#1e1e2e' : '#eff1f5');
+  } catch (e) {}
 }
 function updateThemeLabels(t) {
   document.querySelectorAll('.theme-label').forEach(function(el) { el.textContent = t === 'dark' ? 'Light Mode' : 'Dark Mode'; });

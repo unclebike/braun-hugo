@@ -12,7 +12,9 @@ export const PUSH_MANIFEST = {
   scope: '/admin/',
   display: 'standalone',
   background_color: '#eff1f5',
-  theme_color: '#dc8a78',
+  // Manifest does not support separate dark theme_color; we set the light base.
+  // HTML <meta name="theme-color"> is updated dynamically for Latte/Mocha.
+  theme_color: '#eff1f5',
   icons: [
     {
       src: '/images/uncle-logo.svg',
