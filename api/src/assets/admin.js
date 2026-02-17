@@ -648,11 +648,11 @@ document.addEventListener('click', function(e) {
   var panelEl = null;
   var content = document.getElementById('sms-thread-modal-content');
   if (!opener) return;
-  e.preventDefault();
-  e.stopPropagation();
   if (!openSmsThreadModalOverlay()) return;
 
   if (mode === 'move') {
+    e.preventDefault();
+    e.stopPropagation();
     panelEl = opener.closest('#sms-thread-panel') || document.getElementById('sms-thread-panel');
     if (panelEl) {
       setSmsThreadModalTitle('Conversation');
@@ -661,6 +661,7 @@ document.addEventListener('click', function(e) {
     return;
   }
 
+  // For non-move mode, let HTMX handle the request
   setSmsThreadModalTitle('Conversation');
   if (content) {
     content.innerHTML = '<div class="text-sm text-muted-foreground" style="padding:12px;">Loading conversation…</div>';
