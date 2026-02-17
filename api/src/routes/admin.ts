@@ -1,5 +1,3 @@
-/** @jsx jsx */
-import { jsx } from 'hono/jsx';
 // biome-ignore assist/source/organizeImports: keep imports stable for this file
 import { type Context, Hono } from 'hono';
 import { checkServiceArea } from '../geo/service-area';
@@ -11,16 +9,23 @@ import { BrandingPage } from '../views/branding';
 import { MessageDetailPage, SmsHistoryList, SmsThreadPanel } from '../views/message-detail';
 import type { SmsLogRow } from '../views/message-detail';
 import { Dashboard } from '../views/dashboard';
-import { JobDetailPage, SmsThreadCard, NotesList } from '../views/job-detail';
+import { JobDetailPage, SmsThreadCard } from '../views/job-detail';
 import { AddressSearchResults, CustomerSearchResults, JobWizardPage, JobWizardSwapBundle, parseWizardState, type NewJobProps, type WizardState } from '../views/job-wizard';
 import { ProviderDetailPage } from '../views/provider-detail';
 import { ServiceDetailPage } from '../views/service-detail';
 import { GeofencePanel, RadiusPanel, TerritoryDetailPage, ZipPanel } from '../views/territory-detail';
 import { SmsSettingsPage } from '../views/sms-settings';
+import { PUSH_MANIFEST, PUSH_SERVICE_WORKER_SCRIPT, PushSettingsPage } from '../views/push-settings';
 import { InvoiceDetailPage } from '../views/invoice-detail';
 import { formatTorontoDate } from '../utils/datetime';
-
-void jsx;
+import {
+  deactivatePushSubscription,
+  enqueueTestPushNotificationAndPing,
+  getPushSubscriptionStatus,
+  getPushVapidPublicKey,
+  pullPendingPushNotifications,
+  upsertPushSubscription,
+} from '../services/notifications';
 
 type WizardCustomer = { id: string; first_name: string; last_name: string; email?: string; phone?: string };
 type WizardService = { id: string; name: string; description?: string; base_price_cents: number; base_duration_minutes: number };
@@ -81,6 +86,12 @@ type AdminContext = Context<{ Bindings: { DB: D1Database; MAPBOX_ACCESS_TOKEN?: 
 const app = new Hono<{ Bindings: { DB: D1Database; MAPBOX_ACCESS_TOKEN?: string } }>();
 
 const generateId = () => crypto.randomUUID();
+
+const getAuthenticatedStaffEmail = (c: Context): string | null => {
+  const auth = c.get('auth');
+  if (!auth || auth.type !== 'cf_access' || !auth.email) return null;
+  return auth.email;
+};
 
 const normalizeEmail = (value: string | null | undefined) => {
   const trimmed = (value || '').trim();
@@ -1482,16 +1493,7 @@ app.get('/jobs/new', async (c) => {
   const timeQ = c.req.query('time') || undefined;
   const providerIdQ = c.req.query('provider_id') || undefined;
   const addressLine1 = c.req.query('address_line1') || undefined;
-  const addressCity = c.req.query('address_city') || undefined;
-  const addressState = c.req.query('address_state') || undefined;
-  const addressPostal = c.req.query('address_postal') || undefined;
-  const addressLatRaw = c.req.query('address_lat') || undefined;
-  const addressLngRaw = c.req.query('address_lng') || undefined;
   const error = c.req.query('error') || undefined;
-
-  const parsedAddressLat = addressLatRaw ? Number.parseFloat(addressLatRaw) : Number.NaN;
-  const parsedAddressLng = addressLngRaw ? Number.parseFloat(addressLngRaw) : Number.NaN;
-  const hasAddressCoordinates = Number.isFinite(parsedAddressLat) && Number.isFinite(parsedAddressLng);
 
   let customer: WizardCustomer | undefined;
   if (customerId) {
@@ -1499,28 +1501,10 @@ app.get('/jobs/new', async (c) => {
     if (row) customer = row as unknown as WizardCustomer;
   }
 
-  const territoriesRes = await db.prepare('SELECT id, name, service_area_type, service_area_data FROM territories WHERE is_active = 1 ORDER BY name').all();
-  const territoryRows = (territoriesRes.results || []) as Array<{ id: string; name: string; service_area_type: string; service_area_data: string }>;
-  const territories = territoryRows.map((t) => ({ id: t.id, name: t.name }));
+  const territoriesRes = await db.prepare('SELECT id, name FROM territories WHERE is_active = 1 ORDER BY name').all();
+  const territories = (territoriesRes.results || []).map(t => ({ id: t.id as string, name: t.name as string }));
 
   let selectedTerritoryId = territoryIdQ;
-  if (!selectedTerritoryId && (addressPostal || hasAddressCoordinates)) {
-    for (const t of territoryRows) {
-      try {
-        const result = checkServiceArea(t.service_area_type, t.service_area_data, {
-          postalCode: addressPostal,
-          lat: hasAddressCoordinates ? parsedAddressLat : undefined,
-          lng: hasAddressCoordinates ? parsedAddressLng : undefined,
-        });
-        if (result.within) {
-          selectedTerritoryId = t.id;
-          break;
-        }
-      } catch {
-      }
-    }
-  }
-
   const onlyTerritory = territories.length === 1 ? territories[0] : undefined;
   if (!selectedTerritoryId && onlyTerritory) selectedTerritoryId = onlyTerritory.id;
 
@@ -1595,11 +1579,6 @@ app.get('/jobs/new', async (c) => {
     timeslots,
     providers,
     addressLine1,
-    addressCity,
-    addressState,
-    addressPostal,
-    addressLat: addressLatRaw,
-    addressLng: addressLngRaw,
     selectedTerritoryId,
     selectedServiceId,
     selectedDate,
@@ -1629,11 +1608,6 @@ app.post('/jobs/quick-create', async (c) => {
   const time = typeof body.time === 'string' ? body.time : '';
   const providerId = typeof body.provider_id === 'string' ? body.provider_id : '';
   const addressLine1 = typeof body.address_line1 === 'string' ? body.address_line1.trim() : '';
-  const addressCity = typeof body.address_city === 'string' ? body.address_city.trim() : '';
-  const addressState = typeof body.address_state === 'string' ? body.address_state.trim() : '';
-  const addressPostal = typeof body.address_postal === 'string' ? body.address_postal.trim() : '';
-  const addressLat = (typeof body.address_lat === 'string' && body.address_lat.trim()) ? Number.parseFloat(body.address_lat) : null;
-  const addressLng = (typeof body.address_lng === 'string' && body.address_lng.trim()) ? Number.parseFloat(body.address_lng) : null;
 
   if (!customerId || !territoryId || !serviceId || !date || !time) {
     const q = new URLSearchParams();
@@ -1644,11 +1618,6 @@ app.post('/jobs/quick-create', async (c) => {
     if (time) q.set('time', time);
     if (providerId) q.set('provider_id', providerId);
     if (addressLine1) q.set('address_line1', addressLine1);
-    if (addressCity) q.set('address_city', addressCity);
-    if (addressState) q.set('address_state', addressState);
-    if (addressPostal) q.set('address_postal', addressPostal);
-    if (addressLat != null && Number.isFinite(addressLat)) q.set('address_lat', String(addressLat));
-    if (addressLng != null && Number.isFinite(addressLng)) q.set('address_lng', String(addressLng));
     q.set('error', 'Pick a customer, territory, service, date, and time.');
     return c.redirect(`/admin/jobs/new?${q.toString()}`);
   }
@@ -1667,18 +1636,9 @@ app.post('/jobs/quick-create', async (c) => {
     customerAddressId = generateId();
     await db
       .prepare(
-        'INSERT INTO customer_addresses (id, customer_id, line_1, city, state, postal_code, lat, lng, is_default) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)'
+        'INSERT INTO customer_addresses (id, customer_id, line_1, city, state, postal_code, is_default) VALUES (?, ?, ?, ?, ?, ?, 1)'
       )
-      .bind(
-        customerAddressId,
-        customerId,
-        addressLine1,
-        addressCity,
-        addressState,
-        addressPostal,
-        (addressLat != null && Number.isFinite(addressLat)) ? addressLat : null,
-        (addressLng != null && Number.isFinite(addressLng)) ? addressLng : null,
-      )
+      .bind(customerAddressId, customerId, addressLine1, '', '', '')
       .run();
   }
 
@@ -1723,41 +1683,6 @@ app.get('/api/customers/search', async (c) => {
   return c.html(CustomerSearchResults({ customers: (customers.results || []) as { id: string; first_name: string; last_name: string; email?: string }[] }));
 });
 
-type MapboxAddressFeature = {
-  properties: {
-    full_address?: string;
-    name?: string;
-    context?: {
-      place?: { name?: string };
-      region?: { region_code?: string };
-      postcode?: { name?: string };
-      address?: { street_name?: string; address_number?: string };
-    };
-  };
-  geometry: { coordinates: [number, number] };
-};
-
-const toAddressSearchResult = (feature: MapboxAddressFeature) => {
-  const p = feature.properties;
-  const ctx = p.context || {};
-  const line1FromContext = `${ctx.address?.address_number || ''} ${ctx.address?.street_name || ''}`.trim();
-  const display = p.full_address || p.name || line1FromContext || '';
-  const line1 = p.name || line1FromContext || (display ? display.split(',')[0].trim() : '');
-  const rawState = ctx.region?.region_code || '';
-  const state = rawState.startsWith('CA-') ? rawState.slice(3) : rawState;
-  const fallbackPostalMatch = display.match(/[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d/);
-  const postal = ctx.postcode?.name || (fallbackPostalMatch ? fallbackPostalMatch[0].toUpperCase() : '');
-  return {
-    display,
-    line1,
-    city: ctx.place?.name || '',
-    state,
-    postal,
-    lat: String(feature.geometry.coordinates[1]),
-    lng: String(feature.geometry.coordinates[0]),
-  };
-};
-
 app.get('/api/address/search', async (c) => {
   const q = c.req.query('q')
     || c.req.query('center_address_q')
@@ -1772,39 +1697,31 @@ app.get('/api/address/search', async (c) => {
     if (!token) {
       return c.html('<div class="search-results"><div class="search-item text-muted-foreground">Mapbox is not configured.</div></div>');
     }
-    const res = await fetch(`https://api.mapbox.com/search/geocode/v6/forward?q=${encodeURIComponent(q)}&country=ca&types=address&limit=5&access_token=${token}`);
-    const data = await res.json() as { features?: MapboxAddressFeature[] };
-    const results = (data.features || []).map(toAddressSearchResult);
+    const res = await fetch(`https://api.mapbox.com/search/geocode/v6/forward?q=${encodeURIComponent(q)}&country=ca&limit=5&access_token=${token}`);
+    const data = await res.json() as {
+      features?: Array<{
+        properties: { full_address?: string; name?: string; context?: { place?: { name?: string }; region?: { region_code?: string }; postcode?: { name?: string }; address?: { street_name?: string; address_number?: string } } };
+        geometry: { coordinates: [number, number] };
+      }>;
+    };
+
+    const results = (data.features || []).map(f => {
+      const p = f.properties;
+      const ctx = p.context || {};
+      return {
+        display: p.full_address || p.name || '',
+        line1: p.name || '',
+        city: ctx.place?.name || '',
+        state: ctx.region?.region_code || '',
+        postal: ctx.postcode?.name || '',
+        lat: String(f.geometry.coordinates[1]),
+        lng: String(f.geometry.coordinates[0])
+      };
+    });
 
     return c.html(AddressSearchResults({ results, targetPrefix }));
   } catch {
     return c.html(AddressSearchResults({ results: [], targetPrefix }));
-  }
-});
-
-app.get('/api/address/reverse', async (c) => {
-  const latRaw = c.req.query('lat') || '';
-  const lngRaw = c.req.query('lng') || '';
-  const lat = Number.parseFloat(latRaw);
-  const lng = Number.parseFloat(lngRaw);
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-    return c.html('<div class="search-results"><div class="search-item text-muted-foreground">Could not read your location.</div></div>');
-  }
-
-  try {
-    const token = c.env?.MAPBOX_ACCESS_TOKEN || '';
-    if (!token) {
-      return c.html('<div class="search-results"><div class="search-item text-muted-foreground">Mapbox is not configured.</div></div>');
-    }
-
-    const res = await fetch(
-      `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${encodeURIComponent(String(lng))}&latitude=${encodeURIComponent(String(lat))}&country=ca&types=address&limit=5&access_token=${token}`
-    );
-    const data = await res.json() as { features?: MapboxAddressFeature[] };
-    const results = (data.features || []).map(toAddressSearchResult);
-    return c.html(AddressSearchResults({ results }));
-  } catch {
-    return c.html(AddressSearchResults({ results: [] }));
   }
 });
 
@@ -2112,13 +2029,8 @@ app.get('/jobs/:id/sms-thread-card', async (c) => {
 
   const job = await db.prepare('SELECT customer_id FROM jobs WHERE id = ?').bind(id).first<{ customer_id: string | null }>();
   const customer = job?.customer_id
-    ? await db.prepare('SELECT first_name, last_name, phone, phone_e164 FROM customers WHERE id = ?')
-      .bind(job.customer_id)
-      .first<{ first_name: string | null; last_name: string | null; phone: string | null; phone_e164: string | null }>()
+    ? await db.prepare('SELECT phone, phone_e164 FROM customers WHERE id = ?').bind(job.customer_id).first<{ phone: string | null; phone_e164: string | null }>()
     : null;
-  const customerName = customer
-    ? [customer.first_name, customer.last_name].filter(Boolean).join(' ').trim()
-    : '';
   const customerPhone = customer?.phone_e164 || normalizePhoneE164(customer?.phone || null);
 
   const smsThreadMessage = await db.prepare(
@@ -2140,7 +2052,6 @@ app.get('/jobs/:id/sms-thread-card', async (c) => {
 
   return c.html(SmsThreadCard({
     jobId: id,
-    customerName: customerName || null,
     smsThreadMessage: smsThreadMessage
       ? {
         id: smsThreadMessage.id,
@@ -2168,7 +2079,7 @@ app.post('/jobs/:id/notes/add', async (c) => {
   
   await db.prepare('UPDATE jobs SET notes_json = ?, updated_at = datetime("now") WHERE id = ?').bind(JSON.stringify(notes), jobId).run();
   
-  return c.html(NotesList({ jobId, notes }));
+  return c.redirect(`/admin/jobs/${jobId}`);
 });
 
 app.post('/jobs/:id/notes/toggle', async (c) => {
@@ -2186,7 +2097,7 @@ app.post('/jobs/:id/notes/toggle', async (c) => {
   
   await db.prepare('UPDATE jobs SET notes_json = ?, updated_at = datetime("now") WHERE id = ?').bind(JSON.stringify(notes), jobId).run();
   
-  return c.html(NotesList({ jobId, notes }));
+  return c.redirect(`/admin/jobs/${jobId}`);
 });
 
 app.post('/jobs/:id/notes/delete', async (c) => {
@@ -2202,7 +2113,7 @@ app.post('/jobs/:id/notes/delete', async (c) => {
   
   await db.prepare('UPDATE jobs SET notes_json = ?, updated_at = datetime("now") WHERE id = ?').bind(JSON.stringify(notes), jobId).run();
   
-  return c.html(NotesList({ jobId, notes }));
+  return c.redirect(`/admin/jobs/${jobId}`);
 });
 
 app.post('/jobs/:id/status', async (c) => {
@@ -3018,6 +2929,217 @@ app.post('/settings/:key/delete', async (c) => {
   return c.redirect('/admin/settings');
 });
 
+app.get('/push-settings', (c) => {
+  return c.html(PushSettingsPage());
+});
+
+app.get('/manifest.webmanifest', (c) => {
+  return c.text(JSON.stringify(PUSH_MANIFEST), 200, {
+    'Content-Type': 'application/manifest+json; charset=utf-8',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+  });
+});
+
+app.get('/sw.js', (c) => {
+  return c.text(PUSH_SERVICE_WORKER_SCRIPT, 200, {
+    'Content-Type': 'application/javascript; charset=utf-8',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+  });
+});
+
+app.get('/push/vapid-public-key', async (c) => {
+  const db = c.env.DB;
+  const email = getAuthenticatedStaffEmail(c);
+  if (!email) {
+    return c.json({ error: 'Cloudflare Access user required' }, 403);
+  }
+
+  try {
+    const publicKey = await getPushVapidPublicKey(db);
+    return c.json({ publicKey });
+  } catch (error) {
+    return c.json(
+      {
+        error: error instanceof Error ? error.message : String(error),
+        step: 'getPushVapidPublicKey',
+      },
+      500,
+    );
+  }
+});
+
+app.get('/push/status', async (c) => {
+  const db = c.env.DB;
+  const email = getAuthenticatedStaffEmail(c);
+  if (!email) {
+    return c.json({ error: 'Cloudflare Access user required' }, 403);
+  }
+
+  const endpoint = (c.req.query('endpoint') || '').trim();
+
+  try {
+    const status = await getPushSubscriptionStatus(db, email, endpoint || undefined);
+    return c.json(status);
+  } catch (error) {
+    return c.json(
+      {
+        error: error instanceof Error ? error.message : String(error),
+        step: 'getPushSubscriptionStatus',
+      },
+      500,
+    );
+  }
+});
+
+app.post('/push/subscribe', async (c) => {
+  const db = c.env.DB;
+  const email = getAuthenticatedStaffEmail(c);
+  if (!email) {
+    return c.json({ error: 'Cloudflare Access user required' }, 403);
+  }
+
+  const body = await c.req.json<Record<string, unknown>>();
+  const subscriptionRaw = body.subscription;
+  const preferencesRaw = body.preferences;
+
+  if (!subscriptionRaw || typeof subscriptionRaw !== 'object' || Array.isArray(subscriptionRaw)) {
+    return c.json({ error: 'Invalid subscription payload' }, 400);
+  }
+
+  const subscriptionRecord = subscriptionRaw as Record<string, unknown>;
+  const endpoint = typeof subscriptionRecord.endpoint === 'string' ? subscriptionRecord.endpoint.trim() : '';
+  const keysRaw = subscriptionRecord.keys;
+  const keysRecord = (keysRaw && typeof keysRaw === 'object' && !Array.isArray(keysRaw))
+    ? keysRaw as Record<string, unknown>
+    : null;
+  const p256dh = typeof keysRecord?.p256dh === 'string' ? keysRecord.p256dh.trim() : '';
+  const auth = typeof keysRecord?.auth === 'string' ? keysRecord.auth.trim() : '';
+
+  if (!endpoint || !p256dh || !auth) {
+    return c.json({ error: 'Subscription endpoint and keys are required' }, 400);
+  }
+
+  const preferencesRecord = (preferencesRaw && typeof preferencesRaw === 'object' && !Array.isArray(preferencesRaw))
+    ? preferencesRaw as Record<string, unknown>
+    : {};
+
+  try {
+    await upsertPushSubscription(
+      db,
+      email,
+      {
+        endpoint,
+        keys: { p256dh, auth },
+      },
+      {
+        notifyNewJobs: preferencesRecord.notifyNewJobs !== false,
+        notifyNewMessages: preferencesRecord.notifyNewMessages !== false,
+      },
+    );
+
+    return c.json({ success: true });
+  } catch (error) {
+    return c.json(
+      {
+        error: error instanceof Error ? error.message : String(error),
+        step: 'upsertPushSubscription',
+      },
+      500,
+    );
+  }
+});
+
+app.post('/push/unsubscribe', async (c) => {
+  const db = c.env.DB;
+  const email = getAuthenticatedStaffEmail(c);
+  if (!email) {
+    return c.json({ error: 'Cloudflare Access user required' }, 403);
+  }
+
+  const body = await c.req.json<Record<string, unknown>>();
+  const endpoint = typeof body.endpoint === 'string' ? body.endpoint.trim() : '';
+  if (!endpoint) return c.json({ success: true });
+
+  try {
+    await deactivatePushSubscription(db, email, endpoint);
+    return c.json({ success: true });
+  } catch (error) {
+    return c.json(
+      {
+        error: error instanceof Error ? error.message : String(error),
+        step: 'deactivatePushSubscription',
+      },
+      500,
+    );
+  }
+});
+
+app.post('/push/test', async (c) => {
+  const db = c.env.DB;
+  const email = getAuthenticatedStaffEmail(c);
+  if (!email) {
+    return c.json({ error: 'Cloudflare Access user required' }, 403);
+  }
+
+  const body = await c.req.json<Record<string, unknown>>();
+  const endpoint = typeof body.endpoint === 'string' ? body.endpoint.trim() : '';
+  if (!endpoint) {
+    return c.json({ error: 'Endpoint is required' }, 400);
+  }
+
+  try {
+    const result = await enqueueTestPushNotificationAndPing(db, email, endpoint);
+    return c.json({ success: true, ...result });
+  } catch (error) {
+    return c.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      },
+      400,
+    );
+  }
+});
+
+app.get('/push/pending', async (c) => {
+  const db = c.env.DB;
+  const email = getAuthenticatedStaffEmail(c);
+  if (!email) {
+    return c.json({ notifications: [] }, 403);
+  }
+
+  const endpoint = (c.req.query('endpoint') || '').trim();
+  if (!endpoint) {
+    return c.json({ notifications: [] });
+  }
+
+  const limitRaw = Number.parseInt(c.req.query('limit') || '6', 10);
+
+  let notifications: Awaited<ReturnType<typeof pullPendingPushNotifications>> = [];
+  try {
+    notifications = await pullPendingPushNotifications(
+      db,
+      email,
+      endpoint,
+      Number.isFinite(limitRaw) ? limitRaw : 6,
+    );
+  } catch (error) {
+    return c.json(
+      {
+        notifications: [],
+        error: error instanceof Error ? error.message : String(error),
+        step: 'pullPendingPushNotifications',
+      },
+      500,
+    );
+  }
+
+  c.header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  c.header('Pragma', 'no-cache');
+  c.header('Expires', '0');
+  return c.json({ notifications });
+});
+
 app.get('/sms-settings', async (c) => {
   const db = c.env.DB;
   const config = await getTwilioConfig(db);
@@ -3509,25 +3631,6 @@ app.get('/inbox/:id', async (c) => {
     selectedJobId,
     completedTaskSmsIds,
   }));
-});
-
-app.get('/inbox/:id/sms-thread-panel', async (c) => {
-  const db = c.env.DB;
-  const id = c.req.param('id');
-  const message = await db.prepare('SELECT first_name, last_name, email FROM messages WHERE id = ?')
-    .bind(id)
-    .first<{ first_name: string | null; last_name: string | null; email: string | null }>();
-  const customerName = message
-    ? ([message.first_name, message.last_name].filter(Boolean).join(' ').trim() || message.email || '')
-    : '';
-  const twilioEnabled = await isTwilioEnabled(db);
-  const { phoneE164, smsHistory } = await getInboxSmsContext(db, id);
-  const { jobOptions, selectedJobId } = await getInboxJobContext(db, id);
-  const completedTaskSmsIds = await getCompletedSmsTaskIds(db, selectedJobId);
-  c.header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-  c.header('Pragma', 'no-cache');
-  c.header('Expires', '0');
-  return c.html(SmsThreadPanel({ messageId: id, smsHistory, twilioEnabled, phoneE164, customerName: customerName || null, jobOptions, selectedJobId, completedTaskSmsIds }));
 });
 
 app.get('/inbox/:id/sms-thread', async (c) => {
