@@ -15,13 +15,24 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
         <meta name="theme-color" content="#eff1f5" id="theme-color-meta" />
          {html`<script>
 (function(){
+  function syncThemeColorMeta(){
+    try {
+      var meta = document.getElementById('theme-color-meta');
+      if (!meta) return;
+      var css = getComputedStyle(document.documentElement);
+      var c = String(css.getPropertyValue('--theme-color') || '').trim();
+      if (c) meta.setAttribute('content', c);
+    } catch (e) {}
+  }
+
+  // Default to Latte unless user explicitly chose otherwise.
   var s = localStorage.getItem('theme');
-  var t = s || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+  var t = (s === 'dark' || s === 'light') ? s : 'light';
   document.documentElement.setAttribute('data-theme', t);
-  try {
-    var meta = document.getElementById('theme-color-meta');
-    if (meta) meta.setAttribute('content', t === 'dark' ? '#1e1e2e' : '#eff1f5');
-  } catch (e) {}
+
+  // Styles load immediately after this script; wait a tick so CSS vars are available.
+  requestAnimationFrame(syncThemeColorMeta);
+  window.__syncThemeColorMeta = syncThemeColorMeta;
 })();
 </script>
 <style data-fodt>
@@ -71,6 +82,8 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
   --sidebar-hover-bg: rgba(76, 79, 105, 0.08);
   --sidebar-active-bg: rgba(30, 102, 245, 0.12);
 
+  --theme-color: #eff1f5;
+
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -95,6 +108,8 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
   --sidebar-divider: rgba(255, 255, 255, 0.08);
   --sidebar-hover-bg: rgba(255, 255, 255, 0.06);
   --sidebar-active-bg: rgba(255, 255, 255, 0.1);
+
+  --theme-color: #1e1e2e;
 }
 
 body { opacity: 0; }
@@ -1254,22 +1269,14 @@ function toggleTheme() {
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('theme', next);
   updateThemeLabels(next);
-  try {
-    var meta = document.getElementById('theme-color-meta');
-    if (meta) meta.setAttribute('content', next === 'dark' ? '#1e1e2e' : '#eff1f5');
-  } catch (e) {}
+  if (typeof window.__syncThemeColorMeta === 'function') {
+    window.__syncThemeColorMeta();
+  }
 }
 function updateThemeLabels(t) {
   document.querySelectorAll('.theme-label').forEach(function(el) { el.textContent = t === 'dark' ? 'Light Mode' : 'Dark Mode'; });
 }
 updateThemeLabels(document.documentElement.getAttribute('data-theme') || 'light');
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
-  if (!localStorage.getItem('theme')) {
-    var t = e.matches ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', t);
-    updateThemeLabels(t);
-  }
-});
 requestAnimationFrame(function(){requestAnimationFrame(function(){document.body.classList.add('ready')})});
 </script>`}
       </body>
