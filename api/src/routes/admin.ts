@@ -2112,8 +2112,13 @@ app.get('/jobs/:id/sms-thread-card', async (c) => {
 
   const job = await db.prepare('SELECT customer_id FROM jobs WHERE id = ?').bind(id).first<{ customer_id: string | null }>();
   const customer = job?.customer_id
-    ? await db.prepare('SELECT phone, phone_e164 FROM customers WHERE id = ?').bind(job.customer_id).first<{ phone: string | null; phone_e164: string | null }>()
+    ? await db.prepare('SELECT first_name, last_name, phone, phone_e164 FROM customers WHERE id = ?')
+      .bind(job.customer_id)
+      .first<{ first_name: string | null; last_name: string | null; phone: string | null; phone_e164: string | null }>()
     : null;
+  const customerName = customer
+    ? [customer.first_name, customer.last_name].filter(Boolean).join(' ').trim()
+    : '';
   const customerPhone = customer?.phone_e164 || normalizePhoneE164(customer?.phone || null);
 
   const smsThreadMessage = await db.prepare(
@@ -2135,6 +2140,7 @@ app.get('/jobs/:id/sms-thread-card', async (c) => {
 
   return c.html(SmsThreadCard({
     jobId: id,
+    customerName: customerName || null,
     smsThreadMessage: smsThreadMessage
       ? {
         id: smsThreadMessage.id,
@@ -3508,6 +3514,12 @@ app.get('/inbox/:id', async (c) => {
 app.get('/inbox/:id/sms-thread-panel', async (c) => {
   const db = c.env.DB;
   const id = c.req.param('id');
+  const message = await db.prepare('SELECT first_name, last_name, email FROM messages WHERE id = ?')
+    .bind(id)
+    .first<{ first_name: string | null; last_name: string | null; email: string | null }>();
+  const customerName = message
+    ? ([message.first_name, message.last_name].filter(Boolean).join(' ').trim() || message.email || '')
+    : '';
   const twilioEnabled = await isTwilioEnabled(db);
   const { phoneE164, smsHistory } = await getInboxSmsContext(db, id);
   const { jobOptions, selectedJobId } = await getInboxJobContext(db, id);
@@ -3515,7 +3527,7 @@ app.get('/inbox/:id/sms-thread-panel', async (c) => {
   c.header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
   c.header('Pragma', 'no-cache');
   c.header('Expires', '0');
-  return c.html(SmsThreadPanel({ messageId: id, smsHistory, twilioEnabled, phoneE164, jobOptions, selectedJobId, completedTaskSmsIds }));
+  return c.html(SmsThreadPanel({ messageId: id, smsHistory, twilioEnabled, phoneE164, customerName: customerName || null, jobOptions, selectedJobId, completedTaskSmsIds }));
 });
 
 app.get('/inbox/:id/sms-thread', async (c) => {
