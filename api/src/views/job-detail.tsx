@@ -172,18 +172,17 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage }: {
           </p>
           <div class="flex items-center justify-between">
             <span class="text-xs text-muted-foreground">{updatedLabel ? `Updated ${updatedLabel}` : ''}</span>
-            <a
-              href={`/admin/inbox/${smsThreadMessage.id}`}
+            <button
+              type="button"
               class="uk-btn uk-btn-default uk-btn-sm"
               data-sms-thread-modal-open="true"
               hx-get={`/admin/inbox/${smsThreadMessage.id}`}
               hx-target="#sms-thread-modal-content"
               hx-select="#sms-thread-panel"
               hx-swap="innerHTML"
-              hx-push-url="false"
             >
               Open conversation
-            </a>
+            </button>
           </div>
         </div>
       ) : (
