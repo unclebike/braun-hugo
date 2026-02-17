@@ -268,7 +268,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                 </div>
               </div>
 
-              <div class="uk-card uk-card-body" id="job-edit-details">
+              <div class="uk-card uk-card-body" id="job-edit-details" style="scroll-margin-top: 96px;">
                 <section>
                   <form
                     class="autosave"
@@ -325,7 +325,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                 </section>
               </div>
 
-              <div class="uk-card uk-card-body" id="job-status">
+              <div class="uk-card uk-card-body" id="job-status" style="scroll-margin-top: 96px;">
                 <section>
                   <div class="flex items-center justify-between mb-4">
                     <h3 class="text-base font-semibold" style="margin:0;">Status</h3>
@@ -598,7 +598,10 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
         </div>
       </div>
 
-      <div class="sm:hidden fixed bottom-0 left-0 right-0 border-t border-border" style="background:var(--bg-card); padding-bottom: var(--safe-bottom);">
+      <div
+        class="sm:hidden fixed bottom-0 left-0 right-0 border-t border-border"
+        style="background:var(--bg-card); padding-bottom: var(--safe-bottom); padding-left: var(--safe-left); padding-right: var(--safe-right);"
+      >
         <div class="px-4 py-3 flex items-center justify-between gap-2">
           <button
             type="button"
