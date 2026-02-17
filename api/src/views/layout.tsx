@@ -118,6 +118,7 @@ body.ready { opacity: 1; transition: opacity .15s; }
 [data-theme="dark"] .uk-close { color: var(--text) !important; }
 </style>`}
         <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+        <script src="/admin.js" defer></script>
         <link rel="stylesheet" href="https://unpkg.com/franken-ui@2.1.2/dist/css/core.min.css" />
         <script src="https://unpkg.com/franken-ui@2.1.2/dist/js/core.iife.js"></script>
         <script src="https://cdn.tailwindcss.com/3.4.17"></script>
