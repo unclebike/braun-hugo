@@ -2,7 +2,7 @@
 /** @jsxFrag Fragment */
 import { html } from 'hono/html';
 // biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
-import { jsx, Fragment } from 'hono/jsx';
+import { Fragment, jsx } from 'hono/jsx';
 
 export const Layout = ({ title, children }: { title: string; children: unknown }) => {
   return (
@@ -950,6 +950,8 @@ document.addEventListener('click', function(e) {
             .page-header h2 { font-size: 18px; }
             .page-body { padding: 16px; }
           }
+
+          #sms-thread-modal-error:not([data-open]) { display: none; }
         `}</style>
       </head>
       <body>
@@ -1048,6 +1050,59 @@ document.addEventListener('click', function(e) {
             </div>
           </main>
         </div>
+
+        <div
+          id="sms-thread-modal-overlay"
+          hidden
+          data-open="false"
+          style="position:fixed;inset:0;z-index:1200;display:none;align-items:flex-end;justify-content:center;padding:16px;background:rgba(0,0,0,0.45);"
+          aria-hidden="true"
+        >
+          <div
+            id="sms-thread-modal-panel"
+            style="width:100%;max-width:720px;max-height:calc(100vh - 32px);background:var(--bg-card,#fff);border:1px solid var(--border,#ccd0da);border-radius:16px;box-shadow:0 18px 48px rgba(0,0,0,0.24);overflow:hidden;display:flex;flex-direction:column;"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div
+              id="sms-thread-modal-header"
+              style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 12px;border-bottom:1px solid var(--border,#ccd0da);"
+            >
+              <div style="min-width:0;display:flex;align-items:center;gap:10px;">
+                <h3 style="margin:0;font-size:14px;font-weight:700;letter-spacing:-0.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Conversation</h3>
+                <a
+                  id="sms-thread-modal-open-inbox"
+                  href="/admin/inbox"
+                  class="uk-btn uk-btn-default uk-btn-sm"
+                  style="display:none;padding:0 10px;"
+                >
+                  Open in inbox
+                </a>
+              </div>
+              <button
+                type="button"
+                class="uk-btn uk-btn-default uk-btn-sm"
+                data-sms-thread-modal-close
+                aria-label="Close"
+                style="padding:0 10px;"
+              >
+                Close
+              </button>
+            </div>
+
+            <div
+              id="sms-thread-modal-error"
+              style="padding:10px 12px;border-bottom:1px solid var(--border,#ccd0da);background:rgba(239,68,68,0.08);color:#b91c1c;"
+            ></div>
+
+            <div id="sms-thread-modal-loading" style="display:none;padding:12px;color:var(--text-secondary,#6b7280);font-size:12px;">
+              Loading...
+            </div>
+
+            <div id="sms-thread-modal-body" style="padding:12px;overflow:auto;flex:1;"></div>
+          </div>
+        </div>
+
         {html`<script>
 function toggleTheme() {
   var cur = document.documentElement.getAttribute('data-theme');
