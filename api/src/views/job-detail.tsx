@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
 import { Layout } from './layout';
 
@@ -196,129 +197,196 @@ const money = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
 export const JobDetailPage = ({ job, customer, service, territory, team, assignedProviderId, notes, smsThreadMessage, lineItems }: JobDetailPageProps) => {
   const subtotal = lineItems.reduce((sum, line) => sum + line.total_cents, 0);
+  const customerName = customer ? `${customer.first_name} ${customer.last_name}`.trim() : 'Unassigned customer';
+  const serviceName = service?.name || job.custom_service_name || 'Custom Service';
+  const providerName = assignedProviderId
+    ? (() => {
+      const p = team.find(t => t.id === assignedProviderId);
+      return p ? `${p.first_name} ${p.last_name}`.trim() : 'Assigned';
+    })()
+    : 'Unassigned';
+  const dateLabel = (() => {
+    try {
+      const d = new Date(`${job.scheduled_date}T00:00:00`);
+      return d.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' });
+    } catch {
+      return job.scheduled_date;
+    }
+  })();
+  const timeLabel = job.scheduled_start_time ? job.scheduled_start_time : '';
+  const scheduleLabel = `${dateLabel}${timeLabel ? ` at ${timeLabel}` : ''}`;
+  const canOpenSms = Boolean(smsThreadMessage);
+  const smsTitle = customer ? `${customer.first_name} ${customer.last_name}`.trim() : '';
+
   return (
     <Layout title={`Job ${job.id}`}>
-      <div class="flex flex-wrap items-center justify-between gap-3 px-4 pl-14 py-4 sm:px-8 sm:pl-8 sm:py-5 bg-white border-b border-border sticky top-0 z-50">
-        <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-          <h2 class="text-xl font-semibold">Job {job.id.slice(0, 8)}</h2>
-          <span class={statusClass(job.status)}>{job.status.replace('_', ' ')}</span>
+      <div class="flex flex-wrap items-start justify-between gap-3 px-4 pl-14 py-4 sm:px-8 sm:pl-8 sm:py-5 bg-white border-b border-border sticky top-0 z-50">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h2 class="text-xl font-extrabold truncate">{customerName}</h2>
+            <span class={statusClass(job.status)}>{job.status.replace('_', ' ')}</span>
+          </div>
+          <p class="text-sm text-muted-foreground truncate" style="margin:2px 0 0;">
+            {serviceName} | {scheduleLabel} | {providerName}
+          </p>
         </div>
-        <a href="/admin/jobs" class="uk-btn uk-btn-default uk-btn-sm" hx-get="/admin/jobs" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Back</a>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="uk-btn uk-btn-primary uk-btn-sm"
+            data-sms-thread-modal-open={canOpenSms ? 'true' : undefined}
+            data-sms-thread-modal-title={canOpenSms ? smsTitle : undefined}
+            hx-get={canOpenSms ? `/admin/inbox/${smsThreadMessage?.id}/sms-thread-panel` : undefined}
+            hx-target={canOpenSms ? '#sms-thread-modal-body' : undefined}
+            hx-swap={canOpenSms ? 'innerHTML' : undefined}
+            hx-indicator={canOpenSms ? '#sms-thread-modal-loading' : undefined}
+            aria-disabled={canOpenSms ? 'false' : 'true'}
+            disabled={canOpenSms ? undefined : true}
+          >
+            Message
+          </button>
+          <a href="/admin/jobs" class="uk-btn uk-btn-default uk-btn-sm" hx-get="/admin/jobs" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Back</a>
+        </div>
       </div>
 
-      <div class="p-4 sm:p-8">
-        <div class="grid gap-4 sm:gap-6" style="max-width: 800px;">
-          <div class="uk-card uk-card-body">
-            <section>
-              <form
-                class="autosave"
-                hx-post={`/admin/jobs/${job.id}`}
-                hx-target="#page-content"
-                hx-select="#page-content"
-                hx-swap="none"
-                hx-trigger="input delay:500ms, change"
-                hx-sync="this:queue last"
-              >
-                <input type="hidden" name="_section" value="details" />
-                <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-base font-semibold">Details</h3>
-                  <span class="save-indicator"></span>
-                </div>
-
-                <div class="grid gap-4 sm:grid-cols-2">
-                  <div class="grid gap-2">
-                    <label class="uk-form-label" for="scheduled-date">Date</label>
-                    <input id="scheduled-date" name="scheduled_date" type="date" class="uk-input" value={job.scheduled_date} />
+      <div class="p-4 sm:p-8" style="padding-bottom: calc(84px + var(--safe-bottom));">
+        <div class="mx-auto" style="max-width: 1120px;">
+          <div class="grid gap-4 lg:grid-cols-[1fr,320px] lg:gap-6">
+            <div class="grid gap-4 sm:gap-6">
+              <div class="uk-card uk-card-body" style="background:var(--surface-0);">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <p class="text-[10px] uppercase tracking-wide text-muted-foreground">Job</p>
+                    <p class="text-base font-semibold" style="margin:0;">{job.id.slice(0, 8)}</p>
+                    <p class="text-xs text-muted-foreground" style="margin:4px 0 0;">Created {new Date(`${job.created_at}Z`).toLocaleString()}</p>
                   </div>
-                  <div class="grid gap-2">
-                    <label class="uk-form-label" for="scheduled-time">Start Time</label>
-                    <input id="scheduled-time" name="scheduled_start_time" type="time" class="uk-input" value={job.scheduled_start_time} />
-                  </div>
-                  <div class="grid gap-2">
-                    <label class="uk-form-label" for="duration">Duration (minutes)</label>
-                    <input id="duration" name="duration_minutes" type="number" min={1} class="uk-input" value={job.duration_minutes} />
-                  </div>
-                  <div class="grid gap-2">
-                    <label class="uk-form-label" for="base-price">Base Price ($)</label>
-                    <input id="base-price" name="base_price" type="number" min={0} step={0.01} class="uk-input" value={(job.base_price_cents / 100).toFixed(2)} />
-                  </div>
-                  <div class="grid gap-2">
-                    <label class="uk-form-label" for="total-price">Total Price ($)</label>
-                    <input id="total-price" name="total_price" type="number" min={0} step={0.01} class="uk-input" value={(job.total_price_cents / 100).toFixed(2)} />
-                  </div>
-                  <div class="grid gap-2">
-                    <label class="uk-form-label" for="provider-id">Assigned Provider</label>
-                    <select id="provider-id" name="provider_id" class="uk-select">
-                      <option value="">Unassigned</option>
-                      {team.map((provider) => (
-                        <option key={provider.id} value={provider.id} selected={assignedProviderId === provider.id}>
-                          {provider.first_name} {provider.last_name}
-                        </option>
-                      ))}
-                    </select>
+                  <div class="text-right">
+                    <p class="text-[10px] uppercase tracking-wide text-muted-foreground">Total</p>
+                    <p class="text-2xl font-extrabold" style="margin:0;">{money(job.total_price_cents)}</p>
+                    <p class="text-xs text-muted-foreground" style="margin:4px 0 0;">{lineItems.length} item{lineItems.length === 1 ? '' : 's'}</p>
                   </div>
                 </div>
-              </form>
-            </section>
-          </div>
+              </div>
 
-          <div class="uk-card uk-card-body">
-            <section>
-              <h3 class="text-base font-semibold mb-4">Status</h3>
-              <form hx-post={`/admin/jobs/${job.id}/status`} hx-target="#page-content" hx-select="#page-content" class="grid gap-3 sm:flex sm:items-end">
-                <div class="grid gap-2 flex-1">
-                  <label class="uk-form-label" for="job-status">Job Status</label>
-                  <select id="job-status" name="status" class="uk-select">
-                    {STATUS_OPTIONS.map((status) => (
-                      <option value={status} selected={job.status === status} key={status}>{status.replace('_', ' ')}</option>
-                    ))}
-                  </select>
+              <div class="uk-card uk-card-body" id="job-edit-details">
+                <section>
+                  <form
+                    class="autosave"
+                    hx-post={`/admin/jobs/${job.id}`}
+                    hx-target="#page-content"
+                    hx-select="#page-content"
+                    hx-swap="none"
+                    hx-trigger="input delay:500ms, change"
+                    hx-sync="this:queue last"
+                  >
+                    <input type="hidden" name="_section" value="details" />
+                    <div class="flex items-center justify-between mb-4">
+                      <div class="min-w-0">
+                        <h3 class="text-base font-semibold" style="margin:0;">Job details</h3>
+                        <p class="text-xs text-muted-foreground" style="margin:2px 0 0;">Edits auto-save.</p>
+                      </div>
+                      <span class="save-indicator"></span>
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                      <div class="grid gap-2">
+                        <label class="uk-form-label" for="scheduled-date">Date</label>
+                        <input id="scheduled-date" name="scheduled_date" type="date" class="uk-input" value={job.scheduled_date} />
+                      </div>
+                      <div class="grid gap-2">
+                        <label class="uk-form-label" for="scheduled-time">Start Time</label>
+                        <input id="scheduled-time" name="scheduled_start_time" type="time" class="uk-input" value={job.scheduled_start_time} />
+                      </div>
+                      <div class="grid gap-2">
+                        <label class="uk-form-label" for="duration">Duration (minutes)</label>
+                        <input id="duration" name="duration_minutes" type="number" min={1} class="uk-input" value={job.duration_minutes} />
+                      </div>
+                      <div class="grid gap-2">
+                        <label class="uk-form-label" for="provider-id">Assigned Provider</label>
+                        <select id="provider-id" name="provider_id" class="uk-select">
+                          <option value="">Unassigned</option>
+                          {team.map((provider) => (
+                            <option key={provider.id} value={provider.id} selected={assignedProviderId === provider.id}>
+                              {provider.first_name} {provider.last_name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div class="grid gap-2">
+                        <label class="uk-form-label" for="base-price">Base Price ($)</label>
+                        <input id="base-price" name="base_price" type="number" min={0} step={0.01} class="uk-input" value={(job.base_price_cents / 100).toFixed(2)} />
+                      </div>
+                      <div class="grid gap-2">
+                        <label class="uk-form-label" for="total-price">Total Price ($)</label>
+                        <input id="total-price" name="total_price" type="number" min={0} step={0.01} class="uk-input" value={(job.total_price_cents / 100).toFixed(2)} />
+                      </div>
+                    </div>
+                  </form>
+                </section>
+              </div>
+
+              <div class="uk-card uk-card-body" id="job-status">
+                <section>
+                  <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-semibold" style="margin:0;">Status</h3>
+                    <span class={statusClass(job.status)}>{job.status.replace('_', ' ')}</span>
+                  </div>
+                  <form hx-post={`/admin/jobs/${job.id}/status`} hx-target="#page-content" hx-select="#page-content" class="grid gap-3 sm:flex sm:items-end">
+                    <div class="grid gap-2 flex-1">
+                      <label class="uk-form-label" for="job-status-select">Job Status</label>
+                      <select id="job-status-select" name="status" class="uk-select">
+                        {STATUS_OPTIONS.map((status) => (
+                          <option value={status} selected={job.status === status} key={status}>{status.replace('_', ' ')}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <button type="submit" class="uk-btn uk-btn-default">Update</button>
+                  </form>
+                  <div class="mt-4 rounded-md border border-border p-3" style="background:var(--surface-elevated);">
+                    <p class="text-xs uppercase tracking-wide text-muted-foreground">Pricing subtotal</p>
+                    <p class="text-lg font-semibold">{money(subtotal)}</p>
+                    <p class="text-xs text-muted-foreground">{lineItems.length} line item{lineItems.length === 1 ? '' : 's'} in job breakdown</p>
+                  </div>
+                </section>
+              </div>
+
+              <div class="uk-card uk-card-body hidden sm:block lg:hidden">
+                <h3 class="text-base font-semibold mb-4">Customer</h3>
+                {customer ? (
+                  <div class="grid gap-2 text-sm">
+                    <p class="font-medium">{customer.first_name} {customer.last_name}</p>
+                    <p class="text-muted-foreground">{customer.email || '-'}</p>
+                    <p class="text-muted-foreground">{customer.phone || '-'}</p>
+                    <div>
+                      <a href={`/admin/customers/${customer.id}/edit`} class="uk-link" hx-get={`/admin/customers/${customer.id}/edit`} hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Open customer</a>
+                    </div>
+                  </div>
+                ) : (
+                  <p class="text-sm text-muted-foreground">No customer linked.</p>
+                )}
+              </div>
+
+              <div id="job-sms">
+                <SmsThreadCard
+                  jobId={job.id}
+                  smsThreadMessage={smsThreadMessage}
+                  customerName={customer ? `${customer.first_name} ${customer.last_name}`.trim() : null}
+                />
+              </div>
+
+              <div class="uk-card uk-card-body hidden sm:block lg:hidden">
+                <h3 class="text-base font-semibold mb-4">Service & Territory</h3>
+                <div class="grid gap-2 text-sm">
+                  <div>
+                    <span class="text-muted-foreground">Service:</span>{' '}
+                    <span class="font-medium">{service?.name || job.custom_service_name || 'Custom Service'}</span>
+                  </div>
+                  <div>
+                    <span class="text-muted-foreground">Territory:</span>{' '}
+                    <span class="font-medium">{territory?.name || '-'}</span>
+                  </div>
                 </div>
-                <button type="submit" class="uk-btn uk-btn-default">Update Status</button>
-              </form>
-              <div class="mt-4 rounded-md border border-border p-3" style="background:var(--surface-elevated);">
-                <p class="text-xs uppercase tracking-wide text-muted-foreground">Pricing subtotal</p>
-                <p class="text-lg font-semibold">{money(subtotal)}</p>
-                <p class="text-xs text-muted-foreground">{lineItems.length} line item{lineItems.length === 1 ? '' : 's'} in job breakdown</p>
               </div>
-            </section>
-          </div>
-
-          <div class="uk-card uk-card-body hidden sm:block">
-            <h3 class="text-base font-semibold mb-4">Customer</h3>
-            {customer ? (
-              <div class="grid gap-2 text-sm">
-                <p class="font-medium">{customer.first_name} {customer.last_name}</p>
-                <p class="text-muted-foreground">{customer.email || '-'}</p>
-                <p class="text-muted-foreground">{customer.phone || '-'}</p>
-                <div>
-                  <a href={`/admin/customers/${customer.id}/edit`} class="uk-link" hx-get={`/admin/customers/${customer.id}/edit`} hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Open customer</a>
-                </div>
-              </div>
-            ) : (
-              <p class="text-sm text-muted-foreground">No customer linked.</p>
-            )}
-          </div>
-
-          <SmsThreadCard
-            jobId={job.id}
-            smsThreadMessage={smsThreadMessage}
-            customerName={customer ? `${customer.first_name} ${customer.last_name}`.trim() : null}
-          />
-
-          <div class="uk-card uk-card-body hidden sm:block">
-            <h3 class="text-base font-semibold mb-4">Service & Territory</h3>
-            <div class="grid gap-2 text-sm">
-              <div>
-                <span class="text-muted-foreground">Service:</span>{' '}
-                <span class="font-medium">{service?.name || job.custom_service_name || 'Custom Service'}</span>
-              </div>
-              <div>
-                <span class="text-muted-foreground">Territory:</span>{' '}
-                <span class="font-medium">{territory?.name || '-'}</span>
-              </div>
-            </div>
-          </div>
 
           <details class="uk-card uk-card-body sm:hidden">
             <summary class="text-base font-semibold cursor-pointer">Customer</summary>
@@ -352,67 +420,70 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
             </div>
           </details>
 
-          <div class="uk-card uk-card-body">
-            <section>
-              <h3 class="text-base font-semibold mb-4">Price Breakdown</h3>
-              <div class="grid gap-2 mb-4">
-                {lineItems.length === 0 ? (
-                  <p class="text-sm text-muted-foreground">No line items yet.</p>
-                ) : (
-                  lineItems.map((line) => (
-                    <div class="flex items-start gap-3 p-3 border border-border rounded-md" key={line.id}>
-                      <div class="flex-1 min-w-0" style={line.parent_id ? 'padding-left: 16px;' : ''}>
-                        <div class="flex items-center gap-2 flex-wrap">
-                          <p class="text-sm font-medium">{line.description}</p>
-                          <span class="text-xs text-muted-foreground">{line.kind}</span>
+              <div class="uk-card uk-card-body">
+                <section>
+                  <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-semibold" style="margin:0;">Price breakdown</h3>
+                    <span class="text-sm font-semibold">{money(subtotal)}</span>
+                  </div>
+                  <div class="grid gap-2 mb-4">
+                    {lineItems.length === 0 ? (
+                      <p class="text-sm text-muted-foreground">No line items yet.</p>
+                    ) : (
+                      lineItems.map((line) => (
+                        <div class="flex items-start gap-3 p-3 border border-border rounded-md" key={line.id}>
+                          <div class="flex-1 min-w-0" style={line.parent_id ? 'padding-left: 16px;' : ''}>
+                            <div class="flex items-center gap-2 flex-wrap">
+                              <p class="text-sm font-medium">{line.description}</p>
+                              <span class="text-xs text-muted-foreground">{line.kind}</span>
+                            </div>
+                            <p class="text-xs text-muted-foreground">{line.quantity} x {money(line.unit_price_cents)}</p>
+                          </div>
+                          <div class="text-right">
+                            <p class="text-sm font-semibold">{money(line.total_cents)}</p>
+                            {line.is_custom === 1 ? (
+                              <button
+                                type="button"
+                                class="delete-btn uk-btn uk-btn-small"
+                                hx-post={`/admin/jobs/${job.id}/line-items/delete`}
+                                hx-vals={JSON.stringify({ lineId: line.id })}
+                                hx-target="#page-content"
+                                hx-select="#page-content"
+                                data-confirm="arm"
+                              >
+                                Remove
+                              </button>
+                            ) : null}
+                          </div>
                         </div>
-                        <p class="text-xs text-muted-foreground">{line.quantity} x {money(line.unit_price_cents)}</p>
-                      </div>
-                      <div class="text-right">
-                        <p class="text-sm font-semibold">{money(line.total_cents)}</p>
-                        {line.is_custom === 1 ? (
-                          <button
-                            type="button"
-                            class="delete-btn uk-btn uk-btn-small"
-                            hx-post={`/admin/jobs/${job.id}/line-items/delete`}
-                            hx-vals={JSON.stringify({ lineId: line.id })}
-                            hx-target="#page-content"
-                            hx-select="#page-content"
-                            data-confirm="arm"
-                          >
-                            Remove
-                          </button>
-                        ) : null}
-                      </div>
+                      ))
+                    )}
+                  </div>
+
+                  <form hx-post={`/admin/jobs/${job.id}/line-items/add`} hx-target="#page-content" hx-select="#page-content" hx-swap="innerHTML" class="grid gap-2 sm:grid-cols-4">
+                    <input type="text" name="description" class="uk-input sm:col-span-2" placeholder="Custom line description" required />
+                    <input type="number" name="quantity" class="uk-input" min={1} step={1} value="1" required />
+                    <input type="number" name="unit_price" class="uk-input" min={0} step={0.01} placeholder="Unit price" required />
+                    <div class="sm:col-span-4 flex justify-end">
+                      <button type="submit" class="uk-btn uk-btn-default">Add Custom Line</button>
                     </div>
-                  ))
-                )}
+                  </form>
+                </section>
               </div>
 
-               <form hx-post={`/admin/jobs/${job.id}/line-items/add`} hx-target="#page-content" hx-select="#page-content" hx-swap="innerHTML" class="grid gap-2 sm:grid-cols-4">
-                 <input type="text" name="description" class="uk-input sm:col-span-2" placeholder="Custom line description" required />
-                 <input type="number" name="quantity" class="uk-input" min={1} step={1} value="1" required />
-                 <input type="number" name="unit_price" class="uk-input" min={0} step={0.01} placeholder="Unit price" required />
-                 <div class="sm:col-span-4 flex justify-end">
-                   <button type="submit" class="uk-btn uk-btn-default">Add Custom Line</button>
+              <div class="uk-card uk-card-body hidden sm:block">
+               <section>
+                 <h3 class="text-base font-semibold mb-4">Task Notes</h3>
+                 <div class="grid gap-2 mb-4">
+                   <NotesList jobId={job.id} notes={notes} listId="notes-list-desktop" />
                  </div>
-               </form>
-            </section>
-          </div>
-
-           <div class="uk-card uk-card-body hidden sm:block">
-              <section>
-                <h3 class="text-base font-semibold mb-4">Task Notes</h3>
-                <div class="grid gap-2 mb-4">
-                  <NotesList jobId={job.id} notes={notes} listId="notes-list-desktop" />
-                </div>
 
                   <form
                     hx-post={`/admin/jobs/${job.id}/notes/add`}
                     hx-target="#notes-list-desktop"
                     hx-select="#notes-list > *"
                     hx-swap="innerHTML"
-                    hx-on="htmx:afterRequest: const xhr=event.detail.xhr; if(!xhr||xhr.status<200||xhr.status>=300) return; const input=this.querySelector('input[name=text]'); if(input) input.value=''; const btn=this.querySelector('button[type=submit]'); if(!btn) return; btn.dataset.defaultText=btn.dataset.defaultText||btn.textContent||'Add'; btn.textContent='Task Added'; btn.style.backgroundColor='#16a34a'; btn.style.borderColor='#16a34a'; btn.style.color='#fff'; setTimeout(()=>{ btn.textContent=btn.dataset.defaultText||'Add'; btn.style.backgroundColor=''; btn.style.borderColor=''; btn.style.color=''; }, 1200);"
+                    hx-on="htmx:afterRequest: const xhr=event.detail.xhr; if(!xhr||xhr.status<200||xhr.status>=300) return; const input=this.querySelector('input[name=text]'); if(input) input.value=''; const btn=this.querySelector('button[type=submit]'); if(!btn) return; btn.dataset.defaultText=btn.dataset.defaultText||btn.textContent||'Add'; btn.textContent='Task Added'; btn.style.backgroundColor='var(--badge-secondary)'; btn.style.borderColor='var(--badge-secondary)'; btn.style.color='var(--on-brand)'; setTimeout(()=>{ btn.textContent=btn.dataset.defaultText||'Add'; btn.style.backgroundColor=''; btn.style.borderColor=''; btn.style.color=''; }, 1200);"
                     class="flex gap-2"
                   >
                     <input
@@ -442,9 +513,9 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                      hx-target="#notes-list-mobile"
                      hx-select="#notes-list > *"
                      hx-swap="innerHTML"
-                     hx-on="htmx:afterRequest: const xhr=event.detail.xhr; if(!xhr||xhr.status<200||xhr.status>=300) return; const input=this.querySelector('input[name=text]'); if(input) input.value=''; const btn=this.querySelector('button[type=submit]'); if(!btn) return; btn.dataset.defaultText=btn.dataset.defaultText||btn.textContent||'Add'; btn.textContent='Task Added'; btn.style.backgroundColor='#16a34a'; btn.style.borderColor='#16a34a'; btn.style.color='#fff'; setTimeout(()=>{ btn.textContent=btn.dataset.defaultText||'Add'; btn.style.backgroundColor=''; btn.style.borderColor=''; btn.style.color=''; }, 1200);"
-                     class="grid gap-2 sm:flex"
-                   >
+                     hx-on="htmx:afterRequest: const xhr=event.detail.xhr; if(!xhr||xhr.status<200||xhr.status>=300) return; const input=this.querySelector('input[name=text]'); if(input) input.value=''; const btn=this.querySelector('button[type=submit]'); if(!btn) return; btn.dataset.defaultText=btn.dataset.defaultText||btn.textContent||'Add'; btn.textContent='Task Added'; btn.style.backgroundColor='var(--badge-secondary)'; btn.style.borderColor='var(--badge-secondary)'; btn.style.color='var(--on-brand)'; setTimeout(()=>{ btn.textContent=btn.dataset.defaultText||'Add'; btn.style.backgroundColor=''; btn.style.borderColor=''; btn.style.color=''; }, 1200);"
+                      class="grid gap-2 sm:flex"
+                    >
                      <input
                        type="text"
                        name="text"
@@ -457,20 +528,20 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                </section>
              </details>
 
-          <div class="uk-card uk-card-body hidden sm:block">
-            <section>
-              <h3 class="text-base font-semibold mb-3">Delete</h3>
-              <button
-                type="button"
-                class="delete-btn"
-                hx-post={`/admin/jobs/${job.id}/delete`}
-                data-confirm="arm"
-                hx-target="#page-content"
-              >
-                Delete Job
-              </button>
-            </section>
-          </div>
+              <details class="uk-card uk-card-body hidden sm:block">
+                <summary class="text-base font-semibold cursor-pointer">Danger zone</summary>
+                <section class="pt-4">
+                  <button
+                    type="button"
+                    class="delete-btn"
+                    hx-post={`/admin/jobs/${job.id}/delete`}
+                    data-confirm="arm"
+                    hx-target="#page-content"
+                  >
+                    Delete Job
+                  </button>
+                </section>
+              </details>
 
           <details class="uk-card uk-card-body sm:hidden">
             <summary class="text-base font-semibold cursor-pointer">Delete Job</summary>
@@ -486,6 +557,62 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
               </button>
             </section>
           </details>
+            </div>
+
+            <aside class="hidden lg:block">
+              <div class="grid gap-4 lg:sticky" style="top: 92px;">
+                <div class="uk-card uk-card-body">
+                  <h3 class="text-base font-semibold mb-3">Customer</h3>
+                  {customer ? (
+                    <div class="grid gap-2 text-sm">
+                      <p class="font-medium">{customer.first_name} {customer.last_name}</p>
+                      <p class="text-muted-foreground">{customer.email || '-'}</p>
+                      <p class="text-muted-foreground">{customer.phone || '-'}</p>
+                      <div>
+                        <a href={`/admin/customers/${customer.id}/edit`} class="uk-link" hx-get={`/admin/customers/${customer.id}/edit`} hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Open customer</a>
+                      </div>
+                    </div>
+                  ) : (
+                    <p class="text-sm text-muted-foreground">No customer linked.</p>
+                  )}
+                </div>
+
+                <div class="uk-card uk-card-body">
+                  <h3 class="text-base font-semibold mb-3">Service</h3>
+                  <div class="grid gap-2 text-sm">
+                    <div>
+                      <p class="text-xs text-muted-foreground" style="margin:0;">Service</p>
+                      <p class="font-medium" style="margin:0;">{service?.name || job.custom_service_name || 'Custom Service'}</p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-muted-foreground" style="margin:0;">Territory</p>
+                      <p class="font-medium" style="margin:0;">{territory?.name || '-'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+
+      <div class="sm:hidden fixed bottom-0 left-0 right-0 border-t border-border" style="background:var(--bg-card); padding-bottom: var(--safe-bottom);">
+        <div class="px-4 py-3 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            class="uk-btn uk-btn-primary uk-btn-sm"
+            data-sms-thread-modal-open={canOpenSms ? 'true' : undefined}
+            data-sms-thread-modal-title={canOpenSms ? smsTitle : undefined}
+            hx-get={canOpenSms ? `/admin/inbox/${smsThreadMessage?.id}/sms-thread-panel` : undefined}
+            hx-target={canOpenSms ? '#sms-thread-modal-body' : undefined}
+            hx-swap={canOpenSms ? 'innerHTML' : undefined}
+            hx-indicator={canOpenSms ? '#sms-thread-modal-loading' : undefined}
+            disabled={canOpenSms ? undefined : true}
+          >
+            Message
+          </button>
+          <a href="#job-status" class="uk-btn uk-btn-default uk-btn-sm">Status</a>
+          <a href="#job-edit-details" class="uk-btn uk-btn-default uk-btn-sm">Edit</a>
         </div>
       </div>
 
