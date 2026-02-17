@@ -77,6 +77,16 @@ export const Dashboard = ({ stats, upcomingJobs, recentBookings, recentMessages 
     <Layout title="Dashboard">
       <div class="flex items-center justify-between px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
         <h2 class="text-xl font-semibold">Dashboard</h2>
+        <a
+          href="/admin/jobs/new"
+          class="uk-btn uk-btn-primary uk-btn-sm"
+          hx-get="/admin/jobs/new"
+          hx-target="#page-content"
+          hx-select="#page-content"
+          hx-push-url="true"
+        >
+          New Job
+        </a>
       </div>
 
       <div class="p-4 md:p-8">

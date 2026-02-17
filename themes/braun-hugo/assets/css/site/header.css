@@ -282,9 +282,9 @@ body:has(#announcement-bar-root .gh-announcement-bar) .head-member-actions {
 
 .head-member-actions {
     position: sticky;
-    bottom: 0;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + var(--vv-bottom-inset, 0px));
     z-index: 10;
-    padding: 4.8rem 0 1.6rem 0;
+    padding: 4.8rem 0 calc(1.6rem + env(safe-area-inset-bottom, 0px) + var(--vv-bottom-inset, 0px)) 0;
     display: flex;
     align-items: end;
 }
@@ -512,6 +512,14 @@ body:has(#announcement-bar-root .gh-announcement-bar) .head-member-actions {
         width: 100%;
         overflow: hidden;
     }
+    .is-head-open #gh-head {
+        position: fixed;
+        inset: 0;
+        height: var(--vvh, 100svh);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--vv-bottom-inset, 0px));
+    }
     #gh-head .head-menu {
         visibility: hidden;
         opacity: 0;
@@ -562,6 +570,15 @@ body:has(#announcement-bar-root .gh-announcement-bar) .head-member-actions {
         opacity: 1;
         visibility: visible;
         height: auto;
+    }
+    .is-head-open #gh-head .head-inner {
+        min-height: 100%;
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--vv-bottom-inset, 0px));
+    }
+    .is-head-open .head-member-actions {
+        position: sticky;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + var(--vv-bottom-inset, 0px));
+        z-index: 12;
     }
     body.is-head-open {
         overflow: hidden;

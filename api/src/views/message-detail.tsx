@@ -195,11 +195,12 @@ export const SmsHistoryList = ({
   );
 };
 
-export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164, jobOptions, selectedJobId, completedTaskSmsIds, sendResult, taskResult }: {
+export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164, customerName, jobOptions, selectedJobId, completedTaskSmsIds, sendResult, taskResult }: {
   messageId: string;
   smsHistory: SmsLogRow[];
   twilioEnabled: boolean;
   phoneE164: string | null;
+  customerName?: string | null;
   jobOptions: Array<{ id: string; label: string }>;
   selectedJobId: string | null;
   completedTaskSmsIds: string[];
@@ -213,16 +214,31 @@ export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164
 
   return (
   <div id="sms-thread-panel" class="uk-card uk-card-body">
-    <div class="flex items-start justify-between gap-3 pb-3 mb-3" style="border-bottom:1px solid var(--border);">
+     <div class="flex items-start justify-between gap-3 pb-3 mb-3" style="border-bottom:1px solid var(--border);" data-sms-thread-header="1">
       <div class="min-w-0">
         <p class="text-[11px] uppercase tracking-wide text-muted-foreground">Thread</p>
-        <h3 class="text-sm font-semibold truncate" style="margin-top:2px;">{phoneE164}</h3>
+        {customerName && (
+          <span data-sms-thread-customer-name="1" style="display:none;">{customerName}</span>
+        )}
+        <h3 class="text-sm font-semibold truncate" style="margin-top:2px;" data-sms-thread-phone="1">{phoneE164}</h3>
         <p class="text-xs text-muted-foreground" style="margin-top:2px;">
           {visibleSms.length} message{visibleSms.length === 1 ? '' : 's'}
           {lastSms ? ` • Last ${formatTime(lastSms.created_at)}` : ''}
         </p>
       </div>
-      <span class="uk-label uk-label-secondary shrink-0">Live</span>
+      <div class="flex items-center gap-2 shrink-0">
+        <button
+          type="button"
+          class="uk-btn uk-btn-default uk-btn-sm"
+          data-sms-thread-modal-open="move"
+          data-sms-thread-modal-title={customerName || ''}
+          aria-label="Open conversation full screen"
+          style="padding:0 10px;"
+        >
+          Full screen
+        </button>
+        <span class="uk-label uk-label-secondary">Live</span>
+      </div>
     </div>
 
     {sendResult && !sendResult.success && (
@@ -242,7 +258,7 @@ export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164
       <p class="text-xs text-muted-foreground mb-3" style="margin-top:0;">No jobs found for this customer yet.</p>
     )}
 
-    <div>
+    <div data-sms-thread-body="1">
       {(visibleSms.length > 0 || sendResult) && (
         <div
           id="sms-history-scroll"
@@ -277,9 +293,8 @@ export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164
           class="uk-textarea"
           rows={3}
           placeholder="Write a reply..."
-          style="resize:vertical;min-height:84px;font-size:14px;"
+          style="resize:vertical;min-height:84px;font-size:16px;"
           maxlength={1600}
-          autofocus
           oninput="var c=this.value.length;var s=c<=160?1:Math.ceil(c/153);var n=this.form&&this.form.querySelector('[data-sms-counter]');if(n){n.textContent=c+' chars · '+s+' segment'+(s>1?'s':'');}"
         ></textarea>
         <div class="flex items-center justify-between gap-3" style="flex-wrap:wrap;">
@@ -479,6 +494,7 @@ export const MessageDetailPage = ({ message, smsHistory, twilioEnabled, phoneE16
               smsHistory={smsHistory}
               twilioEnabled={twilioEnabled}
               phoneE164={phoneE164}
+              customerName={senderName}
               jobOptions={jobOptions}
               selectedJobId={selectedJobId}
               completedTaskSmsIds={completedTaskSmsIds}

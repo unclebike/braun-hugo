@@ -64,6 +64,24 @@
                 document.documentElement.setAttribute('data-theme', 'dark');
             }
         })();
+        (function() {
+            var root = document.documentElement;
+            var vv = window.visualViewport;
+            function setViewportVars() {
+                var viewportHeight = vv ? vv.height : window.innerHeight;
+                var bottomInset = vv ? Math.max(0, window.innerHeight - (vv.height + vv.offsetTop)) : 0;
+                root.style.setProperty('--vvh', viewportHeight + 'px');
+                root.style.setProperty('--vv-bottom-inset', bottomInset + 'px');
+            }
+            setViewportVars();
+            window.addEventListener('resize', setViewportVars, { passive: true });
+            window.addEventListener('orientationchange', setViewportVars);
+            window.addEventListener('pageshow', setViewportVars);
+            if (vv) {
+                vv.addEventListener('resize', setViewportVars);
+                vv.addEventListener('scroll', setViewportVars);
+            }
+        })();
     </script>
 
     <style>
@@ -200,6 +218,30 @@
         .photo-pile .card:nth-child(9) { transform: rotate(-6deg) translateY(-3px); }
         @media (max-width: 600px) { .photo-pile { grid-template-columns: repeat(2, 1fr); padding: 1rem 0; } .photo-pile .card { margin: -12px; } }
         [data-theme="dark"] .photo-pile .card { background: transparent; }
+
+        @media (max-width: 767px) {
+            .head-member-actions {
+                bottom: calc(env(safe-area-inset-bottom, 0px) + var(--vv-bottom-inset, 0px));
+                padding-bottom: calc(1.6rem + env(safe-area-inset-bottom, 0px) + var(--vv-bottom-inset, 0px));
+            }
+            .is-head-open #gh-head {
+                position: fixed;
+                inset: 0;
+                height: var(--vvh, 100svh);
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--vv-bottom-inset, 0px));
+            }
+            .is-head-open #gh-head .head-inner {
+                min-height: 100%;
+                padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--vv-bottom-inset, 0px));
+            }
+            .is-head-open .head-member-actions {
+                position: sticky;
+                bottom: calc(env(safe-area-inset-bottom, 0px) + var(--vv-bottom-inset, 0px));
+                z-index: 12;
+            }
+        }
     </style>
 </head>
 <body class="{{ if .IsHome }}home-template{{ else }}post-template{{ end }}">
@@ -353,6 +395,21 @@
         setTimeout(syncExpanded, 0);
       });
       new MutationObserver(syncExpanded).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    })();
+    (function() {
+      var closeMenuForWidgetOpen = function() {
+        if (!document.body.classList.contains('is-head-open')) return;
+        if (window.matchMedia('(min-width: 768px)').matches) return;
+        document.body.classList.remove('is-head-open');
+        var burger = document.querySelector('.gh-burger');
+        if (burger) burger.setAttribute('aria-expanded', 'false');
+      };
+
+      document.addEventListener('click', function(e) {
+        var trigger = e.target.closest('[data-zbw-open], #zenbooker-trigger');
+        if (!trigger) return;
+        closeMenuForWidgetOpen();
+      }, true);
     })();
     (function() {
       if (!('serviceWorker' in navigator)) return;

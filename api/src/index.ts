@@ -21,7 +21,7 @@ import webhooksRoutes from './routes/webhooks';
 import twilioWebhooksRoutes from './routes/twilio-webhooks';
 import { BOOKING_WIDGET_DEMO, BOOKING_WIDGET_JS, BOOKING_WIDGET_POPUP } from './widget/embed';
 
-const app = new Hono<{ Bindings: { DB: D1Database; ASSETS: any } }>();
+const app = new Hono<{ Bindings: { DB: D1Database; ASSETS: any; MAPBOX_ACCESS_TOKEN?: string } }>();
 
 app.onError((err, c) => {
   console.error('Unhandled error:', err.message, err.stack);
@@ -32,6 +32,10 @@ app.use('/v1/*', cors());
 app.use('/widget/*', cors());
 app.get('/fonts/*', (c) => c.env.ASSETS.fetch(c.req.raw));
 app.get('/images/*', (c) => c.env.ASSETS.fetch(c.req.raw));
+app.get('/admin.js', (c) => c.env.ASSETS.fetch(c.req.raw));
+app.get('/admin.webmanifest', (c) => c.env.ASSETS.fetch(c.req.raw));
+app.get('/admin-sw.js', (c) => c.env.ASSETS.fetch(c.req.raw));
+app.get('/admin-offline.html', (c) => c.env.ASSETS.fetch(c.req.raw));
 app.use('/admin/*', async (c, next) => {
   await next();
   c.header('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -54,6 +58,47 @@ const getWidgetPrimaryColor = async (db: D1Database) => {
   } catch {
   }
   return primaryColor;
+};
+
+type WidgetMapboxFeature = {
+  properties?: {
+    full_address?: string;
+    name?: string;
+    context?: {
+      place?: { name?: string };
+      region?: { region_code?: string };
+      postcode?: { name?: string };
+    };
+  };
+  geometry?: { coordinates?: [number, number] };
+};
+
+const normalizeWidgetFeature = (f: WidgetMapboxFeature) => {
+  const properties = f.properties || {};
+  const context = properties.context || {};
+  const rawRegion = context.region?.region_code || '';
+  const normalizedRegion = rawRegion.startsWith('CA-') ? rawRegion.slice(3) : rawRegion;
+  return {
+    properties: {
+      full_address: properties.full_address || '',
+      name: properties.name || '',
+      context: {
+        place: { name: context.place?.name || '' },
+        region: { region_code: normalizedRegion },
+        postcode: { name: context.postcode?.name || '' },
+      },
+    },
+    geometry: {
+      coordinates: Array.isArray(f.geometry?.coordinates) ? f.geometry.coordinates : [0, 0],
+    },
+  };
+};
+
+const normalizeProximity = (raw: string) => {
+  if (!raw) return 'ip';
+  if (raw === 'ip') return 'ip';
+  if (/^-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?$/.test(raw)) return raw;
+  return 'ip';
 };
 
 app.get('/widget/booking-widget.js', async (c) => {
@@ -87,6 +132,32 @@ app.get('/widget/demo', async (c) => {
   const primaryColor = await getWidgetPrimaryColor(c.env.DB);
   const html = BOOKING_WIDGET_DEMO.replace(/'#2563eb'/g, `'${primaryColor}'`);
   return c.html(html);
+});
+
+app.get('/widget/address/search', async (c) => {
+  const q = (c.req.query('q') || '').trim();
+  const proximity = normalizeProximity((c.req.query('proximity') || '').trim());
+  if (q.length < 3) {
+    return c.json({ features: [] });
+  }
+
+  const token = c.env.MAPBOX_ACCESS_TOKEN || '';
+  if (!token) {
+    return c.json({ features: [] });
+  }
+
+  try {
+    const url = `https://api.mapbox.com/search/geocode/v6/forward?q=${encodeURIComponent(q)}&country=ca&types=address&limit=5&proximity=${encodeURIComponent(proximity)}&access_token=${encodeURIComponent(token)}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      return c.json({ features: [] });
+    }
+    const data = await res.json() as { features?: WidgetMapboxFeature[] };
+    const features = (data.features || []).map(normalizeWidgetFeature);
+    return c.json({ features });
+  } catch {
+    return c.json({ features: [] });
+  }
 });
 
 const api = new Hono<{ Bindings: { DB: D1Database } }>();
