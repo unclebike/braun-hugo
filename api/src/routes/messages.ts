@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
+import { enqueueAndDispatchPushEvent } from '../services/notifications';
 
 const app = new Hono<{ Bindings: { DB: D1Database } }>();
 
@@ -71,6 +72,35 @@ app.post('/submit', zValidator('json', messageSchema), async (c) => {
     'body' in data ? data.body : null,
     'metadata' in data && data.metadata ? JSON.stringify(data.metadata) : null,
   ).run();
+
+  const sourceLabel = data.source.charAt(0).toUpperCase() + data.source.slice(1);
+  const senderLabel = data.source === 'newsletter'
+    ? data.email
+    : [
+      'first_name' in data ? data.first_name : '',
+      'last_name' in data ? data.last_name : '',
+    ].filter(Boolean).join(' ').trim() || data.email;
+
+  const messagePreview = (
+    data.source === 'contact'
+      ? data.body
+      : subject
+  ).replace(/\s+/g, ' ').trim().slice(0, 160);
+
+  const title = data.source === 'newsletter'
+    ? 'New newsletter signup'
+    : data.source === 'registration'
+      ? `New registration from ${senderLabel}`
+      : `New ${sourceLabel} message from ${senderLabel}`;
+
+  c.executionCtx.waitUntil(
+    enqueueAndDispatchPushEvent(db, {
+      type: 'new_message',
+      title,
+      body: messagePreview || subject,
+      targetUrl: `/admin/inbox/${id}`,
+    })
+  );
 
   return c.json({ id, message: 'Message received' }, 201);
 });
