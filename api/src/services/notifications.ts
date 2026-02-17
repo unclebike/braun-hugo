@@ -178,7 +178,18 @@ async function createVapidJwt(audOrigin: string, subject: string, privateKeyJwk:
     key,
     new TextEncoder().encode(signingInput),
   ));
-  const sigJose = derToJose(sigDer);
+
+  // Cloudflare Workers returns ECDSA signatures in JOSE (raw R||S) format (64 bytes for P-256).
+  // Some runtimes return ASN.1 DER. Support both.
+  let sigJose: Uint8Array;
+  if (sigDer.length === 64) {
+    sigJose = sigDer;
+  } else if (sigDer.length > 0 && sigDer[0] === 0x30) {
+    sigJose = derToJose(sigDer);
+  } else {
+    throw new Error('Unsupported ECDSA signature format');
+  }
+
   const sigB64 = base64UrlEncode(sigJose);
   return `${signingInput}.${sigB64}`;
 }
