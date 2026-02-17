@@ -1,3 +1,6 @@
+/* biome-ignore-all lint/correctness/noInnerDeclarations: legacy script file */
+/* biome-ignore-all lint/suspicious/noRedeclare: legacy script file */
+
 /* --- Named handlers for proper cleanup --- */
 function _onRadiusMilesInput() { updateRadius(); }
 function _onRadiusLatChange() { updateRadius(); }
@@ -618,12 +621,25 @@ function openSmsThreadModalOverlay() {
   overlay.setAttribute('data-open', 'true');
   overlay.style.setProperty('display', 'flex', 'important');
   lockBodyScrollForModal();
+
+  // Add a history entry so the browser Back button closes the modal.
+  try {
+    if (window.history && window.history.pushState) {
+      var st = window.history.state;
+      if (!st || st.__smsThreadModal !== true) {
+        window.history.pushState(Object.assign({}, st || {}, { __smsThreadModal: true }), '');
+      }
+    }
+  } catch {
+  }
+
   return true;
 }
 
-function closeSmsThreadModalOverlay() {
+function closeSmsThreadModalOverlay(opts) {
   var overlay = document.getElementById('sms-thread-modal-overlay');
   if (!overlay) return;
+  var skipHistory = opts && opts.skipHistory ? true : false;
   var content = document.getElementById('sms-thread-modal-body') || document.getElementById('sms-thread-modal-content');
   var restored = false;
 
@@ -655,7 +671,21 @@ function closeSmsThreadModalOverlay() {
   overlay.style.setProperty('display', 'none', 'important');
   overlay.hidden = true;
   unlockBodyScrollForModal();
+
+  // If this modal was opened via pushState, revert history so Back doesn't jump away.
+  try {
+    if (!skipHistory && window.history && window.history.state && window.history.state.__smsThreadModal === true) {
+      window.history.back();
+    }
+  } catch {
+  }
 }
+
+// Handle Back button while modal is open.
+window.addEventListener('popstate', function() {
+  if (!isSmsThreadModalOpen()) return;
+  closeSmsThreadModalOverlay({ skipHistory: true });
+});
 
 function moveSmsThreadPanelIntoModal(panelEl) {
   var content = document.getElementById('sms-thread-modal-body') || document.getElementById('sms-thread-modal-content');
