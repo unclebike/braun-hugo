@@ -48,10 +48,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          TAG="gh-${GITHUB_SHA:0:12}"
           OUT=$(npx wrangler versions upload src/index.ts \
             --cwd api \
             --config wrangler.toml \
-            --tag "${GITHUB_SHA}" \
+            --tag "${TAG}" \
             --message "github ${GITHUB_SHA}")
           echo "$OUT"
           VERSION_ID=$(echo "$OUT" | grep -Eo '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -n 1)
