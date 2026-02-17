@@ -1,6 +1,7 @@
 name = "zenbooker-api"
 main = "src/index.ts"
 compatibility_date = "2024-09-23"
+account_id = "7e5b73319badf4c429b8018988b72cbb"
 
 [assets]
 directory = "src/assets"
