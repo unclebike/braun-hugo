@@ -517,13 +517,13 @@ a.uk-link { color: var(--brand) !important; }
             flex: 1;
             min-height: 0;
             overflow: hidden;
-            padding: 12px;
+            padding: 0;
             display: flex;
             flex-direction: column;
           }
           #sms-thread-modal-status {
             display: block;
-            padding: 0;
+            padding: 12px calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left));
           }
           #sms-thread-modal-loading {
             display: none;
@@ -575,7 +575,8 @@ a.uk-link { color: var(--brand) !important; }
           #sms-thread-modal-body {
             flex: 1;
             min-height: 0;
-            }
+            padding: 0;
+          }
           #sms-thread-modal-body #sms-thread-panel {
             height: 100%;
             display: flex;
@@ -601,14 +602,24 @@ a.uk-link { color: var(--brand) !important; }
             display: flex;
             flex-direction: column;
           }
+          #sms-thread-modal-body #sms-thread-panel [data-sms-thread-body] {
+            padding: 0 calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left));
+          }
           #sms-thread-modal-body #sms-history-scroll {
             max-height: none !important;
             flex: 1;
             min-height: 0;
             overflow-y: auto !important;
           }
+          #sms-thread-modal-body #sms-history-scroll {
+            padding: 10px 0 12px 0 !important;
+          }
           #sms-thread-modal-body #sms-thread-panel form {
-            padding-bottom: calc(16px + var(--safe-bottom));
+            margin-left: calc(-1 * (12px + var(--safe-left)));
+            margin-right: calc(-1 * (12px + var(--safe-right)));
+            padding: 12px calc(12px + var(--safe-right)) calc(18px + var(--safe-bottom)) calc(12px + var(--safe-left));
+            border-top: 1px solid var(--border);
+            background: var(--bg);
           }
           #sms-thread-modal-body #sms-thread-panel form textarea {
             margin-bottom: 2px;
