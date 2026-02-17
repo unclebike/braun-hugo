@@ -510,14 +510,73 @@ a.uk-link { color: var(--brand) !important; }
             border-bottom: 1px solid var(--border);
             background: var(--bg-card);
           }
-          #sms-thread-modal-header h3 { margin: 0; font-size: 14px; font-weight: 600; }
+          #sms-thread-modal-header h3 { margin: 0; font-size: 15px; font-weight: 650; letter-spacing: -0.2px; line-height: 1.2; }
+          #sms-thread-modal-actions { display: inline-flex; align-items: center; gap: 8px; }
+          #sms-thread-modal-open-inbox { text-decoration: none; }
           #sms-thread-modal-content {
             flex: 1;
             min-height: 0;
             overflow: hidden;
             padding: 12px;
+            display: flex;
+            flex-direction: column;
           }
-          #sms-thread-modal-content #sms-thread-panel {
+          #sms-thread-modal-status {
+            display: block;
+            padding: 0;
+          }
+          #sms-thread-modal-loading {
+            display: none;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: rgba(0,0,0,0.02);
+            margin-bottom: 12px;
+          }
+          #sms-thread-modal-loading.htmx-request { display: block; }
+          #sms-thread-modal-loading .skel { display: flex; flex-direction: column; gap: 10px; }
+          #sms-thread-modal-loading .skel-row { display: flex; align-items: center; gap: 10px; }
+          #sms-thread-modal-loading .skel-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.08);
+            flex: 0 0 auto;
+          }
+          #sms-thread-modal-loading .skel-line {
+            height: 12px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.06), rgba(0,0,0,0.10), rgba(0,0,0,0.06));
+            background-size: 240% 100%;
+            animation: smsSkel 1.15s ease-in-out infinite;
+          }
+          #sms-thread-modal-loading .skel-line.w-30 { width: 30%; }
+          #sms-thread-modal-loading .skel-line.w-45 { width: 45%; }
+          #sms-thread-modal-loading .skel-line.w-70 { width: 70%; }
+          #sms-thread-modal-loading .skel-line.w-85 { width: 85%; }
+          @keyframes smsSkel {
+            0% { background-position: 100% 0; }
+            100% { background-position: 0 0; }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            #sms-thread-modal-loading .skel-line { animation: none; background: rgba(0,0,0,0.08); }
+          }
+          #sms-thread-modal-error {
+            display: none;
+            padding: 12px;
+            border: 1px solid rgba(239,68,68,0.35);
+            border-radius: 12px;
+            background: rgba(239,68,68,0.08);
+            color: #b91c1c;
+            font-size: 13px;
+            margin-bottom: 12px;
+          }
+          #sms-thread-modal-error[data-open="true"] { display: block; }
+          #sms-thread-modal-body {
+            flex: 1;
+            min-height: 0;
+            }
+          #sms-thread-modal-body #sms-thread-panel {
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -526,15 +585,16 @@ a.uk-link { color: var(--brand) !important; }
             border: 0 !important;
             padding: 0 !important;
           }
-          #sms-thread-modal-content #sms-thread-panel [data-sms-thread-modal-open="move"] { display: none; }
-          #sms-thread-modal-content #sms-thread-panel [data-sms-thread-body] {
+          #sms-thread-modal-body #sms-thread-panel [data-sms-thread-modal-open] { display: none !important; }
+          #sms-thread-modal-body #sms-thread-panel [data-sms-thread-header] { display: none; }
+          #sms-thread-modal-body #sms-thread-panel [data-sms-thread-body] {
             flex: 1;
             min-height: 0;
             overflow: hidden;
             display: flex;
             flex-direction: column;
           }
-          #sms-thread-modal-content #sms-history-scroll {
+          #sms-thread-modal-body #sms-history-scroll {
             max-height: none !important;
             flex: 1;
             min-height: 0;
@@ -542,6 +602,7 @@ a.uk-link { color: var(--brand) !important; }
           }
 
           @media (min-width: 768px) {
+            #sms-thread-modal-header h3 { font-size: 16px; }
             #sms-thread-modal-overlay {
               padding: 24px;
               align-items: center;
@@ -657,9 +718,25 @@ a.uk-link { color: var(--brand) !important; }
           <div id="sms-thread-modal-panel" role="dialog" aria-modal="true" aria-label="SMS conversation">
             <div id="sms-thread-modal-header">
               <h3>Conversation</h3>
-              <button type="button" class="uk-btn uk-btn-default uk-btn-sm" data-sms-thread-modal-close aria-label="Close conversation">Close</button>
+              <div id="sms-thread-modal-actions">
+                <a id="sms-thread-modal-open-inbox" class="uk-btn uk-btn-default uk-btn-sm" href="/admin/inbox" style="display:none;">Inbox</a>
+                <button type="button" class="uk-btn uk-btn-default uk-btn-sm" data-sms-thread-modal-close aria-label="Close conversation">Close</button>
+              </div>
             </div>
-            <div id="sms-thread-modal-content"></div>
+            <div id="sms-thread-modal-content">
+              <div id="sms-thread-modal-status">
+                <div id="sms-thread-modal-loading" aria-live="polite" aria-busy="true">
+                  <div class="skel" aria-hidden="true">
+                    <div class="skel-row"><span class="skel-dot"></span><span class="skel-line w-45"></span></div>
+                    <div class="skel-row"><span class="skel-dot"></span><span class="skel-line w-70"></span></div>
+                    <div class="skel-row"><span class="skel-dot"></span><span class="skel-line w-85"></span></div>
+                    <div class="skel-row"><span class="skel-dot"></span><span class="skel-line w-30"></span></div>
+                  </div>
+                </div>
+                <div id="sms-thread-modal-error" role="alert"></div>
+              </div>
+              <div id="sms-thread-modal-body"></div>
+            </div>
           </div>
         </div>
 

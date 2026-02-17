@@ -3505,6 +3505,19 @@ app.get('/inbox/:id', async (c) => {
   }));
 });
 
+app.get('/inbox/:id/sms-thread-panel', async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param('id');
+  const twilioEnabled = await isTwilioEnabled(db);
+  const { phoneE164, smsHistory } = await getInboxSmsContext(db, id);
+  const { jobOptions, selectedJobId } = await getInboxJobContext(db, id);
+  const completedTaskSmsIds = await getCompletedSmsTaskIds(db, selectedJobId);
+  c.header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  c.header('Pragma', 'no-cache');
+  c.header('Expires', '0');
+  return c.html(SmsThreadPanel({ messageId: id, smsHistory, twilioEnabled, phoneE164, jobOptions, selectedJobId, completedTaskSmsIds }));
+});
+
 app.get('/inbox/:id/sms-thread', async (c) => {
   const db = c.env.DB;
   const id = c.req.param('id');

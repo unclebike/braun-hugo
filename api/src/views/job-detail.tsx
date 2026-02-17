@@ -176,12 +176,13 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage }: {
               type="button"
               class="uk-btn uk-btn-default uk-btn-sm"
               data-sms-thread-modal-open="true"
-              hx-get={`/admin/inbox/${smsThreadMessage.id}`}
-              hx-target="#sms-thread-modal-content"
-              hx-select="#sms-thread-panel"
+              hx-get={`/admin/inbox/${smsThreadMessage.id}/sms-thread-panel`}
+              hx-target="#sms-thread-modal-body"
               hx-swap="innerHTML"
+              hx-indicator="#sms-thread-modal-loading"
+              aria-label="View SMS conversation"
             >
-              Open conversation
+              View SMS
             </button>
           </div>
         </div>

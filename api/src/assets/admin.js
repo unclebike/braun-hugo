@@ -521,6 +521,9 @@ function focusSmsComposerWithRetries() {
 
 var _smsThreadModalRestore = null;
 var _smsThreadModalPrevOverflow = null;
+var _smsThreadModalLastUrl = null;
+var _smsThreadModalLastInboxUrl = null;
+var _smsThreadModalOpenMode = null;
 
 function isSmsThreadModalOpen() {
   var overlay = document.getElementById('sms-thread-modal-overlay');
@@ -552,13 +555,43 @@ function setSmsThreadModalTitle(text) {
   titleEl.textContent = text || 'Conversation';
 }
 
+function setSmsThreadModalInboxLink(href) {
+  var link = document.getElementById('sms-thread-modal-open-inbox');
+  if (!link) return;
+  if (!href) {
+    link.style.display = 'none';
+    link.setAttribute('href', '/admin/inbox');
+    return;
+  }
+  link.setAttribute('href', href);
+  link.style.display = 'inline-flex';
+}
+
 function syncSmsThreadModalTitleFromContent() {
   var overlay = document.getElementById('sms-thread-modal-overlay');
   if (!overlay) return;
-  var phoneEl = overlay.querySelector('#sms-thread-modal-content [data-sms-thread-phone]');
+  var phoneEl = overlay.querySelector('#sms-thread-modal-body [data-sms-thread-phone]')
+    || overlay.querySelector('#sms-thread-modal-content [data-sms-thread-phone]');
   if (!phoneEl) return;
   var t = String(phoneEl.textContent || '').trim();
   if (t) setSmsThreadModalTitle(t);
+}
+
+function setSmsThreadModalError(html) {
+  var el = document.getElementById('sms-thread-modal-error');
+  if (!el) return;
+  if (!html) {
+    el.innerHTML = '';
+    el.removeAttribute('data-open');
+    return;
+  }
+  el.innerHTML = html;
+  el.setAttribute('data-open', 'true');
+}
+
+function clearSmsThreadModalBody() {
+  var body = document.getElementById('sms-thread-modal-body');
+  if (body) body.innerHTML = '';
 }
 
 function openSmsThreadModalOverlay() {
@@ -574,7 +607,7 @@ function openSmsThreadModalOverlay() {
 function closeSmsThreadModalOverlay() {
   var overlay = document.getElementById('sms-thread-modal-overlay');
   if (!overlay) return;
-  var content = document.getElementById('sms-thread-modal-content');
+  var content = document.getElementById('sms-thread-modal-body') || document.getElementById('sms-thread-modal-content');
   var restored = false;
 
   if (_smsThreadModalRestore && _smsThreadModalRestore.panel && _smsThreadModalRestore.placeholder) {
@@ -594,6 +627,12 @@ function closeSmsThreadModalOverlay() {
     content.innerHTML = '';
   }
 
+  setSmsThreadModalError('');
+  setSmsThreadModalInboxLink('');
+  _smsThreadModalLastUrl = null;
+  _smsThreadModalLastInboxUrl = null;
+  _smsThreadModalOpenMode = null;
+
   overlay.setAttribute('data-open', 'false');
   overlay.style.setProperty('display', 'none', 'important');
   overlay.hidden = true;
@@ -601,10 +640,10 @@ function closeSmsThreadModalOverlay() {
 }
 
 function moveSmsThreadPanelIntoModal(panelEl) {
-  var content = document.getElementById('sms-thread-modal-content');
+  var content = document.getElementById('sms-thread-modal-body') || document.getElementById('sms-thread-modal-content');
   var placeholder = null;
   if (!panelEl || !content) return;
-  if (panelEl.closest && panelEl.closest('#sms-thread-modal-content')) return;
+  if (panelEl.closest && (panelEl.closest('#sms-thread-modal-body') || panelEl.closest('#sms-thread-modal-content'))) return;
   if (_smsThreadModalRestore) return;
 
   placeholder = document.createElement('div');
@@ -617,7 +656,9 @@ function moveSmsThreadPanelIntoModal(panelEl) {
 
   syncSmsThreadModalTitleFromContent();
   requestAnimationFrame(scrollSmsThreadToBottom);
-  requestAnimationFrame(focusSmsComposerWithRetries);
+  if (_smsThreadModalOpenMode === 'move') {
+    requestAnimationFrame(focusSmsComposerWithRetries);
+  }
 }
 
 document.addEventListener('click', function(e) {
@@ -646,13 +687,20 @@ document.addEventListener('click', function(e) {
   var opener = target && target.closest ? target.closest('[data-sms-thread-modal-open]') : null;
   var mode = opener ? String(opener.getAttribute('data-sms-thread-modal-open') || '').trim() : '';
   var panelEl = null;
-  var content = document.getElementById('sms-thread-modal-content');
+  var body = document.getElementById('sms-thread-modal-body');
+  var hxGet = opener ? opener.getAttribute('hx-get') : null;
   if (!opener) return;
   if (!openSmsThreadModalOverlay()) return;
 
   if (mode === 'move') {
     e.preventDefault();
     e.stopPropagation();
+    _smsThreadModalOpenMode = 'move';
+    if (window.location && typeof window.location.pathname === 'string' && window.location.pathname.indexOf('/admin/inbox/') === 0) {
+      setSmsThreadModalInboxLink(window.location.pathname);
+    } else {
+      setSmsThreadModalInboxLink('/admin/inbox');
+    }
     panelEl = opener.closest('#sms-thread-panel') || document.getElementById('sms-thread-panel');
     if (panelEl) {
       setSmsThreadModalTitle('Conversation');
@@ -661,12 +709,27 @@ document.addEventListener('click', function(e) {
     return;
   }
 
-  // For non-move mode, let HTMX handle the request
   setSmsThreadModalTitle('Conversation');
-  if (content) {
-    content.innerHTML = '<div class="text-sm text-muted-foreground" style="padding:12px;">Loading conversation…</div>';
+  _smsThreadModalOpenMode = 'load';
+  setSmsThreadModalError('');
+  if (body) body.innerHTML = '';
+  if (hxGet) {
+    _smsThreadModalLastUrl = hxGet;
+    var m = /\/admin\/inbox\/([^/?#]+)/.exec(hxGet);
+    _smsThreadModalLastInboxUrl = (m && m[1]) ? ('/admin/inbox/' + m[1]) : null;
+    if (_smsThreadModalLastInboxUrl) setSmsThreadModalInboxLink(_smsThreadModalLastInboxUrl);
   }
 }, true);
+
+document.addEventListener('click', function(e) {
+  var target = e && e.target ? e.target : null;
+  var retryBtn = target && target.closest ? target.closest('[data-sms-thread-modal-retry]') : null;
+  if (!retryBtn) return;
+  if (!_smsThreadModalLastUrl || typeof htmx === 'undefined') return;
+  e.preventDefault();
+  setSmsThreadModalError('');
+  htmx.ajax('GET', _smsThreadModalLastUrl, { target: '#sms-thread-modal-body', swap: 'innerHTML' });
+});
 
 function recalcInvoiceTotal() {
   var lineItems = document.getElementById('line_items_text');
@@ -939,10 +1002,9 @@ document.addEventListener('htmx:afterSwap', function(e) {
     }
     return;
   }
-  if (target.id === 'sms-thread-modal-content') {
+  if (target.id === 'sms-thread-modal-body') {
     requestAnimationFrame(scrollSmsThreadToBottom);
     requestAnimationFrame(syncSmsThreadModalTitleFromContent);
-    requestAnimationFrame(focusSmsComposerWithRetries);
     return;
   }
   if (target.id === 'page-content') {
@@ -953,6 +1015,20 @@ document.addEventListener('htmx:afterSwap', function(e) {
       requestAnimationFrame(scrollSmsThreadToBottom);
     });
   }
+});
+
+document.addEventListener('htmx:afterRequest', function(e) {
+  var cfg = e && e.detail ? e.detail.requestConfig : null;
+  var target = cfg && cfg.target ? cfg.target : '';
+  if (target !== '#sms-thread-modal-body') return;
+  if (e.detail && e.detail.successful) return;
+
+  var openInInbox = _smsThreadModalLastInboxUrl || '';
+  var retry = '<button type="button" class="uk-btn uk-btn-default uk-btn-sm" data-sms-thread-modal-retry style="margin-right:8px;">Retry</button>';
+  var inbox = openInInbox
+    ? ('<a class="uk-btn uk-btn-default uk-btn-sm" href="' + openInInbox + '">Open in inbox</a>')
+    : '';
+  setSmsThreadModalError('Could not load conversation. ' + retry + inbox);
 });
 
 document.addEventListener('DOMContentLoaded', function() {

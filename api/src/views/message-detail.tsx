@@ -216,7 +216,7 @@ export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164
 
   return (
   <div id="sms-thread-panel" class="uk-card uk-card-body">
-    <div class="flex items-start justify-between gap-3 pb-3 mb-3" style="border-bottom:1px solid var(--border);">
+     <div class="flex items-start justify-between gap-3 pb-3 mb-3" style="border-bottom:1px solid var(--border);" data-sms-thread-header="1">
       <div class="min-w-0">
         <p class="text-[11px] uppercase tracking-wide text-muted-foreground">Thread</p>
         <h3 class="text-sm font-semibold truncate" style="margin-top:2px;" data-sms-thread-phone="1">{phoneE164}</h3>
@@ -293,7 +293,6 @@ export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164
           placeholder="Write a reply..."
           style="resize:vertical;min-height:84px;font-size:16px;"
           maxlength={1600}
-          autofocus
           oninput="var c=this.value.length;var s=c<=160?1:Math.ceil(c/153);var n=this.form&&this.form.querySelector('[data-sms-counter]');if(n){n.textContent=c+' chars · '+s+' segment'+(s>1?'s':'');}"
         ></textarea>
         <div class="flex items-center justify-between gap-3" style="flex-wrap:wrap;">

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'unclebike-admin-pwa-v1';
+const CACHE_NAME = 'unclebike-admin-pwa-v2';
 const ADMIN_CACHE_PREFIX = 'unclebike-admin-pwa-';
 const APP_SHELL = [
   '/admin-offline.html',
