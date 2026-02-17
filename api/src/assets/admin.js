@@ -566,6 +566,7 @@ function openSmsThreadModalOverlay() {
   if (!overlay) return false;
   overlay.hidden = false;
   overlay.setAttribute('data-open', 'true');
+  overlay.style.display = 'flex';
   lockBodyScrollForModal();
   return true;
 }
@@ -594,6 +595,7 @@ function closeSmsThreadModalOverlay() {
   }
 
   overlay.setAttribute('data-open', 'false');
+  overlay.style.display = 'none';
   overlay.hidden = true;
   unlockBodyScrollForModal();
 }
@@ -646,6 +648,8 @@ document.addEventListener('click', function(e) {
   var panelEl = null;
   var content = document.getElementById('sms-thread-modal-content');
   if (!opener) return;
+  e.preventDefault();
+  e.stopPropagation();
   if (!openSmsThreadModalOverlay()) return;
 
   if (mode === 'move') {
