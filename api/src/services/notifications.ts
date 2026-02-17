@@ -183,22 +183,47 @@ async function createVapidJwt(audOrigin: string, subject: string, privateKeyJwk:
   return `${signingInput}.${sigB64}`;
 }
 
-async function ensureQueueTable(db: D1Database): Promise<void> {
+async function ensurePushTables(db: D1Database): Promise<void> {
   // Best-effort table creation so deployments don't depend on migrations.
+  // Keep this aligned with `migrations/0010_add_push_notifications.sql`.
   await db.prepare(
-    `CREATE TABLE IF NOT EXISTS push_notification_queue (
+    `CREATE TABLE IF NOT EXISTS push_subscriptions (
       id TEXT PRIMARY KEY,
-      endpoint TEXT NOT NULL,
-      staff_email TEXT,
-      title TEXT NOT NULL,
-      body TEXT NOT NULL,
-      url TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      user_email TEXT NOT NULL,
+      endpoint TEXT NOT NULL UNIQUE,
+      p256dh TEXT NOT NULL,
+      auth TEXT NOT NULL,
+      notify_new_jobs INTEGER NOT NULL DEFAULT 1,
+      notify_new_messages INTEGER NOT NULL DEFAULT 1,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      last_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     )`
   ).run();
 
   await db.prepare(
-    'CREATE INDEX IF NOT EXISTS idx_push_queue_endpoint_created ON push_notification_queue(endpoint, created_at)'
+    `CREATE TABLE IF NOT EXISTS push_notification_queue (
+      id TEXT PRIMARY KEY,
+      subscription_id TEXT NOT NULL,
+      event_type TEXT NOT NULL CHECK (event_type IN ('new_job', 'new_message')),
+      title TEXT NOT NULL,
+      body TEXT,
+      target_url TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      delivered_at TEXT,
+      FOREIGN KEY (subscription_id) REFERENCES push_subscriptions(id) ON DELETE CASCADE
+    )`
+  ).run();
+
+  await db.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user_email ON push_subscriptions(user_email)'
+  ).run();
+  await db.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_push_subscriptions_endpoint ON push_subscriptions(endpoint)'
+  ).run();
+  await db.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_push_queue_subscription_id ON push_notification_queue(subscription_id)'
   ).run();
 }
 
@@ -231,40 +256,60 @@ export async function upsertPushSubscription(
   subscription: PushSubscriptionInput,
   _preferences: PushSubscriptionPreferences,
 ): Promise<void> {
-  // Current migration only stores endpoint + keys. Keep schema flexible; staffEmail/preferences are
-  // used for future targeting but won't block subscription persistence.
   const endpoint = subscription.endpoint.trim();
   const auth = subscription.keys.auth.trim();
   const p256dh = subscription.keys.p256dh.trim();
   if (!endpoint || !auth || !p256dh) throw new Error('endpoint and keys are required');
 
-  await db.prepare(
-    `INSERT INTO push_subscriptions (id, endpoint, auth_key, p256dh_key, created_at, updated_at)
-     VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
-     ON CONFLICT(endpoint) DO UPDATE SET
-       auth_key = excluded.auth_key,
-       p256dh_key = excluded.p256dh_key,
-       updated_at = datetime('now')`
-  ).bind(crypto.randomUUID(), endpoint, auth, p256dh).run();
+  await ensurePushTables(db);
 
-  // Store last-known preferences per staff email (best-effort, JSON value).
-  // This avoids schema changes while letting /push/status reflect checkbox state.
-  const prefsKey = `push_prefs:${staffEmail.trim().toLowerCase()}`;
-  try {
-    await setSetting(db, prefsKey, JSON.stringify(_preferences));
-  } catch {
-    // ignore
-  }
+  const userEmail = staffEmail.trim().toLowerCase();
+  const notifyNewJobs = _preferences.notifyNewJobs ? 1 : 0;
+  const notifyNewMessages = _preferences.notifyNewMessages ? 1 : 0;
+
+  await db.prepare(
+    `INSERT INTO push_subscriptions (
+       id, user_email, endpoint, p256dh, auth,
+       notify_new_jobs, notify_new_messages,
+       is_active, last_seen_at, created_at, updated_at
+     )
+     VALUES (?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'), datetime('now'))
+     ON CONFLICT(endpoint) DO UPDATE SET
+       user_email = excluded.user_email,
+       p256dh = excluded.p256dh,
+       auth = excluded.auth,
+       notify_new_jobs = excluded.notify_new_jobs,
+       notify_new_messages = excluded.notify_new_messages,
+       is_active = 1,
+       last_seen_at = datetime('now'),
+       updated_at = datetime('now')`
+  ).bind(
+    crypto.randomUUID(),
+    userEmail,
+    endpoint,
+    p256dh,
+    auth,
+    notifyNewJobs,
+    notifyNewMessages,
+  ).run();
 }
 
 export async function deactivatePushSubscription(
   db: D1Database,
-  _staffEmail: string,
+  staffEmail: string,
   endpoint: string,
 ): Promise<void> {
   const trimmed = endpoint.trim();
   if (!trimmed) return;
-  await db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?').bind(trimmed).run();
+
+  await ensurePushTables(db);
+
+  const userEmail = staffEmail.trim().toLowerCase();
+  await db.prepare(
+    `UPDATE push_subscriptions
+     SET is_active = 0, updated_at = datetime('now')
+     WHERE user_email = ? AND endpoint = ?`
+  ).bind(userEmail, trimmed).run();
 }
 
 export async function getPushSubscriptionStatus(
@@ -272,57 +317,81 @@ export async function getPushSubscriptionStatus(
   staffEmail: string,
   endpoint?: string,
 ): Promise<{ subscribed: boolean; notifyNewJobs: boolean; notifyNewMessages: boolean }>{
+  await ensurePushTables(db);
+
+  const userEmail = staffEmail.trim().toLowerCase();
   const endpointTrimmed = (endpoint || '').trim();
-  let subscribed = false;
-  if (endpointTrimmed) {
-    const row = await db.prepare('SELECT endpoint FROM push_subscriptions WHERE endpoint = ?').bind(endpointTrimmed).first();
-    subscribed = Boolean(row);
-  } else {
-    const row = await db.prepare('SELECT endpoint FROM push_subscriptions LIMIT 1').first();
-    subscribed = Boolean(row);
+
+  const row = endpointTrimmed
+    ? await db.prepare(
+        `SELECT notify_new_jobs, notify_new_messages
+         FROM push_subscriptions
+         WHERE user_email = ? AND endpoint = ? AND is_active = 1`
+      ).bind(userEmail, endpointTrimmed).first<{ notify_new_jobs: number; notify_new_messages: number }>()
+    : await db.prepare(
+        `SELECT notify_new_jobs, notify_new_messages
+         FROM push_subscriptions
+         WHERE user_email = ? AND is_active = 1
+         ORDER BY datetime(updated_at) DESC
+         LIMIT 1`
+      ).bind(userEmail).first<{ notify_new_jobs: number; notify_new_messages: number }>();
+
+  if (!row) {
+    return { subscribed: false, notifyNewJobs: true, notifyNewMessages: true };
   }
 
-  const prefsKey = `push_prefs:${staffEmail.trim().toLowerCase()}`;
-  const stored = await getSetting(db, prefsKey);
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored) as unknown;
-      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        const rec = parsed as Record<string, unknown>;
-        const notifyNewJobs = typeof rec.notifyNewJobs === 'boolean' ? rec.notifyNewJobs : true;
-        const notifyNewMessages = typeof rec.notifyNewMessages === 'boolean' ? rec.notifyNewMessages : true;
-        return { subscribed, notifyNewJobs, notifyNewMessages };
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  return { subscribed, notifyNewJobs: true, notifyNewMessages: true };
+  return {
+    subscribed: true,
+    notifyNewJobs: row.notify_new_jobs === 1,
+    notifyNewMessages: row.notify_new_messages === 1,
+  };
 }
 
 export async function pullPendingPushNotifications(
   db: D1Database,
-  _staffEmail: string,
+  staffEmail: string,
   endpoint: string,
   limit = 6,
 ): Promise<PendingPushNotification[]> {
   const trimmed = endpoint.trim();
   if (!trimmed) return [];
-  await ensureQueueTable(db);
-  const result = await db.prepare(
-    `SELECT id, title, body, url, created_at
-     FROM push_notification_queue
-     WHERE endpoint = ?
-     ORDER BY created_at DESC
-     LIMIT ?`
-  ).bind(trimmed, Math.max(1, Math.min(20, limit))).all<{ id: string; title: string; body: string; url: string; created_at: string }>();
+  await ensurePushTables(db);
 
-  return (result.results || []).map((row) => ({
+  const userEmail = staffEmail.trim().toLowerCase();
+  const limitClamped = Math.max(1, Math.min(20, limit));
+
+  const sub = await db.prepare(
+    `SELECT id
+     FROM push_subscriptions
+     WHERE user_email = ? AND endpoint = ? AND is_active = 1`
+  ).bind(userEmail, trimmed).first<{ id: string }>();
+
+  if (!sub?.id) return [];
+
+  const pending = await db.prepare(
+    `SELECT id, title, body, target_url, created_at
+     FROM push_notification_queue
+     WHERE subscription_id = ?
+       AND delivered_at IS NULL
+     ORDER BY datetime(created_at) ASC
+     LIMIT ?`
+  ).bind(sub.id, limitClamped).all<{ id: string; title: string; body: string | null; target_url: string; created_at: string }>();
+
+  const rows = pending.results || [];
+  if (rows.length) {
+    const ids = rows.map((r) => r.id);
+    await db.prepare(
+      `UPDATE push_notification_queue
+       SET delivered_at = datetime('now')
+       WHERE id IN (${ids.map(() => '?').join(',')})`
+    ).bind(...ids).run();
+  }
+
+  return rows.map((row) => ({
     id: row.id,
     title: row.title,
-    body: row.body,
-    url: row.url,
+    body: row.body || '',
+    url: row.target_url,
     createdAt: row.created_at,
   }));
 }
@@ -335,15 +404,26 @@ export async function enqueueTestPushNotificationAndPing(
   const trimmed = endpoint.trim();
   if (!trimmed) throw new Error('endpoint is required');
 
-  await ensureQueueTable(db);
+  await ensurePushTables(db);
+
+  const userEmail = staffEmail.trim().toLowerCase();
+  const sub = await db.prepare(
+    `SELECT id
+     FROM push_subscriptions
+     WHERE user_email = ? AND endpoint = ? AND is_active = 1`
+  ).bind(userEmail, trimmed).first<{ id: string }>();
+
+  if (!sub?.id) {
+    return { ok: false, status: 404, queued: false };
+  }
+
   const id = crypto.randomUUID();
   await db.prepare(
-    `INSERT INTO push_notification_queue (id, endpoint, staff_email, title, body, url)
-     VALUES (?, ?, ?, ?, ?, ?)`
+    `INSERT INTO push_notification_queue (id, subscription_id, event_type, title, body, target_url)
+     VALUES (?, ?, 'new_message', ?, ?, ?)`
   ).bind(
     id,
-    trimmed,
-    staffEmail.trim().toLowerCase(),
+    sub.id,
     'Zenbooker test notification',
     'If you can see this, push delivery is working.',
     '/admin',
@@ -357,33 +437,48 @@ export async function enqueueAndDispatchPushEvent(
   db: D1Database,
   event: PushEvent,
 ): Promise<void> {
-  await ensureQueueTable(db);
+  await ensurePushTables(db);
 
-  const subscriptions = await db.prepare(
-    'SELECT endpoint FROM push_subscriptions ORDER BY updated_at DESC LIMIT 100'
-  ).all<{ endpoint: string }>();
-
-  const endpoints = (subscriptions.results || [])
-    .map((row) => (row.endpoint || '').trim())
-    .filter(Boolean);
-
-  if (!endpoints.length) return;
-
+  const type = event.type === 'test' ? 'new_message' : event.type;
   const title = event.title.trim() || 'Zenbooker update';
-  const body = event.body.trim() || 'Open the app for details.';
-  const url = event.targetUrl.trim() || '/admin';
+  const body = (event.body || '').trim() || 'Open the app for details.';
+  const targetUrl = event.targetUrl.trim() || '/admin';
 
-  // Insert a notification row per endpoint, then ping each endpoint to trigger the service worker.
+  const subs = await db.prepare(
+    `SELECT id, endpoint
+     FROM push_subscriptions
+     WHERE is_active = 1
+       AND (
+         (? = 'new_job' AND notify_new_jobs = 1)
+         OR (? = 'new_message' AND notify_new_messages = 1)
+       )
+     ORDER BY datetime(updated_at) DESC
+     LIMIT 200`
+  ).bind(type, type).all<{ id: string; endpoint: string }>();
+
+  const rows = (subs.results || [])
+    .map((r) => ({ id: (r.id || '').trim(), endpoint: (r.endpoint || '').trim() }))
+    .filter((r) => r.id && r.endpoint);
+
+  if (!rows.length) return;
+
   const inserts: D1PreparedStatement[] = [];
-  for (const endpoint of endpoints) {
+  for (const row of rows) {
     inserts.push(db.prepare(
-      `INSERT INTO push_notification_queue (id, endpoint, staff_email, title, body, url)
-       VALUES (?, ?, NULL, ?, ?, ?)`
-    ).bind(crypto.randomUUID(), endpoint, title, body, url));
+      `INSERT INTO push_notification_queue (id, subscription_id, event_type, title, body, target_url)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    ).bind(
+      crypto.randomUUID(),
+      row.id,
+      type,
+      title,
+      body,
+      targetUrl,
+    ));
   }
   await db.batch(inserts);
 
-  await Promise.all(endpoints.map((endpoint) => pingPushEndpoint(db, endpoint).catch(() => null)));
+  await Promise.all(rows.map((row) => pingPushEndpoint(db, row.endpoint).catch(() => null)));
 }
 
 export async function sendNotification(type: string, data: unknown): Promise<void> {
