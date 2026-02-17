@@ -230,7 +230,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
             {serviceName} | {scheduleLabel} | {providerName}
           </p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center justify-end gap-2 flex-wrap">
           <button
             type="button"
             class="uk-btn uk-btn-primary uk-btn-sm"
@@ -245,11 +245,33 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
           >
             Message
           </button>
+
+          <form
+            hx-post={`/admin/jobs/${job.id}/status`}
+            hx-target="#page-content"
+            hx-select="#page-content"
+            class="flex items-center gap-2"
+          >
+            <select
+              name="status"
+              class="uk-select uk-form-small"
+              aria-label="Job status"
+              style="max-width: 160px;"
+            >
+              {STATUS_OPTIONS.map((status) => (
+                <option value={status} selected={job.status === status} key={status}>
+                  {status.replace('_', ' ')}
+                </option>
+              ))}
+            </select>
+            <button type="submit" class="uk-btn uk-btn-default uk-btn-sm">Update</button>
+          </form>
+
           <a href="/admin/jobs" class="uk-btn uk-btn-default uk-btn-sm" hx-get="/admin/jobs" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Back</a>
         </div>
       </div>
 
-      <div class="p-4 sm:p-8" style="padding-bottom: calc(132px + var(--safe-bottom));">
+      <div class="p-4 sm:p-8" style="padding-bottom: calc(24px + var(--safe-bottom));">
         <div class="mx-auto" style="max-width: 1120px;">
           <div class="grid gap-4 lg:grid-cols-[1fr,320px] lg:gap-6">
             <div class="grid gap-4 sm:gap-6">
@@ -594,30 +616,6 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
             </aside>
           </div>
 
-          <div class="sm:hidden" aria-hidden="true" style="height: calc(98px + var(--safe-bottom));"></div>
-        </div>
-      </div>
-
-      <div
-        class="sm:hidden fixed bottom-0 left-0 right-0 border-t border-border"
-        style="background:var(--bg-card); padding-bottom: var(--safe-bottom); padding-left: var(--safe-left); padding-right: var(--safe-right);"
-      >
-        <div class="px-4 py-3 flex items-center justify-between gap-2">
-          <button
-            type="button"
-            class="uk-btn uk-btn-primary uk-btn-sm"
-            data-sms-thread-modal-open={canOpenSms ? 'true' : undefined}
-            data-sms-thread-modal-title={canOpenSms ? smsTitle : undefined}
-            hx-get={canOpenSms ? `/admin/inbox/${smsThreadMessage?.id}/sms-thread-panel` : undefined}
-            hx-target={canOpenSms ? '#sms-thread-modal-body' : undefined}
-            hx-swap={canOpenSms ? 'innerHTML' : undefined}
-            hx-indicator={canOpenSms ? '#sms-thread-modal-loading' : undefined}
-            disabled={canOpenSms ? undefined : true}
-          >
-            Message
-          </button>
-          <a href="#job-status" class="uk-btn uk-btn-default uk-btn-sm">Status</a>
-          <a href="#job-edit-details" class="uk-btn uk-btn-default uk-btn-sm">Edit</a>
         </div>
       </div>
 
