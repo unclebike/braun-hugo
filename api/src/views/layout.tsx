@@ -600,6 +600,15 @@ a.uk-link { color: var(--brand) !important; }
             min-height: 0;
             overflow-y: auto !important;
           }
+          #sms-thread-modal-body #sms-thread-panel form {
+            padding-bottom: calc(16px + var(--safe-bottom));
+          }
+          #sms-thread-modal-body #sms-thread-panel form textarea {
+            margin-bottom: 2px;
+          }
+          #sms-thread-modal-body #sms-thread-panel form [data-sms-counter] {
+            padding-bottom: 6px;
+          }
 
           @media (min-width: 768px) {
             #sms-thread-modal-header h3 { font-size: 16px; }

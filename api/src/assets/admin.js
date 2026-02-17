@@ -555,6 +555,13 @@ function setSmsThreadModalTitle(text) {
   titleEl.textContent = text || 'Conversation';
 }
 
+function setSmsThreadModalTitleLock(locked) {
+  var overlay = document.getElementById('sms-thread-modal-overlay');
+  if (!overlay) return;
+  if (locked) overlay.setAttribute('data-title-lock', 'true');
+  else overlay.removeAttribute('data-title-lock');
+}
+
 function setSmsThreadModalInboxLink(href) {
   var link = document.getElementById('sms-thread-modal-open-inbox');
   if (!link) return;
@@ -570,6 +577,16 @@ function setSmsThreadModalInboxLink(href) {
 function syncSmsThreadModalTitleFromContent() {
   var overlay = document.getElementById('sms-thread-modal-overlay');
   if (!overlay) return;
+  if (overlay.getAttribute('data-title-lock') === 'true') return;
+  var nameEl = overlay.querySelector('#sms-thread-modal-body [data-sms-thread-customer-name]')
+    || overlay.querySelector('#sms-thread-modal-content [data-sms-thread-customer-name]');
+  if (nameEl) {
+    var nameText = String(nameEl.textContent || '').trim();
+    if (nameText) {
+      setSmsThreadModalTitle(nameText);
+      return;
+    }
+  }
   var phoneEl = overlay.querySelector('#sms-thread-modal-body [data-sms-thread-phone]')
     || overlay.querySelector('#sms-thread-modal-content [data-sms-thread-phone]');
   if (!phoneEl) return;
@@ -629,6 +646,7 @@ function closeSmsThreadModalOverlay() {
 
   setSmsThreadModalError('');
   setSmsThreadModalInboxLink('');
+  setSmsThreadModalTitleLock(false);
   _smsThreadModalLastUrl = null;
   _smsThreadModalLastInboxUrl = null;
   _smsThreadModalOpenMode = null;
@@ -686,11 +704,19 @@ document.addEventListener('click', function(e) {
   var target = e && e.target ? e.target : null;
   var opener = target && target.closest ? target.closest('[data-sms-thread-modal-open]') : null;
   var mode = opener ? String(opener.getAttribute('data-sms-thread-modal-open') || '').trim() : '';
+  var desiredTitle = opener ? String(opener.getAttribute('data-sms-thread-modal-title') || '').trim() : '';
   var panelEl = null;
   var body = document.getElementById('sms-thread-modal-body');
   var hxGet = opener ? opener.getAttribute('hx-get') : null;
   if (!opener) return;
   if (!openSmsThreadModalOverlay()) return;
+
+  if (desiredTitle) {
+    setSmsThreadModalTitle(desiredTitle);
+    setSmsThreadModalTitleLock(true);
+  } else {
+    setSmsThreadModalTitleLock(false);
+  }
 
   if (mode === 'move') {
     e.preventDefault();
@@ -703,13 +729,13 @@ document.addEventListener('click', function(e) {
     }
     panelEl = opener.closest('#sms-thread-panel') || document.getElementById('sms-thread-panel');
     if (panelEl) {
-      setSmsThreadModalTitle('Conversation');
+      if (!desiredTitle) setSmsThreadModalTitle('Conversation');
       moveSmsThreadPanelIntoModal(panelEl);
     }
     return;
   }
 
-  setSmsThreadModalTitle('Conversation');
+  if (!desiredTitle) setSmsThreadModalTitle('Conversation');
   _smsThreadModalOpenMode = 'load';
   setSmsThreadModalError('');
   if (body) body.innerHTML = '';

@@ -198,11 +198,12 @@ export const SmsHistoryList = ({
   );
 };
 
-export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164, jobOptions, selectedJobId, completedTaskSmsIds, sendResult, taskResult }: {
+export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164, customerName, jobOptions, selectedJobId, completedTaskSmsIds, sendResult, taskResult }: {
   messageId: string;
   smsHistory: SmsLogRow[];
   twilioEnabled: boolean;
   phoneE164: string | null;
+  customerName?: string | null;
   jobOptions: Array<{ id: string; label: string }>;
   selectedJobId: string | null;
   completedTaskSmsIds: string[];
@@ -219,6 +220,9 @@ export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164
      <div class="flex items-start justify-between gap-3 pb-3 mb-3" style="border-bottom:1px solid var(--border);" data-sms-thread-header="1">
       <div class="min-w-0">
         <p class="text-[11px] uppercase tracking-wide text-muted-foreground">Thread</p>
+        {customerName && (
+          <span data-sms-thread-customer-name="1" style="display:none;">{customerName}</span>
+        )}
         <h3 class="text-sm font-semibold truncate" style="margin-top:2px;" data-sms-thread-phone="1">{phoneE164}</h3>
         <p class="text-xs text-muted-foreground" style="margin-top:2px;">
           {visibleSms.length} message{visibleSms.length === 1 ? '' : 's'}
@@ -230,6 +234,7 @@ export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164
           type="button"
           class="uk-btn uk-btn-default uk-btn-sm"
           data-sms-thread-modal-open="move"
+          data-sms-thread-modal-title={customerName || ''}
           aria-label="Open conversation full screen"
           style="padding:0 10px;"
         >
@@ -492,6 +497,7 @@ export const MessageDetailPage = ({ message, smsHistory, twilioEnabled, phoneE16
               smsHistory={smsHistory}
               twilioEnabled={twilioEnabled}
               phoneE164={phoneE164}
+              customerName={senderName}
               jobOptions={jobOptions}
               selectedJobId={selectedJobId}
               completedTaskSmsIds={completedTaskSmsIds}

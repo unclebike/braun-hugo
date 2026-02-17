@@ -136,9 +136,10 @@ export const NotesList = ({
   </div>
 );
 
-export const SmsThreadCard = ({ jobId, smsThreadMessage }: {
+export const SmsThreadCard = ({ jobId, smsThreadMessage, customerName }: {
   jobId: string;
   smsThreadMessage: JobDetailPageProps['smsThreadMessage'];
+  customerName?: string | null;
 }) => {
   const hasUnread = !!smsThreadMessage && smsThreadMessage.is_read === 0;
   const updatedLabel = smsThreadMessage
@@ -172,18 +173,19 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage }: {
           </p>
           <div class="flex items-center justify-between">
             <span class="text-xs text-muted-foreground">{updatedLabel ? `Updated ${updatedLabel}` : ''}</span>
-            <button
-              type="button"
-              class="uk-btn uk-btn-default uk-btn-sm"
-              data-sms-thread-modal-open="true"
-              hx-get={`/admin/inbox/${smsThreadMessage.id}/sms-thread-panel`}
-              hx-target="#sms-thread-modal-body"
-              hx-swap="innerHTML"
-              hx-indicator="#sms-thread-modal-loading"
-              aria-label="View SMS conversation"
-            >
-              View SMS
-            </button>
+             <button
+               type="button"
+               class="uk-btn uk-btn-default uk-btn-sm"
+               data-sms-thread-modal-open="true"
+               data-sms-thread-modal-title={customerName || ''}
+               hx-get={`/admin/inbox/${smsThreadMessage.id}/sms-thread-panel`}
+               hx-target="#sms-thread-modal-body"
+               hx-swap="innerHTML"
+               hx-indicator="#sms-thread-modal-loading"
+               aria-label="View SMS conversation"
+             >
+               View SMS
+             </button>
           </div>
         </div>
       ) : (
@@ -301,7 +303,11 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
             )}
           </div>
 
-          <SmsThreadCard jobId={job.id} smsThreadMessage={smsThreadMessage} />
+          <SmsThreadCard
+            jobId={job.id}
+            smsThreadMessage={smsThreadMessage}
+            customerName={customer ? `${customer.first_name} ${customer.last_name}`.trim() : null}
+          />
 
           <div class="uk-card uk-card-body hidden sm:block">
             <h3 class="text-base font-semibold mb-4">Service & Territory</h3>
