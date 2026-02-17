@@ -1092,7 +1092,7 @@ document.addEventListener('click', function(e) {
           #sms-thread-modal-body #sms-thread-panel form {
             margin-left: calc(-1 * (12px + var(--safe-left)));
             margin-right: calc(-1 * (12px + var(--safe-right)));
-            padding: 12px calc(12px + var(--safe-right)) calc(18px + var(--safe-bottom)) calc(12px + var(--safe-left));
+            padding: 12px calc(12px + var(--safe-right)) calc(16px + var(--safe-bottom)) calc(12px + var(--safe-left));
             border-top: 1px solid var(--border);
             background: var(--bg);
           }
