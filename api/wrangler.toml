@@ -14,6 +14,7 @@ CF_ACCESS_TEAM_DOMAIN = "unclebike"
 binding = "DB"
 database_name = "zenbooker"
 database_id = "7e36e0fb-dc2a-4f02-a6ac-1b292927d8a0"
+migrations_dir = "../migrations"
 
 [triggers]
 crons = ["0 13 * * *"]
