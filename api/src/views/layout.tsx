@@ -91,6 +91,7 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
 
 :root {
   --brand: #dc8a78;
+  --on-brand: #1e1e2e;
   --bg: #eff1f5;
   --bg-card: #ffffff;
   --bg-sidebar: #e6e9ef;
@@ -141,6 +142,29 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
 
 body { opacity: 0; }
 body.ready { opacity: 1; transition: opacity .15s; }
+
+/* Apply Catppuccin variables to Franken/UIkit components in light mode too.
+   (Dark mode already has explicit overrides; these base rules bring Latte in line.) */
+.uk-card { background: var(--bg-card) !important; border-color: var(--border) !important; color: var(--text) !important; }
+.bg-white { background: var(--bg-card) !important; }
+.border-b, .border-border { border-color: var(--border) !important; }
+.text-muted-foreground { color: var(--text-secondary) !important; }
+.uk-input, .uk-select, .uk-textarea { background: var(--input-bg) !important; color: var(--text) !important; border-color: var(--border) !important; }
+.uk-table th { color: var(--text-secondary) !important; border-color: var(--border) !important; }
+.uk-table td { color: var(--text) !important; }
+.uk-table-divider > :not(:first-child) > tr, .uk-table-divider > tr:not(:first-child) { border-color: var(--border) !important; }
+.uk-label { background: transparent !important; color: var(--text) !important; border-color: var(--border) !important; }
+.uk-btn-default { background: var(--input-bg) !important; color: var(--text) !important; border-color: var(--border) !important; }
+.uk-btn-primary { background: var(--brand) !important; border-color: var(--brand) !important; color: var(--on-brand) !important; }
+.uk-checkbox, .uk-toggle-switch { background: var(--input-bg) !important; border-color: var(--border) !important; }
+.uk-checkbox:checked { background-color: var(--brand) !important; border-color: var(--brand) !important; }
+.uk-toggle-switch:checked { background-color: var(--brand) !important; border-color: var(--brand) !important; }
+.uk-offcanvas-bar { background: var(--bg-sidebar) !important; }
+.uk-form-label { color: var(--text-secondary) !important; }
+h2, h3 { color: var(--text) !important; }
+p { color: var(--text) !important; }
+.uk-nav-header { color: var(--text-secondary) !important; }
+.uk-close { color: var(--text) !important; }
 
 [data-theme="dark"] .uk-card { background: var(--bg-card) !important; border-color: var(--border) !important; color: var(--text) !important; }
 [data-theme="dark"] .bg-white { background: var(--bg-card) !important; }
