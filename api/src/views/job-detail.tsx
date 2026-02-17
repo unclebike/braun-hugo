@@ -249,7 +249,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
         </div>
       </div>
 
-      <div class="p-4 sm:p-8" style="padding-bottom: calc(104px + var(--safe-bottom));">
+      <div class="p-4 sm:p-8" style="padding-bottom: calc(132px + var(--safe-bottom));">
         <div class="mx-auto" style="max-width: 1120px;">
           <div class="grid gap-4 lg:grid-cols-[1fr,320px] lg:gap-6">
             <div class="grid gap-4 sm:gap-6">
@@ -594,7 +594,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
             </aside>
           </div>
 
-          <div class="sm:hidden" aria-hidden="true" style="height: calc(76px + var(--safe-bottom));"></div>
+          <div class="sm:hidden" aria-hidden="true" style="height: calc(98px + var(--safe-bottom));"></div>
         </div>
       </div>
 
