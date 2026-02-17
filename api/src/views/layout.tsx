@@ -584,6 +584,13 @@ a.uk-link { color: var(--brand) !important; }
             background: transparent !important;
             border: 0 !important;
             padding: 0 !important;
+            box-shadow: none !important;
+          }
+          #sms-thread-modal-body #sms-thread-panel.uk-card,
+          #sms-thread-modal-body #sms-thread-panel.uk-card-body {
+            box-shadow: none !important;
+            border: 0 !important;
+            background: transparent !important;
           }
           #sms-thread-modal-body #sms-thread-panel [data-sms-thread-modal-open] { display: none !important; }
           #sms-thread-modal-body #sms-thread-panel [data-sms-thread-header] { display: none; }
