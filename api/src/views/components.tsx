@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
 import { Layout } from './layout';
 
@@ -158,12 +159,12 @@ const TableView = ({ title, columns, rows, createUrl, extraActions, detailUrlPre
             </div>
           ) : (
             <>
-              <div class="grid gap-3 md:hidden">
-                {rows.map((row: Record<string, unknown>, i: number) => {
-                  const displayId = typeof row.id === 'string' ? row.id : '';
-                  const actualId = rawIds ? rawIds[i] : displayId;
-                  const values = Object.values(row);
-                  const detailUrl = detailUrlPrefix ? `${detailUrlPrefix}/${actualId}` : null;
+               <div class="grid gap-3 md:hidden">
+                 {rows.map((row: Record<string, unknown>, i: number) => {
+                   const displayId = typeof row.id === 'string' ? row.id : '';
+                   const actualId = rawIds ? rawIds[i] : displayId;
+                   const values = Object.values(row);
+                   const detailUrl = detailUrlPrefix ? `${detailUrlPrefix}/${actualId}` : null;
                   const entries = values.map((value, index) => ({
                     index,
                     label: columns[index] || 'Field',
@@ -175,39 +176,48 @@ const TableView = ({ title, columns, rows, createUrl, extraActions, detailUrlPre
                     .filter((entry) => entry.index !== 0 && entry !== statusEntry && !isEmptyValue(entry.value))
                     .sort((a, b) => mobilePriorityScore(b.label) - mobilePriorityScore(a.label))
                     .slice(0, 2);
-                  return (
-                    <article class="border border-border rounded-md p-3 bg-background" key={i}>
-                      <div class="flex items-start justify-between gap-2.5">
-                        <div class="min-w-0 flex-1">
-                          {detailUrl ? (
-                            <a
-                              href={detailUrl}
-                              hx-get={detailUrl}
-                              hx-target="#page-content"
-                              hx-select="#page-content"
-                              hx-push-url="true"
-                              class="uk-link font-medium text-primary hover:underline leading-tight block truncate"
-                              data-uk-tooltip={typeof primary?.value === 'string' && primary.value.length === 8 ? `title: ${actualId}` : undefined}
-                            >
-                              {primary?.value}
-                            </a>
-                          ) : (
-                            <p class="font-medium leading-tight truncate">{primary?.value as string | number | boolean | null | undefined}</p>
-                          )}
-                        </div>
-                        {statusEntry && <span class="shrink-0"><StatusBadge status={String(statusEntry.value).toLowerCase()} /></span>}
-                      </div>
+                   return (
+                     <article
+                       class="border border-border rounded-lg p-3"
+                       style="background:var(--bg-card);"
+                       key={i}
+                     >
+                       <div class="flex items-start justify-between gap-3">
+                         <div class="min-w-0 flex-1">
+                           {detailUrl ? (
+                             <a
+                               href={detailUrl}
+                               hx-get={detailUrl}
+                               hx-target="#page-content"
+                               hx-select="#page-content"
+                               hx-push-url="true"
+                               class="uk-link font-semibold leading-snug block truncate"
+                               style="color:var(--text);"
+                               data-uk-tooltip={typeof primary?.value === 'string' && primary.value.length === 8 ? `title: ${actualId}` : undefined}
+                             >
+                               {primary?.value}
+                             </a>
+                           ) : (
+                             <p class="font-semibold leading-snug truncate">{primary?.value as string | number | boolean | null | undefined}</p>
+                           )}
+                         </div>
+                         {statusEntry && (
+                           <span class="shrink-0" style="margin-top:1px;">
+                             <StatusBadge status={String(statusEntry.value).toLowerCase()} />
+                           </span>
+                         )}
+                       </div>
 
-                      {compactMeta.length > 0 && (
-                        <div class="grid grid-cols-2 gap-2 mt-2">
-                          {compactMeta.map((entry) => (
-                            <div class="min-w-0" key={entry.index}>
-                              <p class="text-[10px] uppercase tracking-wide text-muted-foreground truncate">{entry.label}</p>
-                              <p class="text-xs font-medium truncate">{stringifyValue(entry.value) || '-'}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                       {compactMeta.length > 0 && (
+                         <div class="grid grid-cols-2 gap-2 mt-2">
+                           {compactMeta.map((entry) => (
+                             <div class="min-w-0" key={entry.index}>
+                               <p class="text-[10px] uppercase tracking-wide text-muted-foreground truncate">{entry.label}</p>
+                               <p class="text-xs font-medium truncate">{stringifyValue(entry.value) || '-'}</p>
+                             </div>
+                           ))}
+                         </div>
+                       )}
 
                       {!statusEntry && isBadgeStatus(primary?.value) && (
                         <div class="mt-2">
@@ -219,27 +229,36 @@ const TableView = ({ title, columns, rows, createUrl, extraActions, detailUrlPre
                         <p class="text-xs text-muted-foreground mt-2 truncate">{entries[1].label}: {stringifyValue(entries[1].value)}</p>
                       )}
 
-                      <div class="flex items-center gap-2 mt-3">
-                        {detailUrl && (
-                          <a href={detailUrl} class="uk-btn uk-btn-default uk-btn-sm" hx-get={detailUrl} hx-target="#page-content" hx-select="#page-content" hx-push-url="true">View</a>
-                        )}
-                        {deleteUrlPrefix && (
-                          <button
-                            type="button"
-                            class="delete-btn"
-                            data-confirm="arm"
-                            hx-post={`${deleteUrlPrefix}/${actualId}/delete`}
-                            hx-target="closest article"
-                            hx-swap="delete swap:300ms"
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
+                       <div class="flex items-center justify-between gap-2 mt-3">
+                         {detailUrl && (
+                           <a
+                             href={detailUrl}
+                             class="uk-btn uk-btn-default uk-btn-sm"
+                             hx-get={detailUrl}
+                             hx-target="#page-content"
+                             hx-select="#page-content"
+                             hx-push-url="true"
+                           >
+                             View
+                           </a>
+                         )}
+                         {deleteUrlPrefix && (
+                           <button
+                             type="button"
+                             class="delete-btn"
+                             data-confirm="arm"
+                             hx-post={`${deleteUrlPrefix}/${actualId}/delete`}
+                             hx-target="closest article"
+                             hx-swap="delete swap:300ms"
+                           >
+                             Delete
+                           </button>
+                         )}
+                       </div>
+                     </article>
+                   );
+                 })}
+               </div>
               <div class="uk-overflow-auto hidden md:block">
                 <table class="uk-table uk-table-divider uk-table-hover uk-table-sm w-full text-sm">
               <thead>
