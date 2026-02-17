@@ -1,12 +1,13 @@
 import { Hono } from 'hono';
+import { enqueueAndDispatchPushEvent } from '../services/notifications';
 import {
+  ensureSmsInboxMessage,
   getTwilioConfig,
-  validateTwilioSignature,
-  updateSmsStatus,
   logSms,
   normalizePhoneE164,
-  ensureSmsInboxMessage,
   touchSmsInboxMessage,
+  updateSmsStatus,
+  validateTwilioSignature,
 } from '../services/twilio';
 
 const app = new Hono<{ Bindings: { DB: D1Database } }>();
@@ -136,6 +137,19 @@ app.post('/inbound', async (c) => {
     status: 'received',
     segments: numSegments,
   });
+
+  const senderLabel = customer
+    ? [customer.first_name || '', customer.last_name || ''].filter(Boolean).join(' ').trim() || phoneE164
+    : phoneE164;
+  const preview = body.replace(/\s+/g, ' ').trim().slice(0, 160);
+  c.executionCtx.waitUntil(
+    enqueueAndDispatchPushEvent(db, {
+      type: 'new_message',
+      title: `New SMS from ${senderLabel}`,
+      body: preview || 'New inbound SMS received.',
+      targetUrl: `/admin/inbox/${inboxMessageId}`,
+    })
+  );
 
   return c.text('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', 200, { 'Content-Type': 'text/xml' });
 });
