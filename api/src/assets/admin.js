@@ -566,7 +566,7 @@ function openSmsThreadModalOverlay() {
   if (!overlay) return false;
   overlay.hidden = false;
   overlay.setAttribute('data-open', 'true');
-  overlay.style.display = 'flex';
+  overlay.style.setProperty('display', 'flex', 'important');
   lockBodyScrollForModal();
   return true;
 }
@@ -595,7 +595,7 @@ function closeSmsThreadModalOverlay() {
   }
 
   overlay.setAttribute('data-open', 'false');
-  overlay.style.display = 'none';
+  overlay.style.setProperty('display', 'none', 'important');
   overlay.hidden = true;
   unlockBodyScrollForModal();
 }
