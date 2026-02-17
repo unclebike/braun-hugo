@@ -1,9 +1,6 @@
-/** @jsx jsx */
 import { jsx } from 'hono/jsx';
 import { Layout } from './layout';
 import { formatTorontoDate } from '../utils/datetime';
-
-void jsx;
 
 export interface WizardState {
   customer_id?: string;

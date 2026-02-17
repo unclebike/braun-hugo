@@ -1,8 +1,5 @@
-/** @jsx jsx */
 import { jsx } from 'hono/jsx';
 import { Layout } from './layout';
-
-void jsx;
 
 export const BrandingPage = ({ primaryColor }: { primaryColor: string }) => {
   const initialColor = /^#[0-9a-fA-F]{6}$/.test(primaryColor) ? primaryColor : '#2563eb';
