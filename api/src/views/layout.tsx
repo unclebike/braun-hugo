@@ -9,11 +9,13 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
     <html lang="en">
       <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
         <title>{title} - Zenbooker Admin</title>
         <link rel="manifest" href="/admin/manifest.webmanifest" />
         <meta name="theme-color" content="#eff1f5" id="theme-color-meta" />
-         {html`<script>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+          {html`<script>
 (function(){
   function autoThemeFromLocalTime() {
     // Heuristic: use Mocha in the evening/night unless user explicitly chose.
@@ -176,6 +178,15 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
 
 body { opacity: 0; }
 body.ready { opacity: 1; transition: opacity .15s; }
+
+html, body {
+  background: var(--bg);
+}
+
+/* iOS: allow headers to extend under translucent status bar, but keep content readable. */
+.sticky.top-0 {
+  padding-top: var(--safe-top);
+}
 
 /* Apply Catppuccin variables to Franken/UIkit components in light mode too.
    (Dark mode already has explicit overrides; these base rules bring Latte in line.) */
