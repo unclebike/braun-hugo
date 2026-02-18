@@ -1,5 +1,6 @@
 // biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
+import { StatusBadge, StatusIcon } from './components';
 import { Layout } from './layout';
 
 interface JobDetailPageProps {
@@ -50,13 +51,6 @@ interface JobDetailPageProps {
 }
 
 const STATUS_OPTIONS = ['created', 'assigned', 'enroute', 'in_progress', 'complete', 'cancelled'];
-
-const statusClass = (status: string) => {
-  if (status === 'complete') return 'uk-label uk-label-primary';
-  if (status === 'cancelled') return 'uk-label uk-label-destructive';
-  if (status === 'enroute' || status === 'in_progress') return 'uk-label uk-label-secondary';
-  return 'uk-label';
-};
 
 const TaskSourceContext = ({ source }: { source?: JobDetailPageProps['notes'][number]['source'] }) => {
   if (!source || source.type !== 'sms' || !source.excerpt) return null;
@@ -118,8 +112,8 @@ export const NotesList = ({
           </div>
           <button
             type="button"
-            class="delete-btn uk-btn uk-btn-small"
-            hx-post={`/admin/jobs/${jobId}/notes/delete`}
+             class="delete-btn"
+             hx-post={`/admin/jobs/${jobId}/notes/delete`}
             hx-vals={JSON.stringify({ noteIndex: idx })}
             hx-target="closest [data-notes-list]"
             hx-select="#notes-list > *"
@@ -220,17 +214,19 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
 
   return (
     <Layout title={`Job ${job.id}`}>
-      <div class="flex flex-wrap items-start justify-between gap-3 px-4 pl-14 py-4 sm:px-8 sm:pl-8 sm:py-5 bg-white border-b border-border sticky top-0 z-50">
-        <div class="min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
-            <h2 class="text-xl font-extrabold truncate">{customerName}</h2>
-            <span class={statusClass(job.status)}>{job.status.replace('_', ' ')}</span>
+      <div class="page-header page-header--rich">
+        <div class="page-header-info">
+          <div class="flex items-center gap-2">
+            <h2>{customerName}</h2>
+            <StatusIcon status={job.status} />
           </div>
-          <p class="text-sm text-muted-foreground truncate" style="margin:2px 0 0;">
-            {serviceName} | {scheduleLabel} | {providerName}
-          </p>
+          <div class="page-header-meta">
+            <span>{serviceName}</span>
+            <span>{scheduleLabel}</span>
+            <span>{providerName}</span>
+          </div>
         </div>
-        <div class="flex items-center justify-end gap-2 flex-wrap">
+        <div class="page-header-actions">
           <button
             type="button"
             class="uk-btn uk-btn-primary uk-btn-sm"
@@ -351,7 +347,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                 <section>
                   <div class="flex items-center justify-between mb-4">
                     <h3 class="text-base font-semibold" style="margin:0;">Status</h3>
-                    <span class={statusClass(job.status)}>{job.status.replace('_', ' ')}</span>
+                    <StatusBadge status={job.status} />
                   </div>
                   <form hx-post={`/admin/jobs/${job.id}/status`} hx-target="#page-content" hx-select="#page-content" class="grid gap-3 sm:flex sm:items-end">
                     <div class="grid gap-2 flex-1">
@@ -466,8 +462,8 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                             {line.is_custom === 1 ? (
                               <button
                                 type="button"
-                                class="delete-btn uk-btn uk-btn-small"
-                                hx-post={`/admin/jobs/${job.id}/line-items/delete`}
+                                 class="delete-btn"
+                                 hx-post={`/admin/jobs/${job.id}/line-items/delete`}
                                 hx-vals={JSON.stringify({ lineId: line.id })}
                                 hx-target="#page-content"
                                 hx-select="#page-content"
@@ -550,10 +546,10 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                </section>
              </details>
 
-              <details class="uk-card uk-card-body hidden sm:block">
-                <summary class="text-base font-semibold cursor-pointer">Danger zone</summary>
-                <section class="pt-4">
-                  <button
+              <details class="uk-card uk-card-body hidden sm:block danger-card">
+                 <summary class="text-base font-semibold cursor-pointer">Danger zone</summary>
+                 <section class="pt-4">
+                   <button
                     type="button"
                     class="delete-btn"
                     hx-post={`/admin/jobs/${job.id}/delete`}
