@@ -34,7 +34,13 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
       if (!meta) return;
       var css = getComputedStyle(document.documentElement);
       var c = String(css.getPropertyValue('--theme-color') || '').trim();
-      if (c) meta.setAttribute('content', c);
+      if (c) {
+        meta.setAttribute('content', c);
+        return;
+      }
+      // Fallback for first paint before CSS vars are available.
+      var t = document.documentElement.getAttribute('data-theme') || 'light';
+      meta.setAttribute('content', t === 'dark' ? '#1e1e2e' : '#eff1f5');
     } catch (e) {}
   }
 
@@ -42,6 +48,12 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
   var s = localStorage.getItem('theme');
   var t = (s === 'dark' || s === 'light') ? s : autoThemeFromLocalTime();
   document.documentElement.setAttribute('data-theme', t);
+
+  // Set a sensible theme-color immediately for browser chrome.
+  try {
+    var meta = document.getElementById('theme-color-meta');
+    if (meta) meta.setAttribute('content', t === 'dark' ? '#1e1e2e' : '#eff1f5');
+  } catch (e) {}
 
   // Styles load immediately after this script; wait a tick so CSS vars are available.
   requestAnimationFrame(syncThemeColorMeta);
@@ -184,7 +196,7 @@ html, body {
 }
 
 /* iOS: allow headers to extend under translucent status bar, but keep content readable. */
-.sticky.top-0 {
+.sticky.top-0.z-50 {
   padding-top: var(--safe-top);
 }
 
@@ -983,12 +995,18 @@ document.addEventListener('click', function(e) {
             background: none;
             border: none;
             color: var(--text);
-            padding: 8px;
             cursor: pointer;
             position: fixed;
-            top: calc(12px + var(--safe-top));
-            left: calc(12px + var(--safe-left));
+            top: 0;
+            left: 0;
+            height: calc(48px + var(--safe-top));
+            width: calc(48px + var(--safe-left));
+            padding-top: var(--safe-top);
+            padding-left: var(--safe-left);
             z-index: 100;
+          }
+          .mobile-menu-btn svg {
+            transform: translateY(0px);
           }
 
           .sidebar-nav { padding: 0 4px; }
@@ -1094,10 +1112,15 @@ document.addEventListener('click', function(e) {
             opacity: 0;
           }
           .theme-label { line-height: 1; }
-
+          
           .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 0 20px; margin-bottom: 24px; }
           .sidebar-logo img { width: 36px; height: 36px; }
           .sidebar-logo span { font-size: 18px; color: var(--text-sidebar-active); letter-spacing: -0.3px; font-weight: 600; }
+
+          /* iOS PWA: give offcanvas enough top room under translucent status bar. */
+          #offcanvas-nav .uk-offcanvas-bar {
+            padding-top: calc(16px + var(--safe-top));
+          }
 
           @media (max-width: 768px) {
             .page-header { padding: 14px 16px 14px 52px; gap: 8px; flex-wrap: wrap; }
