@@ -110,7 +110,7 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
   --bg-card: #ffffff;
   --bg-sidebar: #e6e9ef;
   --text: #4c4f69;
-  --text-secondary: #6c6f85;
+  --text-secondary: #5c5f78;
   --text-sidebar: #6c6f85;
   --text-sidebar-hover: #4c4f69;
   --text-sidebar-active: #1e66f5;
@@ -950,15 +950,52 @@ document.addEventListener('click', function(e) {
           .desktop-sidebar { display: none; }
 
           .main-content { flex: 1; padding: 0; min-height: 100vh; min-height: 100dvh; }
-          .page-header { background: var(--bg-card); padding: 20px 32px 20px 52px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: -webkit-sticky; position: sticky; top: 0; z-index: 50; }
-          .page-header h2 { font-size: 22px; color: var(--text); font-weight: 600; letter-spacing: -0.3px; }
+
+          .page-header {
+            background: var(--bg-card);
+            padding: 16px 32px 16px 52px;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 8px 16px;
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+          }
+          .page-header h2 { font-size: 20px; color: var(--text); font-weight: 600; letter-spacing: -0.3px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .page-header-info { grid-column: 1; min-width: 0; }
+          .page-header-actions { grid-column: 2; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+          .page-header-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; font-size: 13px; color: var(--text-secondary); }
+          .page-header-meta > span:not(:first-child)::before { content: '·'; margin-right: 6px; opacity: 0.5; }
+          .page-header-meta > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+          .page-header--rich { grid-template-rows: auto auto; }
+          .page-header--rich .page-header-info { grid-row: 1 / -1; }
+          .page-header--rich .page-header-actions { grid-row: 1 / -1; align-self: center; }
+
+          .status-icon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+          .status-icon svg { display: block; }
+          .status-icon--neutral { color: var(--text-secondary); }
+          .status-icon--primary { color: var(--badge-primary); }
+          .status-icon--secondary { color: var(--badge-secondary); }
+          .status-icon--destructive { color: var(--badge-destructive); }
+
+          .danger-card { border-color: var(--destructive-border, var(--border)) !important; }
+          .danger-card h3 { color: var(--text-secondary) !important; font-size: 13px !important; }
+
+          .wizard-progress { display: flex; align-items: center; gap: 4px; }
+          .wizard-progress-step { width: 28px; height: 4px; border-radius: 2px; background: var(--border); }
+          .wizard-progress-step.is-done { background: var(--badge-primary); }
+          .wizard-progress-step.is-active { background: var(--brand); }
+
           .page-body { padding: 28px 32px; }
 
           @media (min-width: 1024px) {
             .admin-layout { display: flex; }
             .desktop-sidebar { display: flex; flex-direction: column; width: 260px; min-width: 260px; background: var(--bg-sidebar); min-height: 100vh; min-height: 100dvh; position: sticky; top: 0; height: 100vh; height: 100dvh; overflow-y: auto; padding: 24px 0; }
             .mobile-menu-btn { display: none !important; }
-            .page-header { padding-left: 32px; }
+            .page-header { padding: 20px 32px; }
           }
 
           table { width: 100%; border-collapse: collapse; }
@@ -1123,8 +1160,11 @@ document.addEventListener('click', function(e) {
           }
 
           @media (max-width: 768px) {
-            .page-header { padding: 14px 16px 14px 52px; gap: 8px; flex-wrap: wrap; }
-            .page-header h2 { font-size: 18px; }
+            .page-header { padding: 12px 16px 12px 52px; }
+            .page-header h2 { font-size: 17px; }
+            .page-header--rich { grid-template-columns: 1fr; }
+            .page-header--rich .page-header-actions { grid-column: 1; grid-row: auto; justify-self: start; }
+            .page-header-meta > span { max-width: 140px; }
             .page-body { padding: 16px; }
           }
 
