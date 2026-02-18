@@ -218,7 +218,22 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
         <div class="page-header-info">
           <div class="flex items-center gap-2">
             <h2>{customerName}</h2>
-            <StatusIcon status={job.status} />
+            <select
+              name="status"
+              class="status-select"
+              aria-label="Job status"
+              data-current={job.status}
+              hx-post={`/admin/jobs/${job.id}/status`}
+              hx-target="#page-content"
+              hx-select="#page-content"
+              hx-trigger="change"
+            >
+              {STATUS_OPTIONS.map((status) => (
+                <option value={status} selected={job.status === status} key={status}>
+                  {status.replace('_', ' ')}
+                </option>
+              ))}
+            </select>
           </div>
           <div class="page-header-meta">
             <span>{serviceName}</span>
@@ -241,28 +256,6 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
           >
             Message
           </button>
-
-          <form
-            hx-post={`/admin/jobs/${job.id}/status`}
-            hx-target="#page-content"
-            hx-select="#page-content"
-            class="flex items-center gap-2"
-          >
-            <select
-              name="status"
-              class="uk-select uk-form-small"
-              aria-label="Job status"
-              style="max-width: 160px;"
-            >
-              {STATUS_OPTIONS.map((status) => (
-                <option value={status} selected={job.status === status} key={status}>
-                  {status.replace('_', ' ')}
-                </option>
-              ))}
-            </select>
-            <button type="submit" class="uk-btn uk-btn-default uk-btn-sm">Update</button>
-          </form>
-
           <a href="/admin/jobs" class="uk-btn uk-btn-default uk-btn-sm" hx-get="/admin/jobs" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Back</a>
         </div>
       </div>

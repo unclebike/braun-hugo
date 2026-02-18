@@ -195,10 +195,7 @@ html, body {
   background: var(--bg);
 }
 
-/* iOS: allow headers to extend under translucent status bar, but keep content readable. */
-.sticky.top-0.z-50 {
-  padding-top: var(--safe-top);
-}
+/* iOS: headers extend under translucent status bar via .page-header padding-top. */
 
 /* Apply Catppuccin variables to Franken/UIkit components in light mode too.
    (Dark mode already has explicit overrides; these base rules bring Latte in line.) */
@@ -953,7 +950,7 @@ document.addEventListener('click', function(e) {
 
           .page-header {
             background: var(--bg-card);
-            padding: 16px 32px 16px 52px;
+            padding: calc(16px + var(--safe-top)) 32px 16px calc(52px + var(--safe-left));
             border-bottom: 1px solid var(--border);
             display: grid;
             grid-template-columns: 1fr auto;
@@ -981,6 +978,32 @@ document.addEventListener('click', function(e) {
           .status-icon--secondary { color: var(--badge-secondary); }
           .status-icon--destructive { color: var(--badge-destructive); }
 
+          .status-select {
+            -webkit-appearance: none;
+            appearance: none;
+            padding: 2px 22px 2px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 7px center;
+            border: 1px solid var(--badge-neutral-border);
+            background-color: var(--badge-neutral-bg);
+            color: var(--badge-neutral-text);
+            transition: border-color 0.15s, background-color 0.15s;
+          }
+          .status-select:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
+          .status-select[data-current="complete"],
+          .status-select[data-current="paid"] { border-color: var(--badge-primary-border); background-color: var(--badge-primary-bg); color: var(--badge-primary); }
+          .status-select[data-current="in_progress"],
+          .status-select[data-current="enroute"],
+          .status-select[data-current="pending"] { border-color: var(--badge-secondary-border); background-color: var(--badge-secondary-bg); color: var(--badge-secondary); }
+          .status-select[data-current="cancelled"],
+          .status-select[data-current="void"] { border-color: var(--badge-destructive-border); background-color: var(--badge-destructive-bg); color: var(--badge-destructive); }
+
           .danger-card { border-color: var(--destructive-border, var(--border)) !important; }
           .danger-card h3 { color: var(--text-secondary) !important; font-size: 13px !important; }
 
@@ -995,7 +1018,7 @@ document.addEventListener('click', function(e) {
             .admin-layout { display: flex; }
             .desktop-sidebar { display: flex; flex-direction: column; width: 260px; min-width: 260px; background: var(--bg-sidebar); min-height: 100vh; min-height: 100dvh; position: sticky; top: 0; height: 100vh; height: 100dvh; overflow-y: auto; padding: 24px 0; }
             .mobile-menu-btn { display: none !important; }
-            .page-header { padding: 20px 32px; }
+            .page-header { padding: calc(20px + var(--safe-top)) 32px 20px 32px; }
           }
 
           table { width: 100%; border-collapse: collapse; }
@@ -1034,16 +1057,11 @@ document.addEventListener('click', function(e) {
             color: var(--text);
             cursor: pointer;
             position: fixed;
-            top: 0;
-            left: 0;
-            height: calc(48px + var(--safe-top));
-            width: calc(48px + var(--safe-left));
-            padding-top: var(--safe-top);
-            padding-left: var(--safe-left);
+            top: var(--safe-top);
+            left: var(--safe-left);
+            height: 48px;
+            width: 48px;
             z-index: 100;
-          }
-          .mobile-menu-btn svg {
-            transform: translateY(0px);
           }
 
           .sidebar-nav { padding: 0 4px; }
@@ -1160,7 +1178,7 @@ document.addEventListener('click', function(e) {
           }
 
           @media (max-width: 768px) {
-            .page-header { padding: 12px 16px 12px 52px; }
+            .page-header { padding: calc(12px + var(--safe-top)) 16px 12px calc(52px + var(--safe-left)); }
             .page-header h2 { font-size: 17px; }
             .page-header--rich { grid-template-columns: 1fr; }
             .page-header--rich .page-header-actions { grid-column: 1; grid-row: auto; justify-self: start; }
