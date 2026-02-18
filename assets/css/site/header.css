@@ -594,12 +594,28 @@ body:has(#announcement-bar-root .gh-announcement-bar) .head-member-actions {
         display: none;
     }
 
+    .button-head-mobile {
+        display: inline-flex;
+        height: 3.2rem;
+        padding: 0 1.2rem;
+        font-size: 1.4rem;
+        border-radius: var(--radii-medium);
+    }
+
+    #gh-head .gh-head-brand {
+        grid-template-columns: 1fr auto auto auto auto;
+    }
+
     body:has(#announcement-bar-root .gh-announcement-bar) .gh-outer {
         top: 0;
     }
     body:has(#announcement-bar-root .gh-announcement-bar) .head-member-actions {
         bottom: 0;
     }
+}
+
+.button-head-mobile {
+    display: none;
 }
 
 .nav-icon {

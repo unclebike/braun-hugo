@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
 import { Layout } from './layout';
 
@@ -6,8 +7,8 @@ export const BrandingPage = ({ primaryColor }: { primaryColor: string }) => {
 
   return (
     <Layout title="Branding">
-      <div class="flex items-center justify-between px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
-        <h2 class="text-xl font-semibold">Branding</h2>
+      <div class="page-header">
+        <h2>Branding</h2>
       </div>
 
       <div class="p-8">

@@ -1,15 +1,9 @@
+// biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
+import { StatusIcon } from './components';
 import { Layout } from './layout';
 
 const money = (cents: number) => `$${(cents / 100).toFixed(2)}`;
-
-const invoiceStatusClass = (status: string) => {
-  const s = (status || '').toLowerCase();
-  if (s === 'paid') return 'uk-label uk-label-primary';
-  if (s === 'void') return 'uk-label uk-label-destructive';
-  if (s === 'pending') return 'uk-label uk-label-secondary';
-  return 'uk-label';
-};
 
 type InvoiceLine = {
   id: string;
@@ -58,15 +52,19 @@ export const InvoiceDetailPage = ({
 
   return (
     <Layout title={`Invoice ${invoice.invoice_number}`}>
-      <div class="flex items-start justify-between gap-3 px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
-        <div class="min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
-            <h2 class="text-xl font-extrabold truncate">Invoice {invoice.invoice_number}</h2>
-            <span class={invoiceStatusClass(invoice.status)}>{invoice.status}</span>
+      <div class="page-header page-header--rich">
+        <div class="page-header-info">
+          <div class="flex items-center gap-2">
+            <h2>Invoice {invoice.invoice_number}</h2>
+            <StatusIcon status={invoice.status} />
           </div>
-          <p class="text-sm text-muted-foreground truncate" style="margin:2px 0 0;">{customerName}{jobLabel ? ` | ${jobLabel}` : ''}{invoice.due_date ? ` | Due ${invoice.due_date}` : ''}</p>
+          <div class="page-header-meta">
+            <span>{customerName}</span>
+            {jobLabel && <span>{jobLabel}</span>}
+            {invoice.due_date && <span>Due {invoice.due_date}</span>}
+          </div>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="page-header-actions">
           <button type="submit" form="invoice-form" class="uk-btn uk-btn-primary uk-btn-sm">Save</button>
           <a href="/admin/invoices" class="uk-btn uk-btn-default uk-btn-sm" hx-get="/admin/invoices" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Back</a>
         </div>
@@ -86,7 +84,7 @@ export const InvoiceDetailPage = ({
                     </div>
                     <div class="text-right">
                       <p class="text-[10px] uppercase tracking-wide text-muted-foreground">Status</p>
-                      <span class={invoiceStatusClass(invoice.status)}>{invoice.status}</span>
+                      <StatusIcon status={invoice.status} />
                       {invoice.due_date ? (
                         <p class="text-xs text-muted-foreground" style="margin:8px 0 0;">Due {invoice.due_date}</p>
                       ) : null}
@@ -113,7 +111,7 @@ export const InvoiceDetailPage = ({
                           <div class="text-right">
                             <p class="text-sm font-semibold" style="margin:0;">{money(line.total_cents)}</p>
                             {line.is_custom ? (
-                              <button type="button" class="delete-btn uk-btn uk-btn-small" hx-post={`/admin/invoices/${invoice.id}/line-items/delete`} hx-vals={JSON.stringify({ lineId: line.id })} hx-target="#page-content" hx-select="#page-content" data-confirm="arm">Remove</button>
+                              <button type="button" class="delete-btn" hx-post={`/admin/invoices/${invoice.id}/line-items/delete`} hx-vals={JSON.stringify({ lineId: line.id })} hx-target="#page-content" hx-select="#page-content" data-confirm="arm">Remove</button>
                             ) : null}
                           </div>
                         </div>
@@ -199,7 +197,7 @@ export const InvoiceDetailPage = ({
                   </form>
                 </details>
 
-                <details class="uk-card uk-card-body">
+                <details class="uk-card uk-card-body danger-card">
                   <summary class="text-base font-semibold cursor-pointer">Danger zone</summary>
                   <div class="pt-4">
                     <button type="button" class="delete-btn" hx-post={`/admin/invoices/${invoice.id}/delete`} hx-target="#page-content" data-confirm="arm">Delete invoice</button>

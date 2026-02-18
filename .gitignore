@@ -49,5 +49,7 @@ CLAUDE.md
 .sisyphus/
 .sisyphus
 AGENTS.md
+AGENT_TASKS.md
+AGENT_MEMORY.md
 **/ai-context.md
 **/AI_CONTEXT.md

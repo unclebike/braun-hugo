@@ -1,5 +1,5 @@
 // biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
-import { jsx } from 'hono/jsx';
+import { Fragment, jsx } from 'hono/jsx';
 import { Layout } from './layout';
 
 type FieldType = 'text' | 'email' | 'tel' | 'number' | 'textarea' | 'select' | 'checkbox' | 'date' | 'time' | 'hidden';
@@ -138,15 +138,15 @@ interface FormViewProps {
 
 const TableView = ({ title, columns, rows, createUrl, extraActions, detailUrlPrefix, deleteUrlPrefix, rawIds }: TableViewProps) => (
   <Layout title={title}>
-    <div class="flex items-center justify-between px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
-      <h2 class="text-xl font-semibold">{title}</h2>
-      <div class="flex items-center gap-2">
+    <div class="page-header">
+      <h2>{title}</h2>
+      <div class="page-header-actions">
         {(extraActions || []).map((action) => (
-          <a href={action.url} class="uk-btn uk-btn-default" hx-get={action.url} hx-target="#page-content" hx-select="#page-content" hx-push-url="true" key={action.url}>
+          <a href={action.url} class="uk-btn uk-btn-default uk-btn-sm" hx-get={action.url} hx-target="#page-content" hx-select="#page-content" hx-push-url="true" key={action.url}>
             {action.label}
           </a>
         ))}
-        {createUrl && <a href={createUrl} class="uk-btn uk-btn-default" hx-get={createUrl} hx-target="#page-content" hx-select="#page-content" hx-push-url="true">+ Create New</a>}
+        {createUrl && <a href={createUrl} class="uk-btn uk-btn-default uk-btn-sm" hx-get={createUrl} hx-target="#page-content" hx-select="#page-content" hx-push-url="true">+ Create New</a>}
       </div>
     </div>
     <div class="p-8">
@@ -405,8 +405,8 @@ const renderField = (field: FormField) => {
 
 const FormView = ({ title, fields, submitUrl, cancelUrl, isEdit, deleteUrl, error }: FormViewProps) => (
   <Layout title={title}>
-    <div class="flex items-center justify-between px-8 py-5 bg-white border-b border-border">
-      <h2 class="text-xl font-semibold">{title}</h2>
+    <div class="page-header">
+      <h2>{title}</h2>
     </div>
     <div class="p-8">
        <div class="uk-card uk-card-body" style="max-width: 720px;">
@@ -468,94 +468,170 @@ interface DetailViewProps {
 
 const DetailView = ({ title, subtitle, fields, editUrl, backUrl, actions }: DetailViewProps) => (
   <Layout title={title}>
-    <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
-      <div>
+    <div class="page-header">
+      <div class="page-header-info">
         <h2>{title}</h2>
-        {subtitle && <p style="color: #666; margin-top: 4px;">{subtitle}</p>}
+        {subtitle && <p class="text-sm text-muted-foreground" style="margin:2px 0 0;">{subtitle}</p>}
       </div>
-      <div style="display: flex; gap: 10px;">
+      <div class="page-header-actions">
         {editUrl && (
-          <a href={editUrl} class="uk-btn uk-btn-primary" hx-get={editUrl} hx-target="#page-content" hx-select="#page-content" hx-push-url="true">
+          <a href={editUrl} class="uk-btn uk-btn-primary uk-btn-sm" hx-get={editUrl} hx-target="#page-content" hx-select="#page-content" hx-push-url="true">
             Edit
           </a>
         )}
-        <a href={backUrl} class="uk-btn uk-btn-default" hx-get={backUrl} hx-target="#page-content" hx-select="#page-content" hx-push-url="true">
+        <a href={backUrl} class="uk-btn uk-btn-default uk-btn-sm" hx-get={backUrl} hx-target="#page-content" hx-select="#page-content" hx-push-url="true">
           Back
         </a>
       </div>
     </div>
-    <div class="uk-card uk-card-body">
-       <dl class="divide-y">
-        {fields.map(f => (
-          <>
-            <dt style="font-weight: 500; color: #666;">{f.label}</dt>
-            <dd>{f.value || '-'}</dd>
-          </>
-        ))}
-      </dl>
-    </div>
-     {actions && actions.length > 0 && (
-       <div class="uk-card uk-card-body">
-         <h3>Actions</h3>
-         <div style="display: flex; gap: 10px; margin-top: 12px;">
-           {actions.map(action => {
-             const variantClass = action.variant === 'primary' ? 'uk-btn-primary' : action.variant === 'danger' ? 'uk-btn-destructive' : 'uk-btn-default';
-             return (
-                <button 
+    <div class="p-4 md:p-8">
+      <div class="uk-card uk-card-body" style="max-width: 800px;">
+        <div class="grid gap-3">
+          {fields.map(f => (
+            <div class="flex items-start justify-between gap-3 rounded-md px-2.5 py-1.5" style="background:var(--surface-elevated, var(--input-bg));" key={f.label}>
+              <span class="text-xs uppercase tracking-wide text-muted-foreground">{f.label}</span>
+              <p class="text-sm font-medium text-right">{f.value || '-'}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      {actions && actions.length > 0 && (
+        <div class="uk-card uk-card-body danger-card" style="max-width: 800px; margin-top: 24px;">
+          <h3 class="text-sm font-semibold text-muted-foreground mb-3">Actions</h3>
+          <div class="flex flex-wrap gap-2">
+            {actions.map(action => {
+              const variantClass = action.variant === 'primary' ? 'uk-btn-primary' : action.variant === 'danger' ? 'delete-btn' : 'uk-btn-default';
+              const isDelete = action.variant === 'danger';
+              return (
+                <button
                   type="button"
-                  class={`uk-btn ${variantClass}`}
+                  class={isDelete ? 'delete-btn' : `uk-btn ${variantClass} uk-btn-sm`}
                   hx-post={action.url}
                   hx-target="#page-content"
-                  data-confirm={action.variant === 'danger' ? 'arm' : undefined}
+                  data-confirm={isDelete ? 'arm' : undefined}
+                  key={action.label}
                 >
                   {action.label}
                 </button>
               );
-           })}
-         </div>
-       </div>
-     )}
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   </Layout>
 );
 
-const StatusBadge = ({ status }: { status: string }) => {
-   const normalizedStatus = status.toLowerCase();
-   const classMap: Record<string, string> = {
-     created: 'uk-label',
-     assigned: 'uk-label',
-     enroute: 'uk-label uk-label-secondary',
-     in_progress: 'uk-label uk-label-secondary',
-     complete: 'uk-label uk-label-primary',
-     cancelled: 'uk-label uk-label-destructive',
-     pending: 'uk-label uk-label-secondary',
-     sent: 'uk-label',
-     paid: 'uk-label uk-label-primary',
-     void: 'uk-label uk-label-destructive',
-     active: 'uk-label uk-label-primary',
-     inactive: 'uk-label uk-label-secondary',
-     manager: 'uk-label',
-     provider: 'uk-label uk-label-secondary',
-     zip: 'uk-label',
-     radius: 'uk-label uk-label-secondary',
-     geofence: 'uk-label uk-label-secondary',
-      weekly: 'uk-label',
-      biweekly: 'uk-label uk-label-secondary',
-      monthly: 'uk-label uk-label-primary',
-      new: 'uk-label uk-label-destructive',
-      read: 'uk-label uk-label-secondary',
-      replied: 'uk-label uk-label-primary',
-      archived: 'uk-label',
-      contact: 'uk-label uk-label-primary',
-      newsletter: 'uk-label uk-label-secondary',
-      registration: 'uk-label',
-    };
-   const labelMap: Record<string, string> = {
-     active: '✓',
-     inactive: '✗',
-   };
-   const label = labelMap[normalizedStatus] || normalizedStatus.replace('_', ' ');
-   return <span class={classMap[normalizedStatus] || 'uk-label'}>{label}</span>;
+const STATUS_ICON_MAP: Record<string, { cls: string; label: string }> = {
+  created:     { cls: 'status-icon--neutral',     label: 'Created' },
+  assigned:    { cls: 'status-icon--neutral',     label: 'Assigned' },
+  enroute:     { cls: 'status-icon--secondary',   label: 'En route' },
+  in_progress: { cls: 'status-icon--secondary',   label: 'In progress' },
+  complete:    { cls: 'status-icon--primary',     label: 'Complete' },
+  cancelled:   { cls: 'status-icon--destructive', label: 'Cancelled' },
+  pending:     { cls: 'status-icon--secondary',   label: 'Pending' },
+  sent:        { cls: 'status-icon--neutral',     label: 'Sent' },
+  paid:        { cls: 'status-icon--primary',     label: 'Paid' },
+  void:        { cls: 'status-icon--destructive', label: 'Void' },
+  new:         { cls: 'status-icon--destructive', label: 'New' },
+  read:        { cls: 'status-icon--secondary',   label: 'Read' },
+  replied:     { cls: 'status-icon--primary',     label: 'Replied' },
+  archived:    { cls: 'status-icon--neutral',     label: 'Archived' },
+  active:      { cls: 'status-icon--primary',     label: 'Active' },
+  inactive:    { cls: 'status-icon--secondary',   label: 'Inactive' },
 };
 
-export { TableView, FormView, DetailView, StatusBadge };
+const svgProps = { width: '14', height: '14', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true' };
+
+const StatusIconSvg = ({ status }: { status: string }) => {
+  switch (status) {
+    case 'created':
+      return <svg {...svgProps}><circle cx="12" cy="12" r="9" /></svg>;
+    case 'assigned':
+      return <svg {...svgProps}><circle cx="9" cy="7" r="4" /><path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2" /><path d="m16 11 2 2 4-4" /></svg>;
+    case 'enroute':
+      return <svg {...svgProps}><path d="M5 12h14m-7-7 7 7-7 7" /></svg>;
+    case 'in_progress':
+      return <svg {...svgProps}><polygon points="6 3 20 12 6 21 6 3" /></svg>;
+    case 'complete':
+    case 'paid':
+      return <svg {...svgProps}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><path d="m22 4-10 10.01-3-3" /></svg>;
+    case 'cancelled':
+      return <svg {...svgProps}><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6m0-6 6 6" /></svg>;
+    case 'pending':
+      return <svg {...svgProps}><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>;
+    case 'sent':
+      return <svg {...svgProps}><path d="m22 2-7 20-4-9-9-4z" /><path d="M22 2 11 13" /></svg>;
+    case 'void':
+      return <svg {...svgProps}><circle cx="12" cy="12" r="10" /><path d="m4.93 4.93 14.14 14.14" /></svg>;
+    case 'new':
+      return <svg {...svgProps} fill="currentColor" stroke="none"><circle cx="12" cy="12" r="5" /></svg>;
+    case 'read':
+      return <svg {...svgProps}><path d="M20 6 9 17l-5-5" /></svg>;
+    case 'replied':
+      return <svg {...svgProps}><path d="m9 17-5-5 5-5" /><path d="M20 18v-2a4 4 0 0 0-4-4H4" /></svg>;
+    case 'archived':
+      return <svg {...svgProps}><rect x="2" y="3" width="20" height="5" rx="1" /><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /><path d="M10 12h4" /></svg>;
+    case 'active':
+      return <svg {...svgProps}><path d="M20 6 9 17l-5-5" /></svg>;
+    case 'inactive':
+      return <svg {...svgProps}><path d="M18 6 6 18M6 6l12 12" /></svg>;
+    default:
+      return <svg {...svgProps}><circle cx="12" cy="12" r="9" /></svg>;
+  }
+};
+
+const StatusIcon = ({ status }: { status: string }) => {
+  const s = status.toLowerCase();
+  const info = STATUS_ICON_MAP[s] || { cls: 'status-icon--neutral', label: s.replace('_', ' ') };
+  return (
+    <span class={`status-icon ${info.cls}`} title={info.label} aria-label={info.label}>
+      <StatusIconSvg status={s} />
+    </span>
+  );
+};
+
+const BADGE_CLASS_MAP: Record<string, string> = {
+  created: 'uk-label',
+  assigned: 'uk-label',
+  enroute: 'uk-label uk-label-secondary',
+  in_progress: 'uk-label uk-label-secondary',
+  complete: 'uk-label uk-label-primary',
+  cancelled: 'uk-label uk-label-destructive',
+  pending: 'uk-label uk-label-secondary',
+  sent: 'uk-label',
+  paid: 'uk-label uk-label-primary',
+  void: 'uk-label uk-label-destructive',
+  active: 'uk-label uk-label-primary',
+  inactive: 'uk-label uk-label-secondary',
+  manager: 'uk-label',
+  provider: 'uk-label uk-label-secondary',
+  zip: 'uk-label',
+  radius: 'uk-label uk-label-secondary',
+  geofence: 'uk-label uk-label-secondary',
+  weekly: 'uk-label',
+  biweekly: 'uk-label uk-label-secondary',
+  monthly: 'uk-label uk-label-primary',
+  new: 'uk-label uk-label-destructive',
+  read: 'uk-label uk-label-secondary',
+  replied: 'uk-label uk-label-primary',
+  archived: 'uk-label',
+  contact: 'uk-label uk-label-primary',
+  newsletter: 'uk-label uk-label-secondary',
+  registration: 'uk-label',
+};
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const s = status.toLowerCase();
+  const hasIcon = s in STATUS_ICON_MAP;
+  const label = s.replace('_', ' ');
+  return (
+    <span class={BADGE_CLASS_MAP[s] || 'uk-label'}>
+      {hasIcon && <StatusIconSvg status={s} />}
+      {label}
+    </span>
+  );
+};
+
+export { TableView, FormView, DetailView, StatusBadge, StatusIcon };
 export type { FormField, TableViewProps, FormViewProps, DetailViewProps };

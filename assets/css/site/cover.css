@@ -57,7 +57,16 @@
 }
 
 .hero-subscription {
-    margin-top: 4rem;
+    margin-top: 2.4rem;
+}
+
+.is-hero-image-rectangle-image-top .hero-image {
+    width: 100%;
+    aspect-ratio: 2/1;
+}
+
+.is-hero-image-rectangle-image-top.hero-grid {
+    max-width: 100%;
 }
 
 /* image left/right */

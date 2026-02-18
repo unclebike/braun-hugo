@@ -1,6 +1,9 @@
+// biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
-import { Layout } from './layout';
 import { formatTorontoDate } from '../utils/datetime';
+// biome-ignore lint/correctness/noUnusedImports: StatusIcon is reserved for header icons
+import { StatusBadge, StatusIcon } from './components';
+import { Layout } from './layout';
 
 interface DashboardProps {
   stats: {
@@ -39,14 +42,6 @@ interface DashboardProps {
   }>;
 }
 
-const statusClass = (status: string) => {
-  const s = status.toLowerCase();
-  if (s === 'complete') return 'uk-label uk-label-primary';
-  if (s === 'cancelled') return 'uk-label uk-label-destructive';
-  if (s === 'in_progress' || s === 'enroute') return 'uk-label uk-label-secondary';
-  return 'uk-label';
-};
-
 const money = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
 const shortDate = (input: string) => {
@@ -75,18 +70,20 @@ export const Dashboard = ({ stats, upcomingJobs, recentBookings, recentMessages 
 
   return (
     <Layout title="Dashboard">
-      <div class="flex items-center justify-between px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
-        <h2 class="text-xl font-semibold">Dashboard</h2>
-        <a
-          href="/admin/jobs/new"
-          class="uk-btn uk-btn-primary uk-btn-sm"
-          hx-get="/admin/jobs/new"
-          hx-target="#page-content"
-          hx-select="#page-content"
-          hx-push-url="true"
-        >
-          New Job
-        </a>
+      <div class="page-header">
+        <h2>Dashboard</h2>
+        <div class="page-header-actions">
+          <a
+            href="/admin/jobs/new"
+            class="uk-btn uk-btn-primary uk-btn-sm"
+            hx-get="/admin/jobs/new"
+            hx-target="#page-content"
+            hx-select="#page-content"
+            hx-push-url="true"
+          >
+            + New Job
+          </a>
+        </div>
       </div>
 
       <div class="p-4 md:p-8">
@@ -120,7 +117,7 @@ export const Dashboard = ({ stats, upcomingJobs, recentBookings, recentMessages 
                         >
                           {job.customer_name}
                         </a>
-                        <span class={`shrink-0 ${statusClass(job.status)}`}>{job.status.replace('_', ' ')}</span>
+                        <span class="shrink-0"><StatusBadge status={job.status} /></span>
                       </div>
                       <p class="text-xs text-muted-foreground mt-1.5">
                         {shortDate(job.scheduled_date)} at {shortTime(job.scheduled_start_time)}
@@ -158,7 +155,7 @@ export const Dashboard = ({ stats, upcomingJobs, recentBookings, recentMessages 
                         <td>{shortDate(job.scheduled_date)}</td>
                         <td>{job.scheduled_start_time}</td>
                         <td>
-                          <span class={statusClass(job.status)}>{job.status.replace('_', ' ')}</span>
+                          <StatusBadge status={job.status} />
                         </td>
                       </tr>
                     ))}
@@ -189,7 +186,7 @@ export const Dashboard = ({ stats, upcomingJobs, recentBookings, recentMessages 
                         >
                           {job.customer_name}
                         </a>
-                        <span class={`shrink-0 ${statusClass(job.status)}`}>{job.status.replace('_', ' ')}</span>
+                        <span class="shrink-0"><StatusBadge status={job.status} /></span>
                       </div>
                       <p class="text-xs text-muted-foreground mt-1 truncate">{job.service_name || 'Custom Service'}</p>
                       <div class="flex items-center justify-between mt-1.5 text-xs text-muted-foreground">
@@ -229,7 +226,7 @@ export const Dashboard = ({ stats, upcomingJobs, recentBookings, recentMessages 
                         <td>{job.service_name || 'Custom Service'}</td>
                         <td>{job.territory_name || '-'}</td>
                         <td>
-                          <span class={statusClass(job.status)}>{job.status.replace('_', ' ')}</span>
+                          <StatusBadge status={job.status} />
                         </td>
                         <td>{shortDate(job.created_at)}</td>
                         <td>{money(job.total_price_cents)}</td>

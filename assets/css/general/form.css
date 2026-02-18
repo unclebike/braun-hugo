@@ -135,6 +135,45 @@ fieldset {
     margin-top: 3.2rem;
 }
 
+.newsletter-box {
+    background-color: var(--hero-background-color);
+    border-radius: var(--radii-medium);
+    padding: 3.2rem;
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.newsletter-text {
+    color: var(--secondary-text-color);
+    margin-bottom: 2rem;
+}
+
+.newsletter-form-wrapper {
+    display: flex;
+    gap: 1rem;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.newsletter-input {
+    flex: 1;
+}
+
+.newsletter-button {
+    flex-shrink: 0;
+}
+
+.newsletter-message {
+    margin-top: 1.2rem;
+}
+
+@media (max-width: 575px) {
+    .newsletter-form-wrapper {
+        flex-direction: column;
+    }
+}
+
 .subscribe-title {
     color: var(--secondary-text-color);
     margin-bottom: 1.6rem;

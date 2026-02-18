@@ -491,9 +491,20 @@ export const JobWizardPage = (props: NewJobProps | WizardFlowProps) => {
   const title = hasStep(props) ? `New Job - Step ${props.step}` : 'Create Job';
   return (
     <Layout title={title}>
-      <div class="flex items-center justify-between px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
-        <h2 class="text-xl font-semibold">{title}</h2>
-        <a href="/admin/jobs" class="uk-btn uk-btn-default uk-btn-sm" hx-get="/admin/jobs" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Back</a>
+      <div class="page-header">
+        <div class="page-header-info">
+          <h2>{title}</h2>
+          {hasStep(props) && (
+            <div class="wizard-progress" style="margin-top:4px;">
+              {[1, 2, 3, 4].map((s) => (
+                <div key={s} class={`wizard-progress-step${s < (props as WizardFlowProps).step ? ' is-done' : ''}${s === (props as WizardFlowProps).step ? ' is-active' : ''}`} />
+              ))}
+            </div>
+          )}
+        </div>
+        <div class="page-header-actions">
+          <a href="/admin/jobs" class="uk-btn uk-btn-default uk-btn-sm" hx-get="/admin/jobs" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Back</a>
+        </div>
       </div>
       <div class="p-8">
         {hasStep(props) ? wizardFlowBody(props) : quickCreateBody(props)}

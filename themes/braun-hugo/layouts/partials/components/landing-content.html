@@ -15,7 +15,7 @@
 
 {{/* Side Projects Section */}}
 {{ if eq .type "side-projects" }}
-<section class="section-container section-side-project"{{ with $bgStyle }} style="{{ . | safeCSS }}"{{ end }}>
+<section class="section-container section-side-project{{ with .extra_class }} {{ . }}{{ end }}"{{ with $bgStyle }} style="{{ . | safeCSS }}"{{ end }}>
     {{ partial "components/section-title" (dict "title" .title "view_all_url" .view_all_url) }}
     <div class="cards content-3col gh-feed container medium">
         {{ range .content }}
