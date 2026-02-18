@@ -1,6 +1,8 @@
+// biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
-import { Layout } from './layout';
 import { formatTorontoDate, formatTorontoTime } from '../utils/datetime';
+import { StatusIcon } from './components';
+import { Layout } from './layout';
 
 interface Message {
   id: string;
@@ -71,11 +73,7 @@ const statusBadge = (status: string) => {
     archived: 'uk-label',
   };
   if (status === 'read') {
-    return (
-      <span class={cls[status]} title="read" style="font-size:12px;padding:1px 8px;line-height:1;">
-        {'\u2022'}
-      </span>
-    );
+    return <StatusIcon status="read" />;
   }
   return <span class={cls[status] || 'uk-label'}>{status}</span>;
 };
@@ -147,7 +145,7 @@ export const SmsHistoryList = ({
             return (
               <div key={sms.id} style={`display:flex;${sms.direction === 'outbound' ? 'justify-content:flex-end;' : 'justify-content:flex-start;'}`}>
                 <div style={`max-width:80%;padding:8px 12px;border-radius:12px;display:flex;flex-direction:column;gap:6px;${sms.direction === 'outbound'
-                  ? 'background:var(--brand,#dc8a78);color:#fff;border:1px solid rgba(0,0,0,0.06);border-bottom-right-radius:4px;'
+                  ? 'background:var(--brand,#dc8a78);color:var(--on-brand, #1e1e2e);border:1px solid rgba(0,0,0,0.06);border-bottom-right-radius:4px;'
                   : 'background:var(--surface-elevated,#eff1f5);color:var(--text-primary,#333);border:1px solid var(--border,#ccd0da);border-bottom-left-radius:4px;'}`}>
                   <div class="text-sm" style="white-space:pre-wrap;word-break:break-word;">{smsBodyText(sms)}</div>
                   <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
@@ -335,49 +333,45 @@ export const MessageDetailPage = ({ message, smsHistory, twilioEnabled, phoneE16
 
   return (
     <Layout title={`Message — ${senderName}`}>
-      <div class="px-4 pl-14 py-2.5 md:px-8 md:pl-8 md:py-3 bg-white border-b border-border sticky top-0 z-50">
-        <div class="flex items-start justify-between gap-2">
-          <div class="min-w-0">
-            <h2 class="text-base md:text-lg font-semibold leading-tight break-words">
-              {senderName}
-            </h2>
-          </div>
-          <div class="flex items-center gap-2 shrink-0">
-            {message.status !== 'archived' && (
-              <button
-                type="button"
-                class="uk-btn uk-btn-default uk-btn-sm"
-                hx-post={`/admin/inbox/${message.id}/archive`}
-                hx-target="#page-content"
-                hx-select="#page-content"
-                aria-label="Archive message"
-                title="Archive message"
-                style="padding:0 10px;"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <rect x="3" y="4" width="18" height="4" rx="1"></rect>
-                  <path d="M5 8V20H19V8"></path>
-                  <path d="M10 12H14"></path>
-                </svg>
-              </button>
-            )}
-            <a
-              href="/admin/inbox"
+      <div class="page-header">
+        <div class="page-header-info">
+          <h2 style="white-space:normal;word-break:break-word;">{senderName}</h2>
+        </div>
+        <div class="page-header-actions">
+          {message.status !== 'archived' && (
+            <button
+              type="button"
               class="uk-btn uk-btn-default uk-btn-sm"
-              hx-get="/admin/inbox"
+              hx-post={`/admin/inbox/${message.id}/archive`}
               hx-target="#page-content"
               hx-select="#page-content"
-              hx-push-url="true"
-              aria-label="Back to inbox"
-              title="Back to inbox"
-              style="padding:0 10px;position:relative;"
+              aria-label="Archive message"
+              title="Archive message"
+              style="padding:0 10px;"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M15 18L9 12L15 6"></path>
+                <rect x="3" y="4" width="18" height="4" rx="1"></rect>
+                <path d="M5 8V20H19V8"></path>
+                <path d="M10 12H14"></path>
               </svg>
-              <span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Back to inbox</span>
-            </a>
-          </div>
+            </button>
+          )}
+          <a
+            href="/admin/inbox"
+            class="uk-btn uk-btn-default uk-btn-sm"
+            hx-get="/admin/inbox"
+            hx-target="#page-content"
+            hx-select="#page-content"
+            hx-push-url="true"
+            aria-label="Back to inbox"
+            title="Back to inbox"
+            style="padding:0 10px;position:relative;"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M15 18L9 12L15 6"></path>
+            </svg>
+            <span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Back to inbox</span>
+          </a>
         </div>
       </div>
 
