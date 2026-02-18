@@ -435,7 +435,7 @@ export async function enqueueTestPushNotificationAndPing(
   ).bind(
     id,
     sub.id,
-    'Zenbooker test notification',
+    'GOATkit test notification',
     'If you can see this, push delivery is working.',
     '/admin',
   ).run();
@@ -451,7 +451,7 @@ export async function enqueueAndDispatchPushEvent(
   await ensurePushTables(db);
 
   const type = event.type === 'test' ? 'new_message' : event.type;
-  const title = event.title.trim() || 'Zenbooker update';
+  const title = event.title.trim() || 'GOATkit update';
   const body = (event.body || '').trim() || 'Open the app for details.';
   const targetUrl = event.targetUrl.trim() || '/admin';
 

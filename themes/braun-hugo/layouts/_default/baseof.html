@@ -359,17 +359,17 @@
     
     <script src="https://api.unclebike.xyz/widget/branding.js"></script>
     <script>
-      window.ZenbookerPopupConfig = {
+      window.GOATkitPopupConfig = {
         apiUrl: 'https://api.unclebike.xyz',
-        primaryColor: (window.ZenbookerBranding || {}).primaryColor || '#2563eb',
+        primaryColor: (window.GOATkitBranding || {}).primaryColor || '#2563eb',
         floatingButton: true,
         floatingButtonText: 'Book Now',
         onComplete: function(booking) {
           console.log('Booking completed:', booking);
         }
       };
-      if (document.getElementById('zenbooker-trigger')) {
-        window.ZenbookerPopupConfig.floatingButton = false;
+      if (document.getElementById('goatkit-trigger')) {
+        window.GOATkitPopupConfig.floatingButton = false;
       }
     </script>
     <script src="https://api.unclebike.xyz/widget/popup.js" defer></script>
@@ -406,7 +406,7 @@
       };
 
       document.addEventListener('click', function(e) {
-        var trigger = e.target.closest('[data-zbw-open], #zenbooker-trigger');
+        var trigger = e.target.closest('[data-zbw-open], #goatkit-trigger');
         if (!trigger) return;
         closeMenuForWidgetOpen();
       }, true);

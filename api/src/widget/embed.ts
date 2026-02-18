@@ -3,10 +3,10 @@ export const BOOKING_WIDGET_JS = `(function() {
 
   var WIDGET_VERSION = '2.0.0';
 
-  function ZenbookerWidget(config) {
+  function GOATkitWidget(config) {
     this.apiUrl = config.apiUrl || '';
     this.apiKey = config.apiKey || '';
-    this.containerId = config.containerId || 'zenbooker-widget';
+    this.containerId = config.containerId || 'goatkit-widget';
     this.primaryColor = config.primaryColor || '#2563eb';
     this.fontFamily = config.fontFamily || "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     this.onComplete = config.onComplete || function() {};
@@ -43,7 +43,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     this.init();
   }
 
-  ZenbookerWidget.prototype.init = function() {
+  GOATkitWidget.prototype.init = function() {
     this.injectStyles();
     this.render();
   };
@@ -52,7 +52,7 @@ export const BOOKING_WIDGET_JS = `(function() {
   // CSS
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype.injectStyles = function() {
+  GOATkitWidget.prototype.injectStyles = function() {
     if (document.getElementById('zbw-styles')) return;
     var s = document.createElement('style');
     s.id = 'zbw-styles';
@@ -60,7 +60,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     document.head.appendChild(s);
   };
 
-  ZenbookerWidget.prototype.getCSS = function() {
+  GOATkitWidget.prototype.getCSS = function() {
     var p = this.primaryColor;
     var f = this.fontFamily;
     return [
@@ -240,19 +240,19 @@ export const BOOKING_WIDGET_JS = `(function() {
   // UTILITIES
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype.formatPrice = function(cents) {
+  GOATkitWidget.prototype.formatPrice = function(cents) {
     if (cents == null) return '--';
     var dollars = Math.abs(cents) / 100;
     var sign = cents < 0 ? '-' : '';
     return sign + '\\$' + dollars.toFixed(dollars % 1 === 0 ? 0 : 2);
   };
 
-  ZenbookerWidget.prototype.formatPriceDelta = function(cents) {
+  GOATkitWidget.prototype.formatPriceDelta = function(cents) {
     if (!cents) return 'Included';
     return '+\\$' + (Math.abs(cents) / 100).toFixed(cents % 100 === 0 ? 0 : 2);
   };
 
-  ZenbookerWidget.prototype.formatTime = function(time24) {
+  GOATkitWidget.prototype.formatTime = function(time24) {
     var parts = time24.split(':');
     var h = parseInt(parts[0], 10);
     var m = parts[1];
@@ -260,12 +260,12 @@ export const BOOKING_WIDGET_JS = `(function() {
     return (h % 12 || 12) + ':' + m + ' ' + ampm;
   };
 
-  ZenbookerWidget.prototype.formatDate = function(dateStr) {
+  GOATkitWidget.prototype.formatDate = function(dateStr) {
     var d = new Date(dateStr + 'T12:00:00');
     return d.toLocaleDateString('en-US', { timeZone: 'America/Toronto', weekday: 'short', month: 'short', day: 'numeric' });
   };
 
-  ZenbookerWidget.prototype.formatDateShort = function(dateStr) {
+  GOATkitWidget.prototype.formatDateShort = function(dateStr) {
     var d = new Date(dateStr + 'T12:00:00');
     return {
       day: d.toLocaleDateString('en-US', { timeZone: 'America/Toronto', weekday: 'short' }),
@@ -273,18 +273,18 @@ export const BOOKING_WIDGET_JS = `(function() {
     };
   };
 
-  ZenbookerWidget.prototype.formatDuration = function(mins) {
+  GOATkitWidget.prototype.formatDuration = function(mins) {
     if (mins < 60) return mins + ' min';
     var h = Math.floor(mins / 60);
     var m = mins % 60;
     return m ? h + ' hr ' + m + ' min' : h + ' hr';
   };
 
-  ZenbookerWidget.prototype.validatePostalCode = function(code) {
+  GOATkitWidget.prototype.validatePostalCode = function(code) {
     return /^[A-Za-z]\\d[A-Za-z]\\s?\\d[A-Za-z]\\d$/.test(code.trim());
   };
 
-  ZenbookerWidget.prototype.normalizePostalCode = function(code) {
+  GOATkitWidget.prototype.normalizePostalCode = function(code) {
     var clean = code.replace(/\\s/g, '').toUpperCase();
     if (clean.length === 6) return clean.substring(0, 3) + ' ' + clean.substring(3);
     return clean;
@@ -294,7 +294,7 @@ export const BOOKING_WIDGET_JS = `(function() {
   // STATE & NAVIGATION
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype.computeSteps = function() {
+  GOATkitWidget.prototype.computeSteps = function() {
     var steps = ['zip'];
 
     if (this.state.categories.length > 1) {
@@ -317,13 +317,13 @@ export const BOOKING_WIDGET_JS = `(function() {
     return steps;
   };
 
-  ZenbookerWidget.prototype.getStepIndex = function() {
+  GOATkitWidget.prototype.getStepIndex = function() {
     var steps = this.computeSteps();
     var idx = steps.indexOf(this.state.currentStep);
     return idx >= 0 ? idx : 0;
   };
 
-  ZenbookerWidget.prototype.getProgressPercent = function() {
+  GOATkitWidget.prototype.getProgressPercent = function() {
     var steps = this.computeSteps();
     var total = steps.length - 1;
     if (total <= 0) return 0;
@@ -332,7 +332,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     return Math.round((idx / (total - 1)) * 100);
   };
 
-  ZenbookerWidget.prototype.goToStep = function(stepId) {
+  GOATkitWidget.prototype.goToStep = function(stepId) {
     this.state.currentStep = stepId;
     this.state.stepHistory.push(stepId);
     this.state.error = null;
@@ -340,7 +340,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     this.render();
   };
 
-  ZenbookerWidget.prototype.goBack = function() {
+  GOATkitWidget.prototype.goBack = function() {
     if (this.state.stepHistory.length <= 1) return;
     this.state.stepHistory.pop();
     this.state.currentStep = this.state.stepHistory[this.state.stepHistory.length - 1];
@@ -348,7 +348,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     this.render();
   };
 
-  ZenbookerWidget.prototype.getRunningTotal = function() {
+  GOATkitWidget.prototype.getRunningTotal = function() {
     var svc = this.state.selectedService;
     if (!svc) return 0;
     var total = svc.base_price_cents || 0;
@@ -371,7 +371,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     return total;
   };
 
-  ZenbookerWidget.prototype.getEffectiveDuration = function() {
+  GOATkitWidget.prototype.getEffectiveDuration = function() {
     var svc = this.state.selectedService;
     if (!svc) return 0;
     var dur = svc.base_duration_minutes || 0;
@@ -392,7 +392,7 @@ export const BOOKING_WIDGET_JS = `(function() {
   // API
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype.fetchApi = function(endpoint, options) {
+  GOATkitWidget.prototype.fetchApi = function(endpoint, options) {
     var self = this;
     var headers = { 'Content-Type': 'application/json' };
     if (this.apiKey) headers['Authorization'] = 'Bearer ' + this.apiKey;
@@ -425,7 +425,7 @@ export const BOOKING_WIDGET_JS = `(function() {
   // RENDER CORE
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype.render = function() {
+  GOATkitWidget.prototype.render = function() {
     var el = document.getElementById(this.containerId);
     if (!el) return;
 
@@ -480,7 +480,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     this.attachEvents();
   };
 
-  ZenbookerWidget.prototype.renderProgress = function() {
+  GOATkitWidget.prototype.renderProgress = function() {
     var pct = this.getProgressPercent();
     var steps = this.computeSteps().filter(function(s) { return s !== 'success'; });
     var idx = this.getStepIndex();
@@ -492,7 +492,7 @@ export const BOOKING_WIDGET_JS = `(function() {
       '</div>';
   };
 
-  ZenbookerWidget.prototype.renderSidebar = function() {
+  GOATkitWidget.prototype.renderSidebar = function() {
     var svc = this.state.selectedService;
     if (!svc) return '';
 
@@ -535,7 +535,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     return html;
   };
 
-  ZenbookerWidget.prototype.renderMobileSummary = function() {
+  GOATkitWidget.prototype.renderMobileSummary = function() {
     var total = this.formatPrice(this.getRunningTotal());
     return '<div class="zbw-mobile-summary">' +
       '<button class="zbw-mobile-summary-btn" data-action="toggleSummary">' +
@@ -545,13 +545,13 @@ export const BOOKING_WIDGET_JS = `(function() {
       '</div>';
   };
 
-  ZenbookerWidget.prototype.renderBackButton = function() {
+  GOATkitWidget.prototype.renderBackButton = function() {
     return '<button class="zbw-btn-back" data-action="back">' +
       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>' +
       'Back</button>';
   };
 
-  ZenbookerWidget.prototype.esc = function(str) {
+  GOATkitWidget.prototype.esc = function(str) {
     if (!str) return '';
     var d = document.createElement('div');
     d.textContent = str;
@@ -562,7 +562,7 @@ export const BOOKING_WIDGET_JS = `(function() {
   // STEP ROUTER
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype.renderCurrentStep = function() {
+  GOATkitWidget.prototype.renderCurrentStep = function() {
     var step = this.state.currentStep;
     if (step === 'zip') return this.renderZipStep();
     if (step === 'categories') return this.renderCategoriesStep();
@@ -582,7 +582,7 @@ export const BOOKING_WIDGET_JS = `(function() {
   // STEP 1: ZIP CODE
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype.renderZipStep = function() {
+  GOATkitWidget.prototype.renderZipStep = function() {
     var html = '<div class="zbw-step">';
     html += '<h2 class="zbw-step-title">Book Online</h2>';
     html += '<p class="zbw-step-desc">Enter your postal code to check availability in your area.</p>';
@@ -604,7 +604,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     return html;
   };
 
-  ZenbookerWidget.prototype.handleCheckZip = function() {
+  GOATkitWidget.prototype.handleCheckZip = function() {
     var input = document.getElementById('zbw-postal');
     var code = input ? input.value.trim() : '';
 
@@ -656,7 +656,7 @@ export const BOOKING_WIDGET_JS = `(function() {
       });
   };
 
-  ZenbookerWidget.prototype.loadServices = function() {
+  GOATkitWidget.prototype.loadServices = function() {
     var self = this;
     var tid = this.state.territory.id;
 
@@ -701,7 +701,7 @@ export const BOOKING_WIDGET_JS = `(function() {
   // STEP 2: CATEGORIES (conditional)
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype.renderCategoriesStep = function() {
+  GOATkitWidget.prototype.renderCategoriesStep = function() {
     var html = '<div class="zbw-step">';
     html += this.renderBackButton();
     html += '<h2 class="zbw-step-title">What do you need?</h2>';
@@ -728,7 +728,7 @@ export const BOOKING_WIDGET_JS = `(function() {
   // STEP 3: SERVICES
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype.renderServicesStep = function() {
+  GOATkitWidget.prototype.renderServicesStep = function() {
     var html = '<div class="zbw-step">';
     html += this.renderBackButton();
     html += '<h2 class="zbw-step-title">Select a Service</h2>';
@@ -768,7 +768,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     return html;
   };
 
-  ZenbookerWidget.prototype.handleSelectService = function(serviceId) {
+  GOATkitWidget.prototype.handleSelectService = function(serviceId) {
     var svc = this.state.services.find(function(s) { return s.id === serviceId; });
     if (!svc) return;
     var hadService = !!this.state.selectedService;
@@ -785,7 +785,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     }
   };
 
-  ZenbookerWidget.prototype.handleConfirmService = function() {
+  GOATkitWidget.prototype.handleConfirmService = function() {
     if (!this.state.selectedService) return;
     var self = this;
     this.state.loading = true;
@@ -814,7 +814,7 @@ export const BOOKING_WIDGET_JS = `(function() {
   // STEP 4: MODIFIERS (1 per screen)
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype.renderModifierStep = function(index) {
+  GOATkitWidget.prototype.renderModifierStep = function(index) {
     var detail = this.state.serviceDetail;
     if (!detail || !detail.modifiers || !detail.modifiers[index]) return '';
 
@@ -859,7 +859,7 @@ export const BOOKING_WIDGET_JS = `(function() {
   // STEP 5: DATE & TIME
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype.renderDateTimeStep = function() {
+  GOATkitWidget.prototype.renderDateTimeStep = function() {
     var html = '<div class="zbw-step">';
     html += this.renderBackButton();
     html += '<h2 class="zbw-step-title">Choose a Time</h2>';
@@ -934,7 +934,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     return html;
   };
 
-  ZenbookerWidget.prototype.loadTimeslots = function() {
+  GOATkitWidget.prototype.loadTimeslots = function() {
     var self = this;
     self.state.loading = true;
     self.render();
@@ -972,7 +972,7 @@ export const BOOKING_WIDGET_JS = `(function() {
   // STEP 6: ADDRESS
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype.renderAddressStep = function() {
+  GOATkitWidget.prototype.renderAddressStep = function() {
     var a = this.state.address;
     var provinces = ['AB','BC','MB','NB','NL','NS','NT','NU','ON','PE','QC','SK','YT'];
 
@@ -998,7 +998,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     return html;
   };
 
-  ZenbookerWidget.prototype.readAddressFromDOM = function() {
+  GOATkitWidget.prototype.readAddressFromDOM = function() {
     var line1 = (document.getElementById('zbw-addr1') || {}).value;
     var line2 = (document.getElementById('zbw-addr2') || {}).value;
     var city = (document.getElementById('zbw-city') || {}).value;
@@ -1015,7 +1015,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     if (postal !== undefined) this.state.address.postalCode = postal.trim();
   };
 
-  ZenbookerWidget.prototype.handleConfirmAddress = function() {
+  GOATkitWidget.prototype.handleConfirmAddress = function() {
     this.readAddressFromDOM();
     var a = this.state.address;
 
@@ -1031,7 +1031,7 @@ export const BOOKING_WIDGET_JS = `(function() {
   // STEP 7: CONTACT + BOOK
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype.renderContactStep = function() {
+  GOATkitWidget.prototype.renderContactStep = function() {
     var c = this.state.contact;
 
     var html = '<div class="zbw-step">';
@@ -1060,7 +1060,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     return html;
   };
 
-  ZenbookerWidget.prototype.handleSubmitBooking = function() {
+  GOATkitWidget.prototype.handleSubmitBooking = function() {
     if (this.state.submitting) return;
 
     var fn = (document.getElementById('zbw-fname') || {}).value || '';
@@ -1158,7 +1158,7 @@ export const BOOKING_WIDGET_JS = `(function() {
   // STEP 8: SUCCESS
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype.renderSuccessStep = function() {
+  GOATkitWidget.prototype.renderSuccessStep = function() {
     var ts = this.state.selectedTimeslot;
     var svc = this.state.selectedService;
     var html = '<div class="zbw-success">';
@@ -1179,7 +1179,7 @@ export const BOOKING_WIDGET_JS = `(function() {
   // TARGETED DOM UPDATES (no full re-render)
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype._toggleCards = function(action, selectedId, confirmAction) {
+  GOATkitWidget.prototype._toggleCards = function(action, selectedId, confirmAction) {
     var el = document.getElementById(this.containerId);
     if (!el) return;
     var cards = el.querySelectorAll('[data-action="' + action + '"]');
@@ -1193,7 +1193,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     }
   };
 
-  ZenbookerWidget.prototype._refreshSidebar = function() {
+  GOATkitWidget.prototype._refreshSidebar = function() {
     var el = document.getElementById(this.containerId);
     if (!el) return;
     var sidebar = el.querySelector('.zbw-sidebar');
@@ -1202,7 +1202,7 @@ export const BOOKING_WIDGET_JS = `(function() {
     if (mBtn) mBtn.textContent = this.formatPrice(this.getRunningTotal());
   };
 
-  ZenbookerWidget.prototype._renderSlotsForDate = function(date) {
+  GOATkitWidget.prototype._renderSlotsForDate = function(date) {
     var byDate = {};
     for (var i = 0; i < this.state.timeslots.length; i++) {
       var t = this.state.timeslots[i];
@@ -1228,7 +1228,7 @@ export const BOOKING_WIDGET_JS = `(function() {
   // EVENT HANDLING
   // ═══════════════════════════════════════
 
-  ZenbookerWidget.prototype.attachEvents = function() {
+  GOATkitWidget.prototype.attachEvents = function() {
     var self = this;
     var container = document.getElementById(this.containerId);
     if (!container) return;
@@ -1414,10 +1414,10 @@ export const BOOKING_WIDGET_JS = `(function() {
   // EXPOSE
   // ═══════════════════════════════════════
 
-  window.ZenbookerWidget = ZenbookerWidget;
+  window.GOATkitWidget = GOATkitWidget;
 
-  if (typeof window.ZenbookerConfig !== 'undefined') {
-    window.zenbookerInstance = new ZenbookerWidget(window.ZenbookerConfig);
+  if (typeof window.GOATkitConfig !== 'undefined') {
+    window.goatkitInstance = new GOATkitWidget(window.GOATkitConfig);
   }
 })();`;
 
@@ -1428,7 +1428,7 @@ export const BOOKING_WIDGET_POPUP = `(function() {
   var overlay = null;
 
   function getConfig() {
-    return window.ZenbookerPopupConfig || {};
+    return window.GOATkitPopupConfig || {};
   }
 
   function createOverlay() {
@@ -1464,7 +1464,7 @@ export const BOOKING_WIDGET_POPUP = `(function() {
     overlay.querySelector('#zbw-popup-close').addEventListener('click', closePopup);
 
     if (!loaded) {
-      window.ZenbookerConfig = {
+      window.GOATkitConfig = {
         apiUrl: apiUrl,
         containerId: 'zbw-popup-widget',
         primaryColor: color,
@@ -1510,13 +1510,13 @@ export const BOOKING_WIDGET_POPUP = `(function() {
     }
     window.addEventListener('orientationchange', syncPopupViewport);
 
-    if (window.zenbookerInstance) {
-      window.zenbookerInstance.state.currentStep = 'zip';
-      window.zenbookerInstance.state.stepHistory = ['zip'];
-      window.zenbookerInstance.state.error = null;
-      window.zenbookerInstance.state.loading = false;
-      window.zenbookerInstance.state.submitting = false;
-      window.zenbookerInstance.render();
+    if (window.goatkitInstance) {
+      window.goatkitInstance.state.currentStep = 'zip';
+      window.goatkitInstance.state.stepHistory = ['zip'];
+      window.goatkitInstance.state.error = null;
+      window.goatkitInstance.state.loading = false;
+      window.goatkitInstance.state.submitting = false;
+      window.goatkitInstance.render();
     }
   }
 
@@ -1543,7 +1543,7 @@ export const BOOKING_WIDGET_POPUP = `(function() {
     if (el) { e.preventDefault(); openPopup(); }
   });
 
-  window.ZenbookerPopup = { open: openPopup, close: closePopup };
+  window.GOATkitPopup = { open: openPopup, close: closePopup };
 
   var cfg = getConfig();
   if (cfg.floatingButton !== false) {
@@ -1580,7 +1580,7 @@ export const BOOKING_WIDGET_DEMO = `<!DOCTYPE html>
     .demo-header { text-align: center; margin-bottom: 32px; }
     .demo-header h1 { font-size: 28px; color: #0f172a; margin-bottom: 8px; }
     .demo-header p { color: #64748b; font-size: 15px; }
-    #zenbooker-widget { width: 100%; max-width: 900px; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,.08); padding: 32px; }
+    #goatkit-widget { width: 100%; max-width: 900px; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,.08); padding: 32px; }
     .demo-code { max-width: 900px; width: 100%; margin-top: 40px; background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
     .demo-code h3 { font-size: 16px; margin-bottom: 12px; color: #0f172a; }
     .demo-code pre { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
@@ -1592,16 +1592,16 @@ export const BOOKING_WIDGET_DEMO = `<!DOCTYPE html>
     <p>Embeddable booking widget for your website</p>
   </div>
 
-  <div id="zenbooker-widget"></div>
+  <div id="goatkit-widget"></div>
 
   <div class="demo-code">
     <h3>Embed on Your Site</h3>
-    <pre><code>&lt;div id="zenbooker-widget"&gt;&lt;/div&gt;
+    <pre><code>&lt;div id="goatkit-widget"&gt;&lt;/div&gt;
 
 &lt;script&gt;
-  window.ZenbookerConfig = {
+  window.GOATkitConfig = {
     apiUrl: 'https://api.unclebike.xyz',
-    containerId: 'zenbooker-widget',
+    containerId: 'goatkit-widget',
     primaryColor: '#2563eb',
     onComplete: function(booking) {
       console.log('Booked:', booking);
@@ -1612,9 +1612,9 @@ export const BOOKING_WIDGET_DEMO = `<!DOCTYPE html>
   </div>
 
   <script>
-    window.ZenbookerConfig = {
+    window.GOATkitConfig = {
       apiUrl: window.location.origin,
-      containerId: 'zenbooker-widget',
+      containerId: 'goatkit-widget',
       primaryColor: '#2563eb',
       onComplete: function(booking) {
         console.log('Booking completed:', booking);

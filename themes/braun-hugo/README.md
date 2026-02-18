@@ -12,7 +12,7 @@ A feature-rich Hugo theme ported from the Braun Ghost theme, designed for portfo
 - **PhotoSwipe Gallery**: Lightbox for images
 - **Multi-language Support**: EN, DE, ES, FR, NL, ZH
 - **Dark Mode**: Automatic dark/light mode switching
-- **Zenbooker Integration**: Booking widget support
+- **GOATkit Integration**: Booking widget support
 - **Cloudflare Pages Ready**: Deployment configuration included
 
 ## Installation
