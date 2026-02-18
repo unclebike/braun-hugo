@@ -1,4 +1,6 @@
+// biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
+import { StatusIcon } from './components';
 import { Layout } from './layout';
 
 interface ProviderDetailPageProps {
@@ -30,12 +32,16 @@ export const ProviderDetailPage = ({ member, weeklyHours, dateOverrides, skills,
 
   return (
     <Layout title={`${member.first_name} ${member.last_name}`}>
-      <div class="flex items-center justify-between px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
-        <div class="flex items-center gap-3">
-          <h2 class="text-xl font-semibold">{member.first_name} {member.last_name}</h2>
-          <span class={member.is_active ? 'uk-label uk-label-primary' : 'uk-label'}>{member.is_active ? 'active' : 'inactive'}</span>
+      <div class="page-header">
+        <div class="page-header-info">
+          <div class="flex items-center gap-2">
+            <h2>{member.first_name} {member.last_name}</h2>
+            <StatusIcon status={member.is_active ? 'active' : 'inactive'} />
+          </div>
         </div>
-        <a href="/admin/team" class="uk-btn uk-btn-default uk-btn-sm" hx-get="/admin/team" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Back</a>
+        <div class="page-header-actions">
+          <a href="/admin/team" class="uk-btn uk-btn-default uk-btn-sm" hx-get="/admin/team" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Back</a>
+        </div>
       </div>
 
       <div class="p-8">
@@ -259,7 +265,7 @@ export const ProviderDetailPage = ({ member, weeklyHours, dateOverrides, skills,
             </section>
           </div>
 
-          <div class="uk-card uk-card-body">
+          <div class="uk-card uk-card-body danger-card">
             <section>
               <h3 class="text-base font-semibold mb-3">Delete</h3>
               <button

@@ -1,4 +1,6 @@
+// biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
+import { StatusIcon } from './components';
 import { Layout } from './layout';
 
 interface ServiceDetailPageProps {
@@ -54,12 +56,16 @@ const formatRuleDetails = (rule: ServiceDetailPageProps['priceRules'][number]) =
 export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, requiredSkills, allSkills, territories }: ServiceDetailPageProps) => {
   return (
     <Layout title={service.name || 'Service'}>
-      <div class="flex items-center justify-between px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
-        <div class="flex items-center gap-3">
-          <h2 class="text-xl font-semibold">{service.name || 'Service'}</h2>
-          <span class={service.is_active ? 'uk-label uk-label-primary' : 'uk-label'}>{service.is_active ? 'active' : 'inactive'}</span>
+      <div class="page-header">
+        <div class="page-header-info">
+          <div class="flex items-center gap-2">
+            <h2>{service.name || 'Service'}</h2>
+            <StatusIcon status={service.is_active ? 'active' : 'inactive'} />
+          </div>
         </div>
-        <a href="/admin/services" class="uk-btn uk-btn-default uk-btn-sm" hx-get="/admin/services" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Back</a>
+        <div class="page-header-actions">
+          <a href="/admin/services" class="uk-btn uk-btn-default uk-btn-sm" hx-get="/admin/services" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Back</a>
+        </div>
       </div>
 
       <div class="p-8">
@@ -344,7 +350,7 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
             </section>
           </div>
 
-          <div class="uk-card uk-card-body">
+          <div class="uk-card uk-card-body danger-card">
             <section>
               <h3 class="text-base font-semibold mb-3">Delete</h3>
               <button

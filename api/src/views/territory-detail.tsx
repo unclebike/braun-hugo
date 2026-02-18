@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
 import { Layout } from './layout';
 
@@ -142,9 +143,11 @@ export const TerritoryDetailPage = ({ territory, services, providers, isNew }: T
 
   return (
     <Layout title={isNew ? 'Create Territory' : territory.name || 'Territory'}>
-      <div class="flex items-center justify-between px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
-        <h2 class="text-xl font-semibold">{isNew ? 'Create Territory' : territory.name || 'Territory'}</h2>
-        <a href="/admin/territories" class="uk-btn uk-btn-default uk-btn-sm" hx-get="/admin/territories" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Back</a>
+      <div class="page-header">
+        <h2>{isNew ? 'Create Territory' : territory.name || 'Territory'}</h2>
+        <div class="page-header-actions">
+          <a href="/admin/territories" class="uk-btn uk-btn-default uk-btn-sm" hx-get="/admin/territories" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Back</a>
+        </div>
       </div>
 
       <div class="p-8">
@@ -301,7 +304,7 @@ export const TerritoryDetailPage = ({ territory, services, providers, isNew }: T
           )}
 
           {!isNew && (
-            <div class="uk-card uk-card-body">
+            <div class="uk-card uk-card-body danger-card">
               <section>
                 <h3 class="text-base font-semibold mb-3">Delete</h3>
                 <button
