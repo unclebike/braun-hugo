@@ -4,10 +4,13 @@
 
 .card {
     position: relative;
+    transition: transform .2s var(--animation-base), box-shadow .2s var(--animation-base);
 }
 
 .card:hover {
-    opacity: .85;
+    opacity: .9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
 }
 
 .card.card-reverse {
@@ -27,7 +30,7 @@
 
 .card-wrapper {
     display: flex;
-    gap: .8rem;
+    gap: 1.2rem;
     flex-direction: column;
     margin-bottom: 1.8rem;
 }
@@ -190,6 +193,10 @@
 }
 
 
+
+.section-benefits .card-text-only {
+    border-left: 3px solid var(--brand-color);
+}
 
 @media (max-width: 767px) {
     .full-row .card-image {

@@ -23,6 +23,19 @@
     padding-bottom: calc(var(--spacepsection) / 2);
 }
 
+.section-side-project + .section-side-project {
+    padding-top: calc(var(--spacepsection) * 0.25);
+}
+
+.section-side-project + .section-blog {
+    padding-top: calc(var(--spacepsection) * 0.75);
+}
+
+.newsletter-signup.section-container {
+    padding-top: calc(var(--spacepsection) * 0.2);
+    padding-bottom: calc(var(--spacepsection) * 0.3);
+}
+
 .section-container.reset-spacing {
     margin-top: calc(var(--spacepsection) - 6rem);
 }

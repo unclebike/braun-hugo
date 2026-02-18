@@ -221,6 +221,13 @@
     font-size: 1.6rem;
 }
 
+.post-feed.feed-card .feed-excerpt {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
 .has-serif-body .feed-excerpt,
 .has-serif-title .feed-title {
     font-family: var(--font-serif);
