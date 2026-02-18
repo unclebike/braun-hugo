@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
 import { Layout } from './layout';
 
@@ -34,8 +35,8 @@ const segmentCount = (len: number) => len <= 160 ? 1 : Math.ceil(len / 153);
 
 export const SmsSettingsPage = ({ config, templates, stats }: Props) => (
   <Layout title="SMS Settings">
-    <div class="flex items-center justify-between px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
-      <h2 class="text-xl font-semibold">SMS Settings</h2>
+    <div class="page-header">
+      <h2>SMS Settings</h2>
     </div>
     <div class="p-4 md:p-8">
       <div class="grid gap-4 md:gap-6" style="max-width: 800px;">

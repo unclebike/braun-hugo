@@ -125,8 +125,8 @@ self.addEventListener('notificationclick', function(event) {
 
 export const PushSettingsPage = () => (
   <Layout title="Push Notifications">
-    <div class="flex items-center justify-between px-4 pl-14 py-4 md:px-8 md:pl-8 md:py-5 bg-white border-b border-border sticky top-0 z-50">
-      <h2 class="text-xl font-semibold">Push Notifications</h2>
+    <div class="page-header">
+      <h2>Push Notifications</h2>
     </div>
 
     <div class="p-4 md:p-8">
