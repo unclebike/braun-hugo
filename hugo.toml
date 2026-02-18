@@ -72,8 +72,8 @@ theme = 'braun-hugo'
   excluded_tags = "books,now,hash-timeline,hash-gallery"
   email_signup_text = "Subscribe to my monthly newsletter"
   
-  # Zenbooker booking widget
-  zenbooker_url = "https://widget.zenbooker.com/book/1746111848718x728354147005624300?embed=true"
+  # GOATkit booking widget
+  goatkit_url = "https://api.unclebike.xyz/widget/demo"
   
   # Post settings
   show_author = false

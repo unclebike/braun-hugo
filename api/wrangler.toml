@@ -13,7 +13,7 @@ CF_ACCESS_TEAM_DOMAIN = "unclebike"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "zenbooker"
+database_name = "goatkit"
 database_id = "7e36e0fb-dc2a-4f02-a6ac-1b292927d8a0"
 migrations_dir = "../migrations"
 

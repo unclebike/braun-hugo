@@ -31,7 +31,7 @@
                     <h1 class="h1 hero-title">{{ .title }}</h1>
                     <section class="gh-content">{{ .content | markdownify }}</section>
                     {{ if .button_text }}
-                    {{ $link := .button_link | default $.Site.Params.zenbooker_url }}
+                    {{ $link := .button_link | default $.Site.Params.goatkit_url }}
                     <a href="{{ $link }}" class="button button-primary">{{ .button_text }}</a>
                     {{ end }}
                 </div>

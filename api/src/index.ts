@@ -121,7 +121,7 @@ app.get('/widget/popup.js', async (c) => {
 
 app.get('/widget/branding.js', async (c) => {
   const primaryColor = await getWidgetPrimaryColor(c.env.DB);
-  const js = `(function(){var c='${primaryColor}';document.documentElement.style.setProperty('--brand-color',c);window.ZenbookerBranding={primaryColor:c};var cfg=window.ZenbookerPopupConfig;if(cfg)cfg.primaryColor=c;})();`;
+  const js = `(function(){var c='${primaryColor}';document.documentElement.style.setProperty('--brand-color',c);window.GOATkitBranding={primaryColor:c};var cfg=window.GOATkitPopupConfig;if(cfg)cfg.primaryColor=c;})();`;
   return c.text(js, 200, {
     'Content-Type': 'application/javascript',
     'Cache-Control': 'no-cache, must-revalidate',

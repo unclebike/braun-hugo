@@ -1,0 +1,4 @@
+# Secrets are not retrievable from Cloudflare.
+# Fill these in from your own records/password manager.
+GEOCODIO_API_KEY=
+MAPBOX_ACCESS_TOKEN=

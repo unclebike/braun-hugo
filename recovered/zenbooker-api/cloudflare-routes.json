@@ -1,0 +1,8 @@
+{
+  "routes": [
+    {
+      "pattern": "api.unclebike.xyz/*",
+      "script": "zenbooker-api"
+    }
+  ]
+}

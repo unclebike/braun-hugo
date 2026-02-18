@@ -10,7 +10,7 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-        <title>{title} - Zenbooker Admin</title>
+        <title>{title} - GOATkit Admin</title>
         <link rel="manifest" href="/admin/manifest.webmanifest" />
         <meta name="theme-color" content="#eff1f5" id="theme-color-meta" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

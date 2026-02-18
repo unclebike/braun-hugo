@@ -1,0 +1,16 @@
+name = "zenbooker-api"
+main = "index.js"
+compatibility_date = "2024-09-23"
+
+# Route currently configured on Cloudflare:
+# api.unclebike.xyz/*
+routes = ["api.unclebike.xyz/*"]
+
+[vars]
+ENVIRONMENT = "production"
+CF_ACCESS_TEAM_DOMAIN = "unclebike"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "zenbooker"
+database_id = "7e36e0fb-dc2a-4f02-a6ac-1b292927d8a0"

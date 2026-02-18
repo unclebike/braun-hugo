@@ -1,0 +1,10 @@
+{
+  "compatibility_date": "2024-09-23",
+  "bindings": [
+    { "name": "CF_ACCESS_TEAM_DOMAIN", "type": "plain_text" },
+    { "name": "DB", "type": "d1", "database_id": "7e36e0fb-dc2a-4f02-a6ac-1b292927d8a0" },
+    { "name": "ENVIRONMENT", "type": "plain_text" },
+    { "name": "GEOCODIO_API_KEY", "type": "secret_text" },
+    { "name": "MAPBOX_ACCESS_TOKEN", "type": "secret_text" }
+  ]
+}

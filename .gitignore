@@ -25,6 +25,9 @@ Thumbs.db
 # Wrangler local state
 api/.wrangler/
 
+# Deployment (local, contains secrets)
+.deployment/DEPLOYMENT.md
+
 # AI Tools
 .cursor/
 .cursorignore

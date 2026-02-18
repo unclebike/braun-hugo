@@ -6,8 +6,8 @@ import { Layout } from './layout';
 void jsx;
 
 export const PUSH_MANIFEST = {
-  name: 'Zenbooker Admin',
-  short_name: 'Zenbooker',
+  name: 'GOATkit Admin',
+  short_name: 'GOATkit',
   start_url: '/admin',
   scope: '/admin/',
   display: 'standalone',
@@ -63,28 +63,28 @@ self.addEventListener('push', function(event) {
     try {
       var items = await fetchPendingPushItems();
       if (!items.length) {
-        await self.registration.showNotification('Zenbooker update', {
+        await self.registration.showNotification('GOATkit update', {
           body: 'Open the app for the latest activity.',
           data: { url: '/admin' },
-          tag: 'zenbooker-fallback'
+          tag: 'goatkit-fallback'
         });
         return;
       }
 
       for (var i = 0; i < items.length; i++) {
         var item = items[i] || {};
-        await self.registration.showNotification(item.title || 'Zenbooker update', {
+        await self.registration.showNotification(item.title || 'GOATkit update', {
           body: item.body || 'Open the app for details.',
           data: { url: item.url || '/admin' },
-          tag: item.id ? ('zenbooker-' + item.id) : undefined,
+          tag: item.id ? ('goatkit-' + item.id) : undefined,
           renotify: false,
         });
       }
     } catch (_error) {
-      await self.registration.showNotification('Zenbooker update', {
+      await self.registration.showNotification('GOATkit update', {
         body: 'Open the app for the latest activity.',
         data: { url: '/admin' },
-        tag: 'zenbooker-fallback-error'
+        tag: 'goatkit-fallback-error'
       });
     }
   })());
