@@ -30,6 +30,9 @@
                 </div>
                 {{ partial "components/theme-toggle" . }}
                 <button class="gh-search gh-icon-btn" aria-label="Search this site">{{ partial "icons/search" . }}</button>
+                {{ if ne .Site.Params.navigation_buttons "Off" }}
+                    <a class="button button-primary button-head-mobile zbw-book-btn" data-zbw-open="true" href="{{ .Site.Params.navigation_buttons_link }}">Book</a>
+                {{ end }}
                 <button class="gh-burger" type="button" aria-label="Toggle navigation menu" aria-controls="gh-head-menu" aria-expanded="false"></button>
             </div>
 

@@ -2,6 +2,9 @@
     <div class="container medium footer-container">
         <div class="fade-to-right"></div>
         <div class="body-2 footer-copyright">
+            {{ with .Site.Params.tagline_text }}
+                <div class="body-1 footer-tagline">{{ . }}</div>
+            {{ end }}
             {{ .Site.Title }} © {{ now.Year }}.
            <span class="footer-signature">
                 Published with
