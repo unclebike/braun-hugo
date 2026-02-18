@@ -976,7 +976,20 @@ document.addEventListener('click', function(e) {
           .delete-btn.delete-armed { background: var(--destructive); color: #fff; border-color: var(--destructive); font-weight: 600; }
           .delete-btn.delete-armed:hover { background: var(--destructive-hover); border-color: var(--destructive-hover); }
 
-          .mobile-menu-btn { display: flex; align-items: center; justify-content: center; background: none; border: none; color: var(--text); padding: 8px; cursor: pointer; position: fixed; top: 12px; left: 12px; z-index: 100; }
+          .mobile-menu-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--text);
+            padding: 8px;
+            cursor: pointer;
+            position: fixed;
+            top: calc(12px + var(--safe-top));
+            left: calc(12px + var(--safe-left));
+            z-index: 100;
+          }
 
           .sidebar-nav { padding: 0 4px; }
           .sidebar-nav .uk-nav-header { color: var(--text-sidebar); font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; padding: 16px 12px 6px; margin: 0; }
