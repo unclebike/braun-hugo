@@ -103,7 +103,15 @@ export const NotesList = ({
   notes: JobDetailPageProps['notes'];
   listId?: string;
 }) => (
-  <div id={listId} data-notes-list="1" class="grid gap-3">
+  <div
+    id={listId}
+    data-notes-list="1"
+    class="grid gap-3"
+    hx-get={`/admin/jobs/${jobId}/notes-list`}
+    hx-trigger="taskAdded from:body"
+    hx-target={`#${listId}`}
+    hx-swap="outerHTML"
+  >
     {notes.length === 0 ? (
       <div class="py-8 text-center border-2 border-dashed border-border rounded-xl">
         <p class="text-sm text-muted-foreground">No tasks or notes assigned to this job.</p>

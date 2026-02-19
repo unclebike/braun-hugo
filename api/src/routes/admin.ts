@@ -11,7 +11,7 @@ import { BrandingPage } from '../views/branding';
 import { MessageDetailPage, SmsHistoryList, SmsThreadPanel } from '../views/message-detail';
 import type { SmsLogRow } from '../views/message-detail';
 import { Dashboard } from '../views/dashboard';
-import { JobDetailPage, SmsThreadCard } from '../views/job-detail';
+import { JobDetailPage, NotesList, SmsThreadCard } from '../views/job-detail';
 import { AddressSearchResults, CustomerSearchResults, JobWizardPage, JobWizardSwapBundle, parseWizardState, type NewJobProps, type WizardState } from '../views/job-wizard';
 import { ProviderDetailPage } from '../views/provider-detail';
 import { ServiceDetailPage } from '../views/service-detail';
@@ -2376,6 +2376,15 @@ app.get('/jobs/:id/sms-thread-card', async (c) => {
   }));
 });
 
+app.get('/jobs/:id/notes-list', async (c) => {
+  const db = c.env.DB;
+  const jobId = c.req.param('id');
+  const job = await db.prepare('SELECT notes_json FROM jobs WHERE id = ?').bind(jobId).first<{ notes_json: string | null }>();
+  const notes = job?.notes_json ? JSON.parse(job.notes_json) : [];
+  c.header('Cache-Control', 'no-store');
+  return c.html(NotesList({ jobId, notes, listId: 'notes-main-list' }));
+});
+
 app.post('/jobs/:id/notes/add', async (c) => {
   const db = c.env.DB;
   const jobId = c.req.param('id');
@@ -4206,6 +4215,9 @@ app.post('/inbox/:id/sms-task', async (c) => {
   c.header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
   c.header('Pragma', 'no-cache');
   c.header('Expires', '0');
+  if (taskResult.success) {
+    c.header('HX-Trigger', JSON.stringify({ taskAdded: { jobId } }));
+  }
   const activeJobId = jobOptions.some((job) => job.id === jobId) ? jobId : selectedJobId;
   const completedTaskSmsIds = await getCompletedSmsTaskIds(db, activeJobId);
   return c.html(
