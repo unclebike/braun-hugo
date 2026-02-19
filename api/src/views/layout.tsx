@@ -1193,16 +1193,18 @@ document.addEventListener('click', function(e) {
             text-align: left;
           }
           .admin-theme-toggle:hover { color: var(--text-sidebar-hover); background: var(--sidebar-hover-bg); }
-          .admin-theme-toggle .theme-toggle-icon {
+          .admin-theme-toggle .theme-toggle-icon,
+          .sidebar-theme-btn .theme-toggle-icon {
             position: relative;
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             flex-shrink: 0;
           }
-          .admin-theme-toggle .moon-or-sun {
+          .admin-theme-toggle .moon-or-sun,
+          .sidebar-theme-btn .moon-or-sun {
             position: relative;
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             border: 1px solid currentColor;
             background: currentColor;
@@ -1211,7 +1213,8 @@ document.addEventListener('click', function(e) {
             overflow: hidden;
             opacity: 0.85;
           }
-          .admin-theme-toggle .moon-or-sun::before {
+          .admin-theme-toggle .moon-or-sun::before,
+          .sidebar-theme-btn .moon-or-sun::before {
             content: "";
             position: absolute;
             right: -9px;
@@ -1224,7 +1227,8 @@ document.addEventListener('click', function(e) {
             opacity: 1;
             transition: transform 0.45s ease;
           }
-          .admin-theme-toggle .moon-or-sun::after {
+          .admin-theme-toggle .moon-or-sun::after,
+          .sidebar-theme-btn .moon-or-sun::after {
             content: "";
             width: 8px;
             height: 8px;
@@ -1244,7 +1248,8 @@ document.addEventListener('click', function(e) {
             transform: scale(0);
             transition: all 0.35s ease;
           }
-          .admin-theme-toggle .moon-mask {
+          .admin-theme-toggle .moon-mask,
+          .sidebar-theme-btn .moon-mask {
             position: absolute;
             right: -9px;
             top: -8px;
@@ -1257,18 +1262,22 @@ document.addEventListener('click', function(e) {
             opacity: 1;
             transition: background 0.25s ease, transform 0.45s ease;
           }
-          [data-theme="dark"] .admin-theme-toggle .moon-or-sun {
+          [data-theme="dark"] .admin-theme-toggle .moon-or-sun,
+          [data-theme="dark"] .sidebar-theme-btn .moon-or-sun {
             transform: scale(0.55);
             overflow: visible;
           }
-          [data-theme="dark"] .admin-theme-toggle .moon-or-sun::before {
+          [data-theme="dark"] .admin-theme-toggle .moon-or-sun::before,
+          [data-theme="dark"] .sidebar-theme-btn .moon-or-sun::before {
             transform: translate(14px, -14px);
             opacity: 0;
           }
-          [data-theme="dark"] .admin-theme-toggle .moon-or-sun::after {
+          [data-theme="dark"] .admin-theme-toggle .moon-or-sun::after,
+          [data-theme="dark"] .sidebar-theme-btn .moon-or-sun::after {
             transform: scale(1);
           }
-          [data-theme="dark"] .admin-theme-toggle .moon-mask {
+          [data-theme="dark"] .admin-theme-toggle .moon-mask,
+          [data-theme="dark"] .sidebar-theme-btn .moon-mask {
             transform: translate(14px, -14px);
             opacity: 0;
           }
@@ -1276,7 +1285,9 @@ document.addEventListener('click', function(e) {
           
           .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 0 20px; margin-bottom: 24px; }
           .sidebar-logo img { width: 36px; height: 36px; }
-          .sidebar-logo span { font-size: var(--text-sm); color: var(--text-sidebar-active); letter-spacing: -0.01em; font-weight: var(--font-weight-medium); }
+          .sidebar-logo span { font-size: var(--text-sm); color: var(--text-sidebar-active); letter-spacing: -0.01em; font-weight: var(--font-weight-medium); flex: 1; }
+          .sidebar-theme-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: none; background: transparent; color: var(--text-sidebar); cursor: pointer; border-radius: 6px; padding: 0; flex-shrink: 0; transition: background .15s, color .15s; }
+          .sidebar-theme-btn:hover { background: var(--sidebar-hover-bg); color: var(--text-sidebar-hover); }
 
           /* iOS PWA: give offcanvas enough top room under translucent status bar. */
           #offcanvas-nav .uk-offcanvas-bar {
@@ -1461,9 +1472,16 @@ document.addEventListener('click', function(e) {
         <div id="offcanvas-nav" data-uk-offcanvas="mode: slide; overlay: true">
           <div class="uk-offcanvas-bar" style="background: var(--bg-sidebar); width: 260px;">
             <button class="uk-offcanvas-close" type="button" data-uk-close style="color: var(--text-sidebar-active);"></button>
-            <div class="sidebar-logo" style="padding: 0 16px;">
+             <div class="sidebar-logo" style="padding: 0 16px;">
               <img src="/images/uncle-logo.svg" alt="" />
               <span>Uncle Bike</span>
+              <button type="button" class="sidebar-theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+                <div class="theme-toggle-icon">
+                  <div class="moon-or-sun">
+                    <div class="moon-mask"></div>
+                  </div>
+                </div>
+              </button>
             </div>
             <ul class="uk-nav uk-nav-default sidebar-nav" data-uk-nav>
               <li class="uk-nav-header">Overview</li>
@@ -1490,17 +1508,6 @@ document.addEventListener('click', function(e) {
               <li><a href="/admin/sms-settings" hx-get="/admin/sms-settings" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">SMS</a></li>
               <li><a href="/admin/push-settings" hx-get="/admin/push-settings" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Push</a></li>
               <li><a href="/admin/settings" hx-get="/admin/settings" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Settings</a></li>
-              <li class="uk-nav-divider"></li>
-              <li>
-                <button type="button" class="admin-theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-                  <div class="theme-toggle-icon">
-                    <div class="moon-or-sun">
-                      <div class="moon-mask"></div>
-                    </div>
-                  </div>
-                  <span class="theme-label"></span>
-                </button>
-              </li>
             </ul>
           </div>
         </div>
@@ -1509,6 +1516,13 @@ document.addEventListener('click', function(e) {
             <div class="sidebar-logo">
               <img src="/images/uncle-logo.svg" alt="" />
               <span>Uncle Bike</span>
+              <button type="button" class="sidebar-theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+                <div class="theme-toggle-icon">
+                  <div class="moon-or-sun">
+                    <div class="moon-mask"></div>
+                  </div>
+                </div>
+              </button>
             </div>
             <ul class="uk-nav uk-nav-default sidebar-nav" data-uk-nav>
               <li class="uk-nav-header">Overview</li>
@@ -1535,17 +1549,6 @@ document.addEventListener('click', function(e) {
               <li><a href="/admin/sms-settings" hx-get="/admin/sms-settings" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">SMS</a></li>
               <li><a href="/admin/push-settings" hx-get="/admin/push-settings" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Push</a></li>
               <li><a href="/admin/settings" hx-get="/admin/settings" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Settings</a></li>
-              <li class="uk-nav-divider"></li>
-              <li>
-                <button type="button" class="admin-theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-                  <div class="theme-toggle-icon">
-                    <div class="moon-or-sun">
-                      <div class="moon-mask"></div>
-                    </div>
-                  </div>
-                  <span class="theme-label"></span>
-                </button>
-              </li>
             </ul>
           </aside>
           <main class="main-content" id="main-content">
