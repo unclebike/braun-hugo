@@ -103,7 +103,7 @@ export const InvoiceDetailPage = ({
                       <p class="text-sm text-muted-foreground">No line items.</p>
                     ) : (
                       lineItems.map((line) => (
-                        <div key={line.id} class="flex items-start gap-3 p-3 border border-border rounded-md">
+                        <div key={line.id} class="flex items-start gap-3 p-3 border border-border rounded-md" data-line-total={(line.total_cents / 100).toFixed(2)}>
                           <div class="flex-1 min-w-0" style={line.parent_id ? 'padding-left:16px;' : ''}>
                             <p class="text-sm font-medium" style="margin:0;">{line.description}</p>
                             <p class="text-xs text-muted-foreground" style="margin:4px 0 0;">{line.kind} • {line.quantity} x {money(line.unit_price_cents)}</p>

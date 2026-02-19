@@ -578,45 +578,19 @@ function focusSmsComposerWithRetries() {
   setTimeout(focusSmsComposer, 180);
 }
 
-function recalcInvoiceTotal() {
-  var lineItems = document.getElementById('line_items_text');
-  var tax = document.getElementById('tax_amount');
-  var discount = document.getElementById('discount_amount');
-  var total = document.getElementById('total_amount');
-  if (!lineItems || !total) return;
-
-  var subtotal = 0;
-  var lines = String(lineItems.value || '').split(/\r?\n/);
-  for (var i = 0; i < lines.length; i++) {
-    var line = lines[i].trim();
-    if (!line) continue;
-    var parts = line.split('|').map(function (part) { return part.trim(); });
-    if (parts.length < 3) continue;
-    var qty = parseFloat(parts[1] || '0');
-    var unit = parseFloat((parts[2] || '0').replace(/[$,]/g, ''));
-    if (!isFinite(qty) || qty <= 0 || !isFinite(unit) || unit < 0) continue;
-    subtotal += qty * unit;
-  }
-
-  var taxValue = tax ? parseFloat(String(tax.value || '0').replace(/[$,]/g, '')) : 0;
-  var discountValue = discount ? parseFloat(String(discount.value || '0').replace(/[$,]/g, '')) : 0;
-  if (!isFinite(taxValue)) taxValue = 0;
-  if (!isFinite(discountValue)) discountValue = 0;
-
-  var next = Math.max(0, subtotal + taxValue - discountValue);
-  total.value = next.toFixed(2);
-}
-
 document.addEventListener('input', function (e) {
   var target = e.target;
   if (!target || !target.id) return;
-  if (target.id === 'line_items_text' || target.id === 'tax_amount' || target.id === 'discount_amount') {
-    recalcInvoiceTotal();
-  }
-});
-
-document.addEventListener('htmx:afterSettle', function () {
-  recalcInvoiceTotal();
+  if (target.id !== 'tax_amount' && target.id !== 'discount_amount') return;
+  var total = document.getElementById('total_amount');
+  if (!total) return;
+  var subtotal = 0;
+  document.querySelectorAll('[data-line-total]').forEach(function(el) {
+    subtotal += parseFloat(el.dataset.lineTotal || '0') || 0;
+  });
+  var tax = parseFloat((document.getElementById('tax_amount') || {}).value || '0') || 0;
+  var disc = parseFloat((document.getElementById('discount_amount') || {}).value || '0') || 0;
+  total.value = Math.max(0, subtotal + tax - disc).toFixed(2);
 });
 
 function flashSmsSendButton() {
