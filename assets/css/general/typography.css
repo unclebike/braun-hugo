@@ -68,79 +68,6 @@
     font-weight: var(--font-weight-regular);
 }
 
-/* ============================================
-   DEPRECATED CLASSES (for backward compatibility)
-   Use semantic classes above instead
-   ============================================ */
-
-.hero-header {
-    font-size: clamp(var(--text-lg), 3vw, var(--text-2xl));
-    line-height: var(--lh-normal);
-    margin-bottom: 0.8rem;
-}
-
-.h1 {
-    font-size: var(--text-lg);
-    line-height: var(--lh-tight);
-    font-weight: var(--font-weight-bold);
-}
-
-.h2 {
-    font-size: var(--text-md);
-    line-height: var(--lh-normal);
-    font-weight: var(--font-weight-bold);
-}
-
-.h3 {
-    font-size: var(--text-md);
-    line-height: var(--lh-normal);
-    font-weight: var(--font-weight-medium);
-}
-
-.h4 {
-    font-size: var(--text-base);
-    line-height: var(--lh-normal);
-    font-weight: var(--font-weight-medium);
-}
-
-.h5, .h6 {
-    font-size: var(--text-sm);
-    line-height: var(--lh-loose);
-    font-weight: var(--font-weight-medium);
-}
-
-.section-title {
-    font-size: var(--text-xs);
-    font-weight: var(--font-weight-medium);
-    line-height: var(--lh-normal);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-}
-
-.body-1 {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-regular);
-    line-height: var(--lh-normal);
-}
-
-.body-2 {
-    font-size: var(--text-sm);
-    font-weight: var(--font-weight-regular);
-    line-height: var(--lh-normal);
-}
-
-.sub-heading-large {
-    font-size: clamp(var(--text-sm), 2vw, var(--text-md));
-    font-weight: var(--font-weight-regular);
-    line-height: var(--lh-normal);
-}
-
-.sub-heading {
-    font-size: var(--text-xs);
-    font-weight: var(--font-weight-regular);
-    line-height: var(--lh-normal);
-}
-
 /* Font Family Switching - Simple and Semantic */
 
 .has-serif-title h1,
@@ -152,8 +79,7 @@
 .has-serif-title .display,
 .has-serif-title .display-md,
 .has-serif-title .headline,
-.has-serif-title .subhead,
-.has-serif-title .hero-header {
+.has-serif-title .subhead {
     font-family: var(--font-serif);
 }
 
@@ -166,6 +92,115 @@
 .has-serif-body .body-sm,
 .has-serif-body .caption {
     font-family: var(--font-serif);
+}
+
+/* ============================================
+   ADMIN-SPECIFIC SEMANTIC STYLES
+   Built on shared system (reuses variables)
+   ============================================ */
+
+/* Page Headers and Titles */
+.admin-page-title {
+    font-size: var(--text-lg);
+    line-height: var(--lh-tight);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.01em;
+}
+
+.admin-section-title {
+    font-size: var(--text-base);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Form and Input Labels */
+.admin-label {
+    font-size: var(--text-xs);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: 0.02em;
+}
+
+/* Navigation and Sidebar */
+.admin-nav-item {
+    font-size: var(--text-sm);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-regular);
+}
+
+.admin-nav-item-active {
+    font-size: var(--text-sm);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-medium);
+}
+
+.admin-nav-header {
+    font-size: var(--text-xs);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+/* Cards, Panels, Modal Titles */
+.admin-card-title {
+    font-size: var(--text-base);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-medium);
+}
+
+.admin-modal-title {
+    font-size: var(--text-lg);
+    line-height: var(--lh-tight);
+    font-weight: var(--font-weight-bold);
+}
+
+/* Buttons and Actions */
+.admin-button {
+    font-size: var(--text-sm);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-medium);
+}
+
+.admin-button-secondary {
+    font-size: var(--text-sm);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-regular);
+}
+
+/* Helper and Status Text */
+.admin-help-text {
+    font-size: var(--text-xs);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-regular);
+}
+
+.admin-caption {
+    font-size: var(--text-xs);
+    line-height: var(--lh-loose);
+    font-weight: var(--font-weight-regular);
+}
+
+/* Table and List Text */
+.admin-table-header {
+    font-size: var(--text-xs);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.admin-table-cell {
+    font-size: var(--text-sm);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-regular);
+}
+
+/* Status Indicators, Badges */
+.admin-badge {
+    font-size: var(--text-xs);
+    line-height: 1;
+    font-weight: var(--font-weight-medium);
 }
 
 /* Mobile Responsive Typography (767px and below) */
@@ -190,19 +225,16 @@
         font-size: clamp(var(--text-base), 2vw, var(--text-md));
     }
 
-    .hero-header {
-        font-size: clamp(var(--text-md), 3vw, var(--text-lg));
-    }
-
-    .h1 {
+    /* Admin responsive adjustments */
+    .admin-page-title {
         font-size: var(--text-md);
     }
 
-    .h2 {
-        font-size: var(--text-base);
+    .admin-section-title {
+        font-size: var(--text-sm);
     }
 
-    .h3 {
-        font-size: var(--text-base);
+    .admin-modal-title {
+        font-size: var(--text-md);
     }
 }
