@@ -205,11 +205,32 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
 }
 
 * {
-  font-family: 'TideSans', system-ui, -apple-system, sans-serif !important;
+  font-family: var(--font-sans) !important;
   font-feature-settings: 'kern' 1;
 }
 
 :root {
+  /* Font family */
+  --font-sans: 'TideSans', system-ui, -apple-system, sans-serif;
+
+  /* Type scale (Major Third: 1.25) */
+  --text-xs: 1.2rem;
+  --text-sm: 1.5rem;
+  --text-base: 1.8rem;
+  --text-md: 2.3rem;
+  --text-lg: 2.8rem;
+
+  /* Line heights */
+  --lh-tight: 1.1;
+  --lh-normal: 1.4;
+  --lh-loose: 1.6;
+
+  /* Font weights */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 600;
+  --font-weight-bold: 700;
+
   --brand: #dc8a78;
   --on-brand: #1e1e2e;
   --bg: #eff1f5;
