@@ -25,19 +25,19 @@ const INBOX_CSS = `
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 11px 16px;
+  padding: 9px 16px;
   text-decoration: none;
   color: var(--text);
   transition: background .12s;
   border-bottom: 1px solid var(--border);
 }
 .inbox-row:last-child { border-bottom: none; }
-.inbox-row:hover { background: var(--sidebar-hover-bg); opacity: 1; }
+.inbox-row:hover { background: var(--sidebar-hover-bg); }
 .inbox-row--unread { background: var(--badge-primary-bg); }
-.inbox-row--unread:hover { background: color-mix(in srgb, var(--badge-primary-bg) 60%, var(--sidebar-hover-bg)); }
+.inbox-row--unread:hover { background: var(--sidebar-hover-bg); }
 
 .inbox-dot {
-  width: 7px; height: 7px;
+  width: 6px; height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
   background: transparent;
@@ -51,14 +51,14 @@ const INBOX_CSS = `
 }
 .inbox-sender-name {
   display: block;
-  font-size: 1.35rem;
+  font-size: 0.875rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--text-secondary);
   font-weight: 400;
 }
-.inbox-row--unread .inbox-sender-name { color: var(--text); font-weight: 700; }
+.inbox-row--unread .inbox-sender-name { color: var(--text); font-weight: 600; }
 
 .inbox-subject-line {
   flex: 1;
@@ -66,7 +66,7 @@ const INBOX_CSS = `
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 1.35rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
 }
 .inbox-row--unread .inbox-subject-line { color: var(--text); font-weight: 500; }
@@ -74,29 +74,30 @@ const INBOX_CSS = `
 .inbox-subject-sub { display: none; }
 
 .inbox-source {
-  font-size: 1.1rem !important;
+  font-size: 0.7rem !important;
   padding: 1px 6px !important;
+  border-radius: 4px !important;
   flex-shrink: 0;
-  opacity: 0.8;
+  opacity: 0.75;
+  letter-spacing: 0.02em;
 }
 
 .inbox-date {
-  font-size: 1.1rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   flex-shrink: 0;
   white-space: nowrap;
-  min-width: 100px;
+  min-width: 108px;
   text-align: right;
 }
 
 @media (max-width: 767px) {
   .inbox-row { align-items: flex-start; padding: 10px 12px; gap: 8px; }
   .inbox-sender { width: auto; flex: 1; min-width: 0; }
-  .inbox-sender-name { white-space: nowrap; }
   .inbox-subject-line { display: none; }
   .inbox-subject-sub {
     display: block;
-    font-size: 1.2rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -104,7 +105,7 @@ const INBOX_CSS = `
     margin-top: 2px;
   }
   .inbox-source { display: none; }
-  .inbox-date { min-width: auto; font-size: 1.1rem; padding-top: 1px; }
+  .inbox-date { min-width: auto; font-size: 0.75rem; padding-top: 1px; }
 }
 `;
 
