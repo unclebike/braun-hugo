@@ -116,7 +116,7 @@ api/
     assets/                  #   Static assets served by worker (fonts, admin.js, SW)
   wrangler.toml              # Worker config, D1 binding, cron triggers
   tsconfig.json              # TypeScript config (strict, ES2020, Hono JSX)
-  package.json               # 3 deps: hono, zod, @hono/zod-validator
+  package.json               # Runtime: hono, zod, @hono/zod-validator. Dev: typescript, wrangler
 ```
 
 ## Database Schema (D1 — SQLite)
@@ -406,15 +406,27 @@ Two auth mechanisms (checked in order):
 Code change
   │
   ├─ themes/**, content/**, hugo.toml, static/**
-  │   └─► git push main → Cloudflare Pages auto-build
+  │   └─► git push main → Cloudflare Pages auto-build (.github/workflows/deploy-pages.yml)
   │
-  ├─ api/src/**, api/wrangler.toml
-  │   └─► cd api && npx wrangler deploy
+  ├─ api/**, migrations/**
+  │   └─► git push main → GitHub Actions (.github/workflows/deploy-worker.yml)
+  │         ├─ npm ci (root)
+  │         ├─ npm ci (api) — installs pinned wrangler from package.json
+  │         ├─ npx wrangler deploy — bundles api/src/ via esbuild, uploads worker
+  │         └─ npx wrangler d1 execute (idempotent migration)
   │
   └─ migrations/**
       └─► cd api && npx wrangler d1 migrations apply goatkit --remote
 ```
 
 **Rule**: If both changed, deploy API first, then Pages.
+
+**Important — how the Worker build works:**
+- Wrangler reads `main = "src/index.ts"` from `wrangler.toml` and bundles with esbuild
+- esbuild transpiles TypeScript but does NOT type-check — it just strips types
+- `api/dist/` does NOT exist in git and is NOT used by deployment (it's gitignored)
+- `tsc` is only useful here for type-checking (`tsc --noEmit`), not for building
+- There are ~40 pre-existing type errors (Cloudflare Workers globals like `D1Database`, `crypto`)
+  that don't affect deployment but would need `@cloudflare/workers-types` to resolve properly
 
 See `.deployment/DEPLOYMENT.md` for detailed deployment instructions (gitignored, contains secrets).

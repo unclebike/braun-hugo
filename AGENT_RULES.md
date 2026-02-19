@@ -84,9 +84,10 @@ Behavioral constraints for any AI agent working in this codebase. Read this befo
 ## Git
 
 - Commit messages should be descriptive but concise.
-- Don't commit generated files (`public/`, `resources/_gen/`, `node_modules/`).
+- Don't commit generated files (`public/`, `resources/_gen/`, `node_modules/`, `api/dist/`).
 - Don't commit AI context files (already in `.gitignore`).
 - The `main` branch is production. Every push triggers a deploy.
+- `api/dist/` is gitignored. Never run `tsc` and commit the output — Wrangler bundles from `api/src/` directly.
 
 ## What to Flag
 
