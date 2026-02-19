@@ -80,30 +80,30 @@ const INBOX_CSS = `
 }
 .inbox-thread-sender {
   display: block;
-  font-size: 0.8125rem;
-  font-weight: 400;
+  font-size: var(--text-footnote);
+  font-weight: var(--fw-footnote);
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.35;
+  line-height: var(--lh-footnote);
 }
-.inbox-row--unread .inbox-thread-sender { color: var(--text); font-weight: 600; }
+.inbox-row--unread .inbox-thread-sender { color: var(--text); font-weight: var(--fw-callout); }
 
 .inbox-thread-subject {
   display: block;
-  font-size: 0.72rem;
+  font-size: var(--text-caption-1);
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   opacity: 0.7;
-  line-height: 1.3;
+  line-height: var(--lh-caption-1);
   margin-top: 1px;
 }
 
 .inbox-thread-date {
-  font-size: 0.7rem;
+  font-size: var(--text-caption-1);
   color: var(--text-secondary);
   flex-shrink: 0;
   white-space: nowrap;
@@ -180,9 +180,9 @@ export const InboxShell = ({
           <h2 class="inbox-pane-title">{title}</h2>
         </div>
         <div class="inbox-list-scroll">
-          {items.length === 0 ? (
-            <p style="padding:24px 16px;font-size:0.875rem;color:var(--text-secondary);">No messages.</p>
-          ) : (
+           {items.length === 0 ? (
+             <p class="text-subheadline" style="padding:24px 16px;color:var(--text-secondary);">No messages.</p>
+           ) : (
             items.map((item) => (
               <a
                 key={item.id}

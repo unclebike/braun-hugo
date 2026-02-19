@@ -238,11 +238,11 @@ export const ServiceTasksList = ({ jobId, tasks, serviceName }: { jobId: string;
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2">
           <span class="text-xs font-black uppercase tracking-widest text-muted-foreground">{serviceName} Checklist</span>
-          {requiredPending.length > 0 && (
-            <span class="uk-label uk-label-destructive" style="font-size:0.65rem;padding:1px 6px;">
-              <span class="badge-label">{requiredPending.length} required</span>
-            </span>
-          )}
+           {requiredPending.length > 0 && (
+             <span class="uk-label uk-label-destructive text-caption-2" style="padding:1px 6px;">
+               <span class="badge-label">{requiredPending.length} required</span>
+             </span>
+           )}
         </div>
         <span class="text-xs font-bold text-muted-foreground">{done}/{total}</span>
       </div>
@@ -259,9 +259,9 @@ export const ServiceTasksList = ({ jobId, tasks, serviceName }: { jobId: string;
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
                   <p class={`text-sm font-medium ${isDone ? 'line-through text-muted-foreground' : ''}`}>{task.title}</p>
-                  {task.is_required && !isDone && (
-                    <span style="font-size:0.6rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--destructive);border:1px solid currentColor;border-radius:4px;padding:1px 4px;">Required</span>
-                  )}
+                   {task.is_required && !isDone && (
+                     <span class="text-caption-2" style="text-transform:uppercase;letter-spacing:0.06em;color:var(--destructive);border:1px solid currentColor;border-radius:4px;padding:1px 4px;font-weight:var(--fw-caption-2);">Required</span>
+                   )}
                 </div>
 
                 {task.type === 'check' && (
@@ -407,16 +407,16 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Back to Jobs</title><path d="M19 12H5m7 7-7-7 7-7"/></svg>
         </a>
 
-        <div class="flex-1 min-w-0">
-          <h2 style="font-size:var(--text-lg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0; font-weight:900; letter-spacing:-0.02em;">{customerName}</h2>
-          <p style="margin:2px 0 0; font-size:10px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; opacity:0.55; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{serviceName}</p>
-        </div>
+         <div class="flex-1 min-w-0">
+           <h2 style="font-size:var(--text-lg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0; font-weight:900; letter-spacing:-0.02em;">{customerName}</h2>
+           <p class="text-caption-2" style="margin:2px 0 0; letter-spacing:0.05em; text-transform:uppercase; opacity:0.55; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{serviceName}</p>
+         </div>
 
-        <select
-          name="status"
-          class="status-select shrink-0 font-bold"
-          style="font-size:10px; height:28px; padding:0 22px 0 8px;"
-          data-current={job.status}
+         <select
+           name="status"
+           class="status-select shrink-0 font-bold text-caption-2"
+           style="height:28px; padding:0 22px 0 8px;"
+           data-current={job.status}
           hx-post={`/admin/jobs/${job.id}/status`}
           hx-target="#page-content"
           hx-select="#page-content"
@@ -429,11 +429,11 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
           ))}
         </select>
 
-        <button
-          type="button"
-          class="shrink-0 uk-btn uk-btn-primary uk-btn-sm font-black"
-          style="height:36px; padding:0 14px; font-size:11px; border-radius:10px; letter-spacing:0.04em;"
-          data-sms-thread-modal-open={canOpenSms ? 'true' : undefined}
+         <button
+           type="button"
+           class="shrink-0 uk-btn uk-btn-primary uk-btn-sm font-black text-footnote"
+           style="height:36px; padding:0 14px; border-radius:10px; letter-spacing:0.04em;"
+           data-sms-thread-modal-open={canOpenSms ? 'true' : undefined}
           data-sms-thread-modal-title={canOpenSms ? smsTitle : undefined}
           hx-get={canOpenSms ? `/admin/inbox/${smsThreadMessage?.id}/sms-thread-panel` : undefined}
           hx-target={canOpenSms ? '#sms-thread-modal-body' : undefined}
@@ -528,7 +528,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                     <div class="w-2 h-8 bg-brand rounded-full" />
                     <h3 class="text-xl font-black tracking-tight">Active Tasks & Notes</h3>
                   </div>
-                  <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--badge-neutral-bg);border:1px solid var(--badge-neutral-border);color:var(--text);font-size:11px;font-weight:400;">{notes.length}</span>
+                   <span class="text-footnote" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--badge-neutral-bg);border:1px solid var(--badge-neutral-border);color:var(--text);">{notes.length}</span>
                 </div>
                 
                 <div class="mb-6">

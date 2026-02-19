@@ -120,7 +120,7 @@ const quickCreateBody = (props: NewJobProps) => {
         <div class="grid gap-3 sm:grid-cols-2 items-end">
           <div class="grid gap-2 sm:col-span-2">
             <label class="uk-form-label" for="customer-search">Find Customer</label>
-            <input id="customer-search" name="q" class="uk-input" style="font-size:0.875rem;" placeholder="Search name or email" hx-get="/admin/api/customers/search" hx-trigger="input changed delay:300ms" hx-target="#customer-results" autocomplete="off" inputmode="search" autocapitalize="off" spellcheck="false" />
+            <input id="customer-search" name="q" class="uk-input" placeholder="Search name or email" hx-get="/admin/api/customers/search" hx-trigger="input changed delay:300ms" hx-target="#customer-results" autocomplete="off" inputmode="search" autocapitalize="off" spellcheck="false" />
             <div id="customer-results"></div>
           </div>
           <div class="sm:col-span-2 text-sm">
@@ -163,7 +163,7 @@ const quickCreateBody = (props: NewJobProps) => {
               Use Current Location
             </button>
           </div>
-          <input id="addr-line1" name="address_line1" class="uk-input" style="font-size:0.875rem;" value={props.addressLine1 || ''} placeholder="Start typing address" hx-get="/admin/api/address/search" hx-trigger="input changed delay:300ms" hx-target="#address-results" hx-select=".search-results" hx-push-url="false" autocomplete="address-line1" />
+           <input id="addr-line1" name="address_line1" class="uk-input" value={props.addressLine1 || ''} placeholder="Start typing address" hx-get="/admin/api/address/search" hx-trigger="input changed delay:300ms" hx-target="#address-results" hx-select=".search-results" hx-push-url="false" autocomplete="address-line1" />
           <input id="addr-city" type="hidden" name="address_city" value={props.addressCity || ''} />
           <input id="addr-state" type="hidden" name="address_state" value={props.addressState || ''} />
           <input id="addr-postal" type="hidden" name="address_postal" value={props.addressPostal || ''} />
@@ -189,8 +189,8 @@ const quickCreateBody = (props: NewJobProps) => {
           {props.selectedTime && <input type="hidden" name="time" value={props.selectedTime} />}
           {props.selectedProviderId && <input type="hidden" name="provider_id" value={props.selectedProviderId} />}
 
-          <select name="territory_id" class="uk-select" style="font-size:0.875rem;" required onchange="this.closest('form').requestSubmit()">
-            <option value="">Select territory...</option>
+           <select name="territory_id" class="uk-select" required onchange="this.closest('form').requestSubmit()">
+             <option value="">Select territory...</option>
             {props.territories.map((t) => <option key={t.id} value={t.id} selected={props.selectedTerritoryId === t.id}>{t.name}</option>)}
           </select>
         </form>
@@ -211,8 +211,8 @@ const quickCreateBody = (props: NewJobProps) => {
           {props.selectedTime && <input type="hidden" name="time" value={props.selectedTime} />}
           {props.selectedProviderId && <input type="hidden" name="provider_id" value={props.selectedProviderId} />}
 
-          <select name="service_id" class="uk-select" style="font-size:0.875rem;" required onchange="this.closest('form').requestSubmit()">
-            <option value="">Select service...</option>
+           <select name="service_id" class="uk-select" required onchange="this.closest('form').requestSubmit()">
+             <option value="">Select service...</option>
             {props.services.map((s) => <option key={s.id} value={s.id} selected={props.selectedServiceId === s.id}>{s.name} — {s.base_duration_minutes}min · ${(s.base_price_cents / 100).toFixed(2)}</option>)}
           </select>
         </form>
@@ -288,8 +288,8 @@ const quickCreateBody = (props: NewJobProps) => {
           {props.selectedDate && <input type="hidden" name="date" value={props.selectedDate} />}
           {props.selectedTime && <input type="hidden" name="time" value={props.selectedTime} />}
 
-          <select name="provider_id" class="uk-select" style="font-size:0.875rem;" onchange="this.closest('form').requestSubmit()">
-            <option value="">Auto-assign later</option>
+           <select name="provider_id" class="uk-select" onchange="this.closest('form').requestSubmit()">
+             <option value="">Auto-assign later</option>
             {props.providers.map((p) => (
               <option key={p.id} value={p.id} selected={props.selectedProviderId === p.id}>
                 {p.first_name} {p.last_name}{p.is_available ? '' : ' (unavailable)'}
@@ -401,7 +401,7 @@ const wizardFlowBody = (props: WizardFlowProps) => {
             <input id="wizard-service-duration" type="hidden" name="service_duration" value={props.state.service_duration || ''} />
             <div class="grid gap-2">
               <label class="uk-form-label" for="wizard-service-id">Select Service</label>
-              <select id="wizard-service-id" name="service_id" class="uk-select" style="font-size:0.875rem;" required>
+              <select id="wizard-service-id" name="service_id" class="uk-select" required>
                 <option value="">Select...</option>
                 {(props.services || []).map((service) => (
                   <option key={service.id} value={service.id} selected={props.state.service_id === service.id} data-name={service.name} data-price={String(service.base_price_cents)} data-duration={String(service.base_duration_minutes)}>
@@ -444,7 +444,7 @@ const wizardFlowBody = (props: WizardFlowProps) => {
               </div>
               <div class="grid gap-2">
                 <label class="uk-form-label" for="wizard-time">Time</label>
-                <select id="wizard-time" name="time" class="uk-select" style="font-size:0.875rem;" required>
+                <select id="wizard-time" name="time" class="uk-select" required>
                   <option value="">Select...</option>
                   {(props.timeslots || []).map((slot) => (
                     <option key={`${slot.date}-${slot.start_time}`} value={slot.start_time} selected={props.state.time === slot.start_time}>
@@ -466,7 +466,7 @@ const wizardFlowBody = (props: WizardFlowProps) => {
             <HiddenWizardStateInputs state={props.state} />
             <div class="grid gap-2">
               <label class="uk-form-label" for="wizard-provider">Provider</label>
-              <select id="wizard-provider" name="provider_id" class="uk-select" style="font-size:0.875rem;">
+              <select id="wizard-provider" name="provider_id" class="uk-select">
                 <option value="">Auto-assign later</option>
                 {(props.providers || []).map((provider) => (
                   <option key={provider.id} value={provider.id} selected={props.state.provider_id === provider.id}>
