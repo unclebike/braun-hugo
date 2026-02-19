@@ -1,5 +1,6 @@
 // biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
+import { StatusIcon } from './components';
 import { Layout } from './layout';
 
 export interface InboxItem {
@@ -135,6 +136,8 @@ export const InboxPage = ({ items, title }: { items: InboxItem[]; title: string 
               class={`inbox-row${!item.is_read ? ' inbox-row--unread' : ''}`}
             >
               <div class="inbox-dot" />
+
+              <StatusIcon status={item.status} />
 
               <div class="inbox-sender">
                 <span class="inbox-sender-name">{item.sender}</span>
