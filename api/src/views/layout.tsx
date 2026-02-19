@@ -1193,101 +1193,17 @@ document.addEventListener('click', function(e) {
             text-align: left;
           }
           .admin-theme-toggle:hover { color: var(--text-sidebar-hover); background: var(--sidebar-hover-bg); }
-           .admin-theme-toggle .theme-toggle-icon,
-           .sidebar-theme-btn .theme-toggle-icon {
-             position: relative;
-             width: 24px;
-             height: 24px;
-             flex-shrink: 0;
-           }
-           .admin-theme-toggle .moon-or-sun,
-           .sidebar-theme-btn .moon-or-sun {
-             position: relative;
-             width: 24px;
-             height: 24px;
-            border-radius: 50%;
-            border: 1px solid currentColor;
-            background: currentColor;
-            transform: scale(1);
-            transition: all 0.45s ease;
-            overflow: hidden;
-            opacity: 0.85;
-          }
-          .admin-theme-toggle .moon-or-sun::before,
-          .sidebar-theme-btn .moon-or-sun::before {
-            content: "";
-            position: absolute;
-            right: -9px;
-            top: -9px;
-            height: 24px;
-            width: 24px;
-            border: 2px solid currentColor;
-            border-radius: 50%;
-            transform: translate(0, 0);
-            opacity: 1;
-            transition: transform 0.45s ease;
-          }
-          .admin-theme-toggle .moon-or-sun::after,
-          .sidebar-theme-btn .moon-or-sun::after {
-            content: "";
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin: -4px 0 0 -4px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            box-shadow: 0 -23px 0 currentColor,
-              0 23px 0 currentColor,
-              23px 0 0 currentColor,
-              -23px 0 0 currentColor,
-              15px 15px 0 currentColor,
-              -15px 15px 0 currentColor,
-              15px -15px 0 currentColor,
-              -15px -15px 0 currentColor;
-            transform: scale(0);
-            transition: all 0.35s ease;
-          }
-          .admin-theme-toggle .moon-mask,
-          .sidebar-theme-btn .moon-mask {
-            position: absolute;
-            right: -9px;
-            top: -8px;
-            height: 24px;
-            width: 24px;
-            border-radius: 50%;
-            border: 0;
-            background: var(--bg-sidebar);
-            transform: translate(0, 0);
-            opacity: 1;
-            transition: background 0.25s ease, transform 0.45s ease;
-          }
-          [data-theme='dark'] .admin-theme-toggle .moon-or-sun,
-          [data-theme='dark'] .sidebar-theme-btn .moon-or-sun {
-            transform: scale(0.55);
-            overflow: visible;
-          }
-          [data-theme='dark'] .admin-theme-toggle .moon-or-sun::before,
-          [data-theme='dark'] .sidebar-theme-btn .moon-or-sun::before {
-            transform: translate(14px, -14px);
-            opacity: 0;
-          }
-          [data-theme='dark'] .admin-theme-toggle .moon-or-sun::after,
-          [data-theme='dark'] .sidebar-theme-btn .moon-or-sun::after {
-            transform: scale(1);
-          }
-          [data-theme='dark'] .admin-theme-toggle .moon-mask,
-          [data-theme='dark'] .sidebar-theme-btn .moon-mask {
-            transform: translate(14px, -14px);
-            opacity: 0;
-          }
+          .sidebar-theme-btn .icon-sun { display: none; }
+          .sidebar-theme-btn .icon-moon { display: block; }
+          [data-theme='dark'] .sidebar-theme-btn .icon-sun { display: block; }
+          [data-theme='dark'] .sidebar-theme-btn .icon-moon { display: none; }
           .theme-label { line-height: 1; }
           
           .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 0 20px; margin-bottom: 24px; }
           .sidebar-logo img { width: 36px; height: 36px; }
           .sidebar-logo span { font-size: var(--text-sm); color: var(--text-sidebar-active); letter-spacing: -0.01em; font-weight: var(--font-weight-medium); flex: 1; }
-          .sidebar-theme-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: none; background: transparent; color: var(--text-sidebar); cursor: pointer; border-radius: 6px; padding: 0; flex-shrink: 0; transition: background .15s, color .15s; }
-          .sidebar-theme-btn:hover { background: var(--sidebar-hover-bg); color: var(--text-sidebar-hover); }
+          .sidebar-theme-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: none; background: transparent; color: var(--text-sidebar-active); cursor: pointer; border-radius: 6px; padding: 0; flex-shrink: 0; transition: background .15s, color .15s; opacity: 0.7; }
+          .sidebar-theme-btn:hover { background: var(--sidebar-hover-bg); opacity: 1; }
 
           /* iOS PWA: give offcanvas enough top room under translucent status bar. */
           #offcanvas-nav .uk-offcanvas-bar {
@@ -1473,16 +1389,13 @@ document.addEventListener('click', function(e) {
           <div class="uk-offcanvas-bar" style="background: var(--bg-sidebar); width: 260px;">
             <button class="uk-offcanvas-close" type="button" data-uk-close style="color: var(--text-sidebar-active);"></button>
              <div class="sidebar-logo" style="padding: 0 16px;">
-              <img src="/images/uncle-logo.svg" alt="" />
-              <span>Uncle Bike</span>
-              <button type="button" class="sidebar-theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
-                <div class="theme-toggle-icon">
-                  <div class="moon-or-sun">
-                    <div class="moon-mask"></div>
-                  </div>
-                </div>
-              </button>
-            </div>
+               <img src="/images/uncle-logo.svg" alt="" />
+               <span>Uncle Bike</span>
+               <button type="button" class="sidebar-theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+                 <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                 <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+               </button>
+             </div>
             <ul class="uk-nav uk-nav-default sidebar-nav" data-uk-nav>
               <li class="uk-nav-header">Overview</li>
               <li><a href="/admin" hx-get="/admin" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Dashboard</a></li>
@@ -1517,11 +1430,8 @@ document.addEventListener('click', function(e) {
               <img src="/images/uncle-logo.svg" alt="" />
               <span>Uncle Bike</span>
               <button type="button" class="sidebar-theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
-                <div class="theme-toggle-icon">
-                  <div class="moon-or-sun">
-                    <div class="moon-mask"></div>
-                  </div>
-                </div>
+                <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
               </button>
             </div>
             <ul class="uk-nav uk-nav-default sidebar-nav" data-uk-nav>
@@ -1608,3 +1518,4 @@ requestAnimationFrame(function(){requestAnimationFrame(function(){document.body.
     </html>
   );
 };
+
