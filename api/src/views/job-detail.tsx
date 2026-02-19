@@ -1,6 +1,6 @@
 // biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
-import { StatusBadge } from './components';
+import type {} from './components';
 import { Layout } from './layout';
 
 interface JobDetailPageProps {
@@ -233,81 +233,79 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
 
   return (
     <Layout title={`${customerName} - ${serviceName}`}>
-      <div class="page-header page-header--rich bg-card border-b border-border sticky top-0 z-[100] shadow-sm">
-        <div class="page-header-info min-w-0">
-          <div class="flex items-center gap-3 sm:gap-4">
-            <div class="avatar bg-brand/10 text-brand font-black w-10 h-10 sm:w-12 sm:h-12 text-sm sm:text-lg rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0">
-              {customer?.first_name?.[0]}{customer?.last_name?.[0]}
-            </div>
-            <div class="min-w-0">
-              <h2 class="text-lg sm:text-2xl font-black tracking-tight leading-tight truncate">{customerName}</h2>
-              <div class="flex items-center gap-1.5 sm:gap-2 mt-1 sm:mt-2 overflow-hidden">
-                <span class="text-[11px] sm:text-sm font-bold text-muted-foreground truncate">{serviceName}</span>
-                <span class="w-1 h-1 rounded-full bg-border shrink-0" />
-                <span class="text-[11px] sm:text-sm font-bold text-muted-foreground truncate">{territory?.name || 'No Territory'}</span>
-              </div>
-            </div>
-          </div>
+      <div class="page-header" style="display:flex; align-items:center; gap:12px; min-height:56px;">
+        <a
+          href="/admin/jobs"
+          class="shrink-0 flex items-center justify-center w-9 h-9 rounded-xl border-2 border-border hover:bg-muted transition-colors"
+          hx-get="/admin/jobs"
+          hx-target="#page-content"
+          hx-select="#page-content"
+          hx-push-url="true"
+          aria-label="Back to Jobs"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Back to Jobs</title><path d="M19 12H5m7 7-7-7 7-7"/></svg>
+        </a>
+
+        <div class="flex-1 min-w-0">
+          <h2 style="font-size:var(--text-lg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0; font-weight:900; letter-spacing:-0.02em;">{customerName}</h2>
+          <p style="margin:2px 0 0; font-size:10px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; opacity:0.55; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{serviceName}</p>
         </div>
-        <div class="page-header-actions gap-2 sm:gap-3 flex-nowrap">
-          <div class="hidden md:flex flex-col items-end text-right mr-2">
-            <span class="text-[9px] uppercase font-black text-muted-foreground tracking-widest leading-none mb-1">Status</span>
-            <select
-              name="status"
-              class="status-select font-bold py-1 px-3 text-[10px] h-7"
-              data-current={job.status}
-              hx-post={`/admin/jobs/${job.id}/status`}
-              hx-target="#page-content"
-              hx-select="#page-content"
-              hx-trigger="change"
-            >
-              {STATUS_OPTIONS.map((status) => (
-                <option value={status} selected={job.status === status} key={status}>
-                  {status.replace('_', ' ').toUpperCase()}
-                </option>
-              ))}
-            </select>
-          </div>
-          <button
-            type="button"
-            class="uk-btn uk-btn-primary uk-btn-sm font-black h-9 sm:h-10 px-3 sm:px-6 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg shadow-brand/20 transition-all hover:scale-[1.02] text-xs sm:text-sm"
-            data-sms-thread-modal-open={canOpenSms ? 'true' : undefined}
-            data-sms-thread-modal-title={canOpenSms ? smsTitle : undefined}
-            hx-get={canOpenSms ? `/admin/inbox/${smsThreadMessage?.id}/sms-thread-panel` : undefined}
-            hx-target={canOpenSms ? '#sms-thread-modal-body' : undefined}
-            hx-swap={canOpenSms ? 'innerHTML' : undefined}
-            hx-indicator={canOpenSms ? '#sms-thread-modal-loading' : undefined}
-            disabled={!canOpenSms}
-          >
-            Message
-          </button>
-          <a href="/admin/jobs" class="uk-btn uk-btn-default uk-btn-sm h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-lg sm:rounded-xl flex items-center justify-center border-2 border-border hover:bg-muted shrink-0" hx-get="/admin/jobs" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="sm:w-5 sm:h-5"><title>Back to Jobs</title><path d="M19 12H5m7 7-7-7 7-7"/></svg>
-          </a>
-        </div>
+
+        <select
+          name="status"
+          class="status-select shrink-0 font-bold"
+          style="font-size:10px; height:28px; padding:0 22px 0 8px;"
+          data-current={job.status}
+          hx-post={`/admin/jobs/${job.id}/status`}
+          hx-target="#page-content"
+          hx-select="#page-content"
+          hx-trigger="change"
+        >
+          {STATUS_OPTIONS.map((status) => (
+            <option value={status} selected={job.status === status} key={status}>
+              {status.replace(/_/g, ' ')}
+            </option>
+          ))}
+        </select>
+
+        <button
+          type="button"
+          class="shrink-0 uk-btn uk-btn-primary uk-btn-sm font-black"
+          style="height:36px; padding:0 14px; font-size:11px; border-radius:10px; letter-spacing:0.04em;"
+          data-sms-thread-modal-open={canOpenSms ? 'true' : undefined}
+          data-sms-thread-modal-title={canOpenSms ? smsTitle : undefined}
+          hx-get={canOpenSms ? `/admin/inbox/${smsThreadMessage?.id}/sms-thread-panel` : undefined}
+          hx-target={canOpenSms ? '#sms-thread-modal-body' : undefined}
+          hx-swap={canOpenSms ? 'innerHTML' : undefined}
+          hx-indicator={canOpenSms ? '#sms-thread-modal-loading' : undefined}
+          disabled={!canOpenSms}
+        >
+          Message
+        </button>
       </div>
 
-      <div class="p-4 lg:p-8">
+      <div class="p-3 sm:p-4 lg:p-8">
         <div class="mx-auto max-w-[1400px]">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div class="bg-card border border-border p-5 rounded-2xl shadow-sm">
-              <p class="text-[10px] uppercase font-black text-muted-foreground tracking-widest mb-1.5">Job Identifier</p>
+          <div class="grid grid-cols-3 gap-3 mb-6 sm:grid-cols-3 lg:grid-cols-4 lg:mb-8">
+            <div class="bg-card border border-border p-3 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm">
+              <p class="text-[9px] sm:text-[10px] uppercase font-black text-muted-foreground tracking-widest mb-1">Schedule</p>
+              <p class="text-sm sm:text-xl font-black leading-tight">{dateLabel}</p>
+              <p class="text-[10px] sm:text-sm font-bold text-muted-foreground mt-0.5">{timeLabel || 'TBD'}</p>
+            </div>
+            <div class="bg-card border border-border p-3 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm">
+              <p class="text-[9px] sm:text-[10px] uppercase font-black text-muted-foreground tracking-widest mb-1">Provider</p>
+              <p class="text-sm sm:text-xl font-black leading-tight truncate">{providerName}</p>
+              <p class="text-[10px] sm:text-sm font-bold text-muted-foreground mt-0.5">{job.duration_minutes} min</p>
+            </div>
+            <div class="bg-brand border border-brand p-3 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm">
+              <p class="text-[9px] sm:text-[10px] uppercase font-black text-on-brand/70 tracking-widest mb-1">Revenue</p>
+              <p class="text-sm sm:text-2xl font-black text-on-brand leading-tight">{money(job.total_price_cents)}</p>
+              <p class="text-[10px] sm:text-[11px] font-bold text-on-brand/80 mt-0.5 hidden sm:block">{lineItems.length} items</p>
+            </div>
+            <div class="hidden lg:block bg-card border border-border p-5 rounded-2xl shadow-sm">
+              <p class="text-[10px] uppercase font-black text-muted-foreground tracking-widest mb-1.5">Job ID</p>
               <p class="text-xl font-bold font-mono">#{job.id.slice(0, 8).toUpperCase()}</p>
-            </div>
-            <div class="bg-card border border-border p-5 rounded-2xl shadow-sm">
-              <p class="text-[10px] uppercase font-black text-muted-foreground tracking-widest mb-1.5">Scheduled For</p>
-              <p class="text-xl font-bold text-foreground">{dateLabel}</p>
-              <p class="text-sm font-bold text-muted-foreground mt-0.5">{timeLabel || 'TBD'}</p>
-            </div>
-            <div class="bg-card border border-border p-5 rounded-2xl shadow-sm">
-              <p class="text-[10px] uppercase font-black text-muted-foreground tracking-widest mb-1.5">Assigned Provider</p>
-              <p class="text-xl font-bold text-foreground truncate">{providerName}</p>
-              <p class="text-sm font-bold text-muted-foreground mt-0.5">{job.duration_minutes} min duration</p>
-            </div>
-            <div class="bg-brand border border-brand p-5 rounded-2xl shadow-md shadow-brand/10">
-              <p class="text-[10px] uppercase font-black text-on-brand/70 tracking-widest mb-1.5">Total Revenue</p>
-              <p class="text-2xl font-black text-on-brand">{money(job.total_price_cents)}</p>
-              <p class="text-[11px] font-bold text-on-brand/80 mt-0.5">{lineItems.length} Billing Items</p>
+              <p class="text-sm font-bold text-muted-foreground mt-0.5 truncate">{territory?.name || '—'}</p>
             </div>
           </div>
 
