@@ -2136,6 +2136,8 @@ app.get('/jobs/:id', async (c) => {
     total_price_cents: number;
     custom_service_name?: string | null;
     created_at: string;
+    started_at?: string | null;
+    completed_at?: string | null;
   };
 
   const notes = JSON.parse(notesJson) as Array<{ text: string; timestamp: string; completed: number }>;
@@ -2314,6 +2316,7 @@ app.post('/jobs/:id/status', async (c) => {
   const updates: string[] = ['status = ?', "updated_at = datetime('now')"];
   const binds: unknown[] = [status];
   if (status === 'complete') updates.push("completed_at = datetime('now')");
+  if (status === 'in_progress') updates.push("started_at = datetime('now')");
   if (status === 'cancelled') updates.push("cancelled_at = datetime('now')");
   binds.push(jobId);
   

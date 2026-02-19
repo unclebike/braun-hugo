@@ -1,6 +1,6 @@
 // biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
-import { StatusBadge, StatusIcon } from './components';
+import { StatusBadge } from './components';
 import { Layout } from './layout';
 
 interface JobDetailPageProps {
@@ -14,6 +14,8 @@ interface JobDetailPageProps {
     total_price_cents: number;
     custom_service_name?: string | null;
     created_at: string;
+    started_at?: string | null;
+    completed_at?: string | null;
   };
   customer?: { id: string; first_name: string; last_name: string; email?: string; phone?: string };
   service?: { id: string; name: string; description?: string };
@@ -103,7 +105,7 @@ export const NotesList = ({
               hx-post={`/admin/jobs/${jobId}/notes/toggle`}
               hx-vals={JSON.stringify({ noteIndex: idx })}
               hx-target="closest [data-notes-list]"
-              hx-select="#notes-list > *"
+              hx-select={`#${listId} > *`}
               hx-swap="innerHTML"
             />
           </div>
@@ -123,7 +125,7 @@ export const NotesList = ({
              hx-post={`/admin/jobs/${jobId}/notes/delete`}
             hx-vals={JSON.stringify({ noteIndex: idx })}
             hx-target="closest [data-notes-list]"
-            hx-select="#notes-list > *"
+            hx-select={`#${listId} > *`}
             hx-swap="innerHTML"
             data-confirm="arm"
             title="Delete task"
@@ -222,9 +224,12 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
     }
   })();
   const timeLabel = job.scheduled_start_time ? job.scheduled_start_time : '';
-  const scheduleLabel = `${dateLabel}${timeLabel ? ` at ${timeLabel}` : ''}`;
   const canOpenSms = Boolean(smsThreadMessage);
   const smsTitle = customer ? `${customer.first_name} ${customer.last_name}`.trim() : '';
+
+  const actualDuration = job.started_at && job.completed_at
+    ? Math.round((new Date(`${job.completed_at}Z`).getTime() - new Date(`${job.started_at}Z`).getTime()) / 60000)
+    : null;
 
   return (
     <Layout title={`${customerName} - ${serviceName}`}>
@@ -325,7 +330,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                   <form
                     hx-post={`/admin/jobs/${job.id}/notes/add`}
                     hx-target="#notes-main-list"
-                    hx-select="#notes-list > *"
+                    hx-select="#notes-main-list > *"
                     hx-swap="innerHTML"
                     hx-on="htmx:afterRequest: const xhr=event.detail.xhr; if(!xhr||xhr.status<200||xhr.status>=300) return; this.querySelector('input').value='';"
                     class="flex gap-2"
@@ -345,49 +350,124 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
               <section id="logistics">
                 <div class="flex items-center gap-3 mb-6">
                   <div class="w-2 h-8 bg-muted-foreground rounded-full" />
-                  <h3 class="text-xl font-black tracking-tight">Logistics & Logistics</h3>
+                  <h3 class="text-xl font-black tracking-tight">Logistics & Timing</h3>
                 </div>
                 
                 <div class="uk-card uk-card-body border border-border rounded-2xl shadow-sm bg-card/50">
-                  <form
-                    class="autosave grid gap-6 sm:grid-cols-2"
-                    hx-post={`/admin/jobs/${job.id}`}
-                    hx-target="#page-content"
-                    hx-select="#page-content"
-                    hx-swap="none"
-                    hx-trigger="input delay:800ms, change"
-                    hx-sync="this:queue last"
-                  >
-                    <input type="hidden" name="_section" value="details" />
-                    
-                    <div class="space-y-2">
-                      <label class="text-[11px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="scheduled-date">Scheduled Date</label>
-                      <input id="scheduled-date" name="scheduled_date" type="date" class="uk-input rounded-xl border-2 font-bold h-12" value={job.scheduled_date} />
+                  <div class="grid gap-8">
+                    <form
+                      class="autosave grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3"
+                      hx-post={`/admin/jobs/${job.id}`}
+                      hx-target="#page-content"
+                      hx-select="#page-content"
+                      hx-swap="none"
+                      hx-trigger="input delay:800ms, change"
+                      hx-sync="this:queue last"
+                    >
+                      <input type="hidden" name="_section" value="details" />
+                      
+                      <div class="space-y-1.5">
+                        <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="scheduled-date">Service Date</label>
+                        <input id="scheduled-date" name="scheduled_date" type="date" class="uk-input rounded-xl border-2 font-bold h-11" value={job.scheduled_date} />
+                      </div>
+                      <div class="space-y-1.5">
+                        <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="scheduled-time">Arrival Time</label>
+                        <input id="scheduled-time" name="scheduled_start_time" type="time" class="uk-input rounded-xl border-2 font-bold h-11" value={job.scheduled_start_time} />
+                      </div>
+                      <div class="space-y-1.5">
+                        <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="duration">Est. duration</label>
+                        <div class="relative">
+                          <input id="duration" name="duration_minutes" type="number" min={1} class="uk-input rounded-xl border-2 font-bold h-11 pr-12" value={job.duration_minutes} />
+                          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-muted-foreground uppercase">Min</span>
+                        </div>
+                      </div>
+                      <div class="space-y-1.5 sm:col-span-2 lg:col-span-1">
+                        <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="provider-id">Primary Provider</label>
+                        <select id="provider-id" name="provider_id" class="uk-select rounded-xl border-2 font-bold h-11">
+                          <option value="">Unassigned</option>
+                          {team.map((p) => <option key={p.id} value={p.id} selected={assignedProviderId === p.id}>{p.first_name} {p.last_name}</option>)}
+                        </select>
+                      </div>
+                      <div class="space-y-1.5">
+                        <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="base-price">Base Price</label>
+                        <div class="relative">
+                          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">$</span>
+                          <input id="base-price" name="base_price" type="number" step="0.01" class="uk-input rounded-xl border-2 font-bold h-11 pl-8" value={(job.base_price_cents / 100).toFixed(2)} />
+                        </div>
+                      </div>
+                      <div class="space-y-1.5">
+                        <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="total-price">Total Price</label>
+                        <div class="relative">
+                          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">$</span>
+                          <input id="total-price" name="total_price" type="number" step="0.01" class="uk-input rounded-xl border-2 font-bold h-11 pl-8" value={(job.total_price_cents / 100).toFixed(2)} />
+                        </div>
+                      </div>
+                      
+                      <div class="sm:col-span-2 lg:col-span-3 flex items-center justify-between mt-2">
+                        <p class="text-[10px] text-muted-foreground/60 font-medium italic flex items-center gap-2">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Auto-save</title><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 6v6l4 2"/></svg>
+                          Changes to logistics auto-save
+                        </p>
+                        <span class="save-indicator font-black text-[10px] uppercase tracking-widest text-brand"></span>
+                      </div>
+                    </form>
+
+                    <div class="pt-6 border-t border-border/50">
+                      <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                          <p class="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Work Execution</p>
+                          <div class="flex flex-wrap gap-3">
+                            {!job.started_at ? (
+                              <button
+                                type="button"
+                                class="uk-btn uk-btn-primary flex-1 h-12 rounded-xl font-black shadow-lg shadow-brand/20 transition-all hover:scale-[1.02]"
+                                hx-post={`/admin/jobs/${job.id}/status`}
+                                hx-vals='{"status": "in_progress"}'
+                                hx-target="#page-content"
+                                hx-select="#page-content"
+                              >
+                                START JOB
+                              </button>
+                            ) : !job.completed_at ? (
+                              <button
+                                type="button"
+                                class="uk-btn uk-btn-primary flex-1 h-12 rounded-xl font-black bg-secondary border-secondary shadow-lg shadow-secondary/20 transition-all hover:scale-[1.02]"
+                                hx-post={`/admin/jobs/${job.id}/status`}
+                                hx-vals='{"status": "complete"}'
+                                hx-target="#page-content"
+                                hx-select="#page-content"
+                              >
+                                END JOB
+                              </button>
+                            ) : (
+                              <div class="flex-1 bg-muted/50 border border-border/50 h-12 rounded-xl flex items-center justify-center gap-2">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-brand"><title>Completed</title><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m22 4-10 10.01-3-3"/></svg>
+                                <span class="text-xs font-black uppercase tracking-widest text-muted-foreground">Work Completed</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div class="bg-muted/30 rounded-2xl p-4 border border-border/40 flex flex-col justify-center">
+                          <p class="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Execution Metrics</p>
+                          <div class="grid grid-cols-2 gap-4">
+                            <div>
+                              <p class="text-[9px] font-bold text-muted-foreground/70 uppercase">Start Time</p>
+                              <p class="text-sm font-black">{job.started_at ? new Date(`${job.started_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
+                            </div>
+                            <div>
+                              <p class="text-[9px] font-bold text-muted-foreground/70 uppercase">End Time</p>
+                              <p class="text-sm font-black">{job.completed_at ? new Date(`${job.completed_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
+                            </div>
+                            <div class="col-span-2 pt-2 mt-2 border-t border-border/30">
+                              <p class="text-[9px] font-bold text-muted-foreground/70 uppercase">Actual Duration</p>
+                              <p class="text-lg font-black text-brand">{actualDuration !== null ? `${actualDuration} Minutes` : 'Calculating...'}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div class="space-y-2">
-                      <label class="text-[11px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="scheduled-time">Start Time</label>
-                      <input id="scheduled-time" name="scheduled_start_time" type="time" class="uk-input rounded-xl border-2 font-bold h-12" value={job.scheduled_start_time} />
-                    </div>
-                    <div class="space-y-2">
-                      <label class="text-[11px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="duration">Duration (Min)</label>
-                      <input id="duration" name="duration_minutes" type="number" min={1} class="uk-input rounded-xl border-2 font-bold h-12" value={job.duration_minutes} />
-                    </div>
-                    <div class="space-y-2">
-                      <label class="text-[11px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="provider-id">Assigned Team Member</label>
-                      <select id="provider-id" name="provider_id" class="uk-select rounded-xl border-2 font-bold h-12">
-                        <option value="">Unassigned</option>
-                        {team.map((p) => <option key={p.id} value={p.id} selected={assignedProviderId === p.id}>{p.first_name} {p.last_name}</option>)}
-                      </select>
-                    </div>
-                    
-                    <div class="sm:col-span-2 pt-4 flex items-center justify-between border-t border-border/50">
-                      <p class="text-xs text-muted-foreground italic flex items-center gap-2">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Auto-save</title><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 6v6l4 2"/></svg>
-                        Changes auto-save instantly
-                      </p>
-                      <span class="save-indicator font-black text-xs uppercase tracking-widest"></span>
-                    </div>
-                  </form>
+                  </div>
                 </div>
               </section>
             </div>
@@ -441,13 +521,25 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                   </div>
 
                   <div class="p-4 bg-muted/30 border-t border-border">
-                    <form hx-post={`/admin/jobs/${job.id}/line-items/add`} hx-target="#page-content" hx-select="#page-content" hx-swap="innerHTML" class="grid gap-2">
-                      <input type="text" name="description" class="uk-input text-xs h-9 rounded-lg border-border/60 bg-card" placeholder="Custom line description" required />
-                      <div class="grid grid-cols-2 gap-2">
-                        <input type="number" name="unit_price" class="uk-input text-xs h-9 rounded-lg border-border/60 bg-card" min={0} step={0.01} placeholder="Price $" required />
-                        <input type="number" name="quantity" class="uk-input text-xs h-9 rounded-lg border-border/60 bg-card" min={1} step={1} value="1" required />
+                    <form hx-post={`/admin/jobs/${job.id}/line-items/add`} hx-target="#page-content" hx-select="#page-content" hx-swap="innerHTML" class="grid gap-3">
+                      <div class="grid gap-1.5">
+                        <label for="new-line-desc" class="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">New Line Description</label>
+                        <input id="new-line-desc" type="text" name="description" class="uk-input text-xs h-10 rounded-xl border-2 border-border/60 bg-card font-bold" placeholder="e.g. Extra deep cleaning" required />
                       </div>
-                      <button type="submit" class="uk-btn uk-btn-default w-full py-1.5 text-[10px] font-black uppercase tracking-widest h-9 mt-1">Add Line Item</button>
+                      <div class="grid grid-cols-2 gap-3">
+                        <div class="grid gap-1.5">
+                          <label for="new-line-price" class="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Unit Price</label>
+                          <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
+                            <input id="new-line-price" type="number" name="unit_price" class="uk-input text-xs h-10 rounded-xl border-2 border-border/60 bg-card pl-6 font-bold" min={0} step={0.01} placeholder="0.00" required />
+                          </div>
+                        </div>
+                        <div class="grid gap-1.5">
+                          <label for="new-line-qty" class="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Quantity</label>
+                          <input id="new-line-qty" type="number" name="quantity" class="uk-input text-xs h-10 rounded-xl border-2 border-border/60 bg-card font-bold" min={1} step={1} value="1" required />
+                        </div>
+                      </div>
+                      <button type="submit" class="uk-btn uk-btn-default w-full py-2 text-[10px] font-black uppercase tracking-widest h-10 mt-1 rounded-xl shadow-sm">Add Billing Item</button>
                     </form>
                   </div>
                 </div>
