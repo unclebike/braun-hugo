@@ -214,6 +214,7 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
   --font-sans: 'TideSans', system-ui, -apple-system, sans-serif;
 
   /* Type scale (Major Third: 1.25) */
+  --text-xxs: 1.0rem;
   --text-xs: 1.2rem;
   --text-sm: 1.5rem;
   --text-base: 1.8rem;
@@ -1066,7 +1067,7 @@ document.addEventListener('click', function(e) {
             top: 0;
             z-index: 50;
           }
-          .page-header h2 { font-size: var(--text-lg); color: var(--text); font-weight: var(--font-weight-bold); letter-spacing: -0.01em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .page-header h2 { font-size: var(--text-sm); color: var(--text); font-weight: var(--font-weight-bold); letter-spacing: -0.01em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
           .page-header-info { grid-column: 1; min-width: 0; }
           .page-header-actions { grid-column: 2; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
           .page-header-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; font-size: var(--text-xs); color: var(--text-secondary); }
@@ -1148,7 +1149,7 @@ document.addEventListener('click', function(e) {
           .save-pending { color: var(--text-secondary); }
           .autosave .save-indicator, #territory-services .save-indicator, #territory-providers .save-indicator { display: inline-block; }
 
-          .delete-btn { color: var(--destructive); background: var(--bg-card); border: 1px solid var(--destructive-border); padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: var(--text-xs); font-weight: var(--font-weight-medium); transition: all 0.15s; }
+          .delete-btn { color: var(--destructive); background: var(--bg-card); border: 1px solid var(--destructive-border); padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: var(--text-xxs); font-weight: var(--font-weight-medium); transition: all 0.15s; }
           .delete-btn:hover { background: var(--destructive-soft); border-color: var(--destructive-hover); color: var(--destructive-hover); }
           .delete-btn.delete-armed { background: var(--destructive); color: #fff; border-color: var(--destructive); font-weight: var(--font-weight-medium); }
           .delete-btn.delete-armed:hover { background: var(--destructive-hover); border-color: var(--destructive-hover); }
@@ -1170,7 +1171,7 @@ document.addEventListener('click', function(e) {
           }
 
           .sidebar-nav { padding: 0 4px; }
-          .sidebar-nav .uk-nav-header { color: var(--text-sidebar); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; font-weight: var(--font-weight-medium); padding: 16px 12px 6px; margin: 0; }
+          .sidebar-nav .uk-nav-header { color: var(--text-sidebar); font-size: var(--text-xxs); text-transform: uppercase; letter-spacing: 0.08em; font-weight: var(--font-weight-medium); padding: 16px 12px 6px; margin: 0; }
           .sidebar-nav .uk-nav-header:first-child { padding-top: 4px; }
           .sidebar-nav .uk-nav-divider { border-color: var(--sidebar-divider); margin: 8px 12px; }
           .sidebar-nav > li > a { color: var(--text-sidebar); padding: 8px 12px; border-radius: 6px; font-size: var(--text-sm); font-weight: var(--font-weight-regular); transition: all 0.15s; display: block; text-decoration: none; }
@@ -1284,7 +1285,7 @@ document.addEventListener('click', function(e) {
 
           @media (max-width: 768px) {
             .page-header { padding: calc(12px + var(--safe-top)) 16px 12px calc(52px + var(--safe-left)); }
-            .page-header h2 { font-size: var(--text-md); }
+            .page-header h2 { font-size: var(--text-sm); }
             .page-header--rich { grid-template-columns: 1fr; }
             .page-header--rich .page-header-actions { grid-column: 1; grid-row: auto; justify-self: start; }
             .page-header-meta > span { max-width: 140px; }
