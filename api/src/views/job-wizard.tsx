@@ -331,7 +331,7 @@ const quickCreateBody = (props: NewJobProps) => {
             if (params.get('error')) params.delete('error');
             var url = '/admin/jobs/new?' + params.toString();
             if (window.htmx) {
-              window.htmx.ajax('GET', url, { target: '#page-content', swap: 'innerHTML' });
+              window.htmx.ajax('GET', url, { target: '#page-content', select: '#page-content', swap: 'outerHTML' });
               window.history.pushState({}, '', url);
             } else {
               window.location.href = url;

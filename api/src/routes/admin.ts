@@ -1721,9 +1721,14 @@ app.get('/jobs/new', async (c) => {
   const error = c.req.query('error') || undefined;
 
   let customer: WizardCustomer | undefined;
+  let customerAddress: { line_1?: string; city?: string; state?: string; postal_code?: string; lat?: string; lng?: string } | undefined;
   if (customerId) {
-    const row = await db.prepare('SELECT id, first_name, last_name, email, phone FROM customers WHERE id = ?').bind(customerId).first();
-    if (row) customer = row as unknown as WizardCustomer;
+    const [custRow, addrRow] = await Promise.all([
+      db.prepare('SELECT id, first_name, last_name, email, phone FROM customers WHERE id = ?').bind(customerId).first(),
+      db.prepare('SELECT line_1, city, state, postal_code, lat, lng FROM customer_addresses WHERE customer_id = ? ORDER BY is_default DESC, created_at DESC LIMIT 1').bind(customerId).first(),
+    ]);
+    if (custRow) customer = custRow as unknown as WizardCustomer;
+    if (addrRow) customerAddress = addrRow as { line_1?: string; city?: string; state?: string; postal_code?: string; lat?: string; lng?: string };
   }
 
   const territoriesRes = await db.prepare('SELECT id, name FROM territories WHERE is_active = 1 ORDER BY name').all();
@@ -1803,7 +1808,12 @@ app.get('/jobs/new', async (c) => {
     dates,
     timeslots,
     providers,
-    addressLine1,
+    addressLine1: addressLine1 || (customerAddress?.line_1 || undefined),
+    addressCity: c.req.query('address_city') || (customerAddress?.city || undefined),
+    addressState: c.req.query('address_state') || (customerAddress?.state || undefined),
+    addressPostal: c.req.query('address_postal') || (customerAddress?.postal_code || undefined),
+    addressLat: c.req.query('address_lat') || (customerAddress?.lat ? String(customerAddress.lat) : undefined),
+    addressLng: c.req.query('address_lng') || (customerAddress?.lng ? String(customerAddress.lng) : undefined),
     selectedTerritoryId,
     selectedServiceId,
     selectedDate,
@@ -1958,6 +1968,41 @@ app.get('/api/address/search', async (c) => {
     return c.html(AddressSearchResults({ results, targetPrefix }));
   } catch {
     return c.html(AddressSearchResults({ results: [], targetPrefix }));
+  }
+});
+
+app.get('/api/address/reverse', async (c) => {
+  const lat = c.req.query('lat') || '';
+  const lng = c.req.query('lng') || '';
+  if (!lat || !lng) return c.html('');
+  try {
+    const token = c.env?.MAPBOX_ACCESS_TOKEN || '';
+    if (!token) {
+      return c.html('<div class="search-results"><div class="search-item text-muted-foreground">Mapbox is not configured.</div></div>');
+    }
+    const res = await fetch(`https://api.mapbox.com/search/geocode/v6/reverse?longitude=${encodeURIComponent(lng)}&latitude=${encodeURIComponent(lat)}&types=address&limit=3&country=ca&access_token=${token}`);
+    const data = await res.json() as {
+      features?: Array<{
+        properties: { full_address?: string; name?: string; context?: { place?: { name?: string }; region?: { region_code?: string }; postcode?: { name?: string } } };
+        geometry: { coordinates: [number, number] };
+      }>;
+    };
+    const results = (data.features || []).map(f => {
+      const p = f.properties;
+      const ctx = p.context || {};
+      return {
+        display: p.full_address || p.name || '',
+        line1: p.name || '',
+        city: ctx.place?.name || '',
+        state: ctx.region?.region_code || '',
+        postal: ctx.postcode?.name || '',
+        lat: String(f.geometry.coordinates[1]),
+        lng: String(f.geometry.coordinates[0]),
+      };
+    });
+    return c.html(AddressSearchResults({ results }));
+  } catch {
+    return c.html('<div class="search-results"><div class="search-item text-muted-foreground">Unable to look up location.</div></div>');
   }
 });
 
