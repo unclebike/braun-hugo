@@ -1,95 +1,208 @@
-/* typography system */
+/* ============================================
+   TYPOGRAPHY SYSTEM (Major Third Scale: 1.25)
+   ============================================ */
+
+/* Display Styles - Large, Bold Headlines */
+.display {
+    font-size: var(--text-3xl);
+    line-height: var(--lh-tight);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.02em;
+}
+
+.display-md {
+    font-size: var(--text-2xl);
+    line-height: var(--lh-tight);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.01em;
+}
+
+/* Headline Styles - Content h1 equivalents */
+.headline {
+    font-size: var(--text-lg);
+    line-height: var(--lh-tight);
+    font-weight: var(--font-weight-bold);
+}
+
+/* Subheading Styles - Content h2-h3 equivalents */
+.subhead {
+    font-size: var(--text-md);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Responsive subheading with fluid scaling */
+.subhead-lg {
+    font-size: clamp(var(--text-md), 2vw, var(--text-lg));
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Body Text - Regular paragraphs, lists, tables */
+.body {
+    font-size: var(--text-base);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-regular);
+}
+
+/* Small Body Text - Supplementary content */
+.body-sm {
+    font-size: var(--text-sm);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-regular);
+}
+
+/* Label Style - Metadata, tags, section headers */
+.label {
+    font-size: var(--text-xs);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Caption Style - Figcaptions, footnotes, dense content */
+.caption {
+    font-size: var(--text-xs);
+    line-height: var(--lh-loose);
+    font-weight: var(--font-weight-regular);
+}
+
+/* ============================================
+   DEPRECATED CLASSES (for backward compatibility)
+   Use semantic classes above instead
+   ============================================ */
+
 .hero-header {
-    font-size: clamp(2.8rem, 3vw, 3.6rem);
-    line-height: 1.5;
-    margin-bottom: .8rem;
+    font-size: clamp(var(--text-lg), 3vw, var(--text-2xl));
+    line-height: var(--lh-normal);
+    margin-bottom: 0.8rem;
 }
 
 .h1 {
-    font-size: 2.8rem;
-    line-height: 4rem;
+    font-size: var(--text-lg);
+    line-height: var(--lh-tight);
     font-weight: var(--font-weight-bold);
 }
 
 .h2 {
-    font-size: 2.4rem;
-    line-height: 3.2rem;
+    font-size: var(--text-md);
+    line-height: var(--lh-normal);
     font-weight: var(--font-weight-bold);
 }
 
 .h3 {
-    font-size: 2rem;
-    line-height: 2.8rem;
-    font-weight: var(--font-weight-bold);
+    font-size: var(--text-md);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-medium);
 }
 
 .h4 {
-    font-size: 1.8rem;
-    line-height: 2.4rem;
-    font-weight: var(--font-weight-bold);
+    font-size: var(--text-base);
+    line-height: var(--lh-normal);
+    font-weight: var(--font-weight-medium);
 }
 
 .h5, .h6 {
-    font-size: 1.6rem;
-    line-height: 2.8rem;
-    font-weight: var(--font-weight-bold);
+    font-size: var(--text-sm);
+    line-height: var(--lh-loose);
+    font-weight: var(--font-weight-medium);
 }
 
 .section-title {
-    font-size: 1.4rem;
-    font-weight: var(--font-weight-bold);
-    line-height: 1;
-    letter-spacing: 1px;
+    font-size: var(--text-xs);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--lh-normal);
+    letter-spacing: 0.05em;
     text-transform: uppercase;
 }
 
 .body-1 {
-    font-size: 1.8rem;
+    font-size: var(--text-base);
     font-weight: var(--font-weight-regular);
-    line-height: 2.4rem;
+    line-height: var(--lh-normal);
 }
 
 .body-2 {
-    font-size: 1.6rem;
+    font-size: var(--text-sm);
     font-weight: var(--font-weight-regular);
-    line-height: 2.4rem;
+    line-height: var(--lh-normal);
 }
 
 .sub-heading-large {
-    font-size: clamp(1.5rem, 2vw, 2.3rem);
+    font-size: clamp(var(--text-sm), 2vw, var(--text-md));
     font-weight: var(--font-weight-regular);
-    line-height: 3.2rem;
+    line-height: var(--lh-normal);
 }
 
 .sub-heading {
-    font-size: 1.4rem;
+    font-size: var(--text-xs);
     font-weight: var(--font-weight-regular);
-    line-height: 2rem;
+    line-height: var(--lh-normal);
 }
 
-/* font change */
+/* Font Family Switching - Simple and Semantic */
 
-.has-serif-title .h1,
-.has-serif-title .h2,
-.has-serif-title .h3,
-.has-serif-title .h4,
-.has-serif-title .h5,
-.has-serif-title .h6,
-.has-serif-body .section-title,
-.has-serif-body .body-1,
-.has-serif-body .body-2,
-.has-serif-body .sub-heading,
-.has-serif-body .sub-heading-large,
+.has-serif-title h1,
+.has-serif-title h2,
+.has-serif-title h3,
+.has-serif-title h4,
+.has-serif-title h5,
+.has-serif-title h6,
+.has-serif-title .display,
+.has-serif-title .display-md,
+.has-serif-title .headline,
+.has-serif-title .subhead,
 .has-serif-title .hero-header {
     font-family: var(--font-serif);
-    font-weight: var(--font-weight-regular);
 }
 
-.has-serif-title.h5, 
-.has-serif-title.h6 {
-    font-weight: var(--font-weight-bold);
+.has-serif-body p,
+.has-serif-body ol,
+.has-serif-body ul,
+.has-serif-body dl,
+.has-serif-body blockquote:not([class]),
+.has-serif-body .body,
+.has-serif-body .body-sm,
+.has-serif-body .caption {
+    font-family: var(--font-serif);
 }
 
-.has-serif-title .h3 {
-    font-size: 2.2rem;
+/* Mobile Responsive Typography (767px and below) */
+@media (max-width: 767px) {
+    .display {
+        font-size: var(--text-2xl);
+    }
+
+    .display-md {
+        font-size: var(--text-xl);
+    }
+
+    .headline {
+        font-size: var(--text-md);
+    }
+
+    .subhead {
+        font-size: var(--text-base);
+    }
+
+    .subhead-lg {
+        font-size: clamp(var(--text-base), 2vw, var(--text-md));
+    }
+
+    .hero-header {
+        font-size: clamp(var(--text-md), 3vw, var(--text-lg));
+    }
+
+    .h1 {
+        font-size: var(--text-md);
+    }
+
+    .h2 {
+        font-size: var(--text-base);
+    }
+
+    .h3 {
+        font-size: var(--text-base);
+    }
 }

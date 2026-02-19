@@ -34,12 +34,32 @@
     --color-dark-gray: hsla(0,0%,1%,0.74);
     --color-darker-gray: hsla(204,71%,1%,0.92);
 
-    --animation-base: ease-in-out;
-    --font-base: -apple-system, BlinkMacSystemFont, 'Inter', Segoe UI, Helvetica, Arial, sans-serif;
-    --font-serif: 'Cardo', serif;
-    --font-weight-regular: 400;
-    --font-weight-bold: 600;
-    --navbar-height: 8rem;
+     --animation-base: ease-in-out;
+     --font-base: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif;
+     --font-serif: 'Cardo', Georgia, serif;
+     
+     /* Typography Scale (Major Third: 1.25 ratio) */
+     --text-xs: 1.2rem;
+     --text-sm: 1.5rem;
+     --text-base: 1.8rem;
+     --text-md: 2.3rem;
+     --text-lg: 2.8rem;
+     --text-xl: 3.5rem;
+     --text-2xl: 4.4rem;
+     --text-3xl: 5.5rem;
+     
+     /* Line Heights (unitless ratios) */
+     --lh-tight: 1.1;
+     --lh-normal: 1.4;
+     --lh-loose: 1.6;
+     
+     /* Font Weights */
+     --font-weight-light: 300;
+     --font-weight-regular: 400;
+     --font-weight-medium: 600;
+     --font-weight-bold: 700;
+     
+     --navbar-height: 8rem;
     --form-input-height: 4.8rem;
     --base-text-size: 1.8rem;
     --spacepsection: 12.8rem;
