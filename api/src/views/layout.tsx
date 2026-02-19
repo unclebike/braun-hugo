@@ -746,7 +746,7 @@ window.openSmsTaskModal = function(config) {
 
   var overlay = document.createElement('div');
   overlay.id = 'sms-task-modal-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1100;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1300;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
 
   var panel = document.createElement('div');
   panel.id = 'sms-task-modal-panel';
