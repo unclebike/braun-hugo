@@ -27,12 +27,14 @@ interface JobDetailPageProps {
     created_at: string;
     started_at?: string | null;
     completed_at?: string | null;
+    paused_at?: string | null;
   };
   customer?: { id: string; first_name: string; last_name: string; email?: string; phone?: string };
   service?: { id: string; name: string; description?: string };
   territory?: { id: string; name: string };
   team: Array<{ id: string; first_name: string; last_name: string }>;
   assignedProviderId: string | null;
+  workIntervals: Array<{ started: string; ended: string | null }>;
   serviceTasks: ServiceTask[];
   completeBlocked?: boolean;
   completeBlockers?: string[];
@@ -66,7 +68,7 @@ interface JobDetailPageProps {
   }>;
 }
 
-const STATUS_OPTIONS = ['created', 'assigned', 'enroute', 'in_progress', 'complete', 'cancelled'];
+const STATUS_OPTIONS = ['created', 'assigned', 'enroute', 'in_progress', 'paused', 'complete', 'cancelled'];
 
 const TaskSourceContext = ({ source }: { source?: JobDetailPageProps['notes'][number]['source'] }) => {
   if (!source || source.type !== 'sms' || !source.excerpt) return null;
@@ -227,6 +229,82 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage, customerName }: {
 
 const money = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
+const fmtTime = (iso: string) =>
+  new Date(`${iso}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' });
+
+const intervalMinutes = (started: string, ended: string | null): number => {
+  const s = new Date(`${started}Z`).getTime();
+  const e = ended ? new Date(`${ended}Z`).getTime() : Date.now();
+  return Math.max(0, Math.round((e - s) / 60000));
+};
+
+export const WorkIntervals = ({
+  jobId,
+  intervals,
+  isActive,
+}: {
+  jobId: string;
+  intervals: Array<{ started: string; ended: string | null }>;
+  isActive: boolean;
+}) => {
+  const completedMinutes = intervals
+    .filter(i => i.ended)
+    .reduce((sum, i) => sum + intervalMinutes(i.started, i.ended), 0);
+  const openInterval = intervals.find(i => !i.ended);
+  const totalLabel = openInterval
+    ? `${completedMinutes} min logged + current session`
+    : `${completedMinutes} min total`;
+
+  return (
+    <div id="work-intervals">
+      {intervals.length > 0 && (
+        <div class="grid gap-1.5 mb-3">
+          {intervals.map((interval, i) => {
+            const mins = intervalMinutes(interval.started, interval.ended);
+            return (
+              <div key={i} class="flex items-center justify-between text-xs">
+                <span class="text-muted-foreground">
+                  {fmtTime(interval.started)} — {interval.ended ? fmtTime(interval.ended) : <span class="text-brand font-bold">running</span>}
+                </span>
+                <span class="font-bold tabular-nums">{mins} min</span>
+              </div>
+            );
+          })}
+          <div class="flex items-center justify-between text-xs pt-1.5 mt-0.5 border-t border-border/50">
+            <span class="font-black uppercase tracking-widest text-[9px]">Total worked</span>
+            <span class="font-black text-brand">{totalLabel}</span>
+          </div>
+        </div>
+      )}
+      <div class="flex flex-wrap gap-2">
+        {isActive && (
+          <button
+            type="button"
+            class="uk-btn uk-btn-default uk-btn-sm font-black"
+            style="border-color:var(--badge-primary);color:var(--badge-primary);"
+            hx-post={`/admin/jobs/${jobId}/pause`}
+            hx-target="#page-content"
+            hx-select="#page-content"
+          >
+            Pause
+          </button>
+        )}
+        {!isActive && intervals.length > 0 && (
+          <button
+            type="button"
+            class="uk-btn uk-btn-primary uk-btn-sm font-black"
+            hx-post={`/admin/jobs/${jobId}/resume`}
+            hx-target="#page-content"
+            hx-select="#page-content"
+          >
+            Resume
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const ServiceTasksList = ({ jobId, tasks, serviceName }: { jobId: string; tasks: ServiceTask[]; serviceName: string }) => {
   const total = tasks.length;
   const done = tasks.filter(t => t.completed || t.answer).length;
@@ -366,7 +444,7 @@ export const ServiceTasksList = ({ jobId, tasks, serviceName }: { jobId: string;
   );
 };
 
-export const JobDetailPage = ({ job, customer, service, territory, team, assignedProviderId, serviceTasks, completeBlocked, completeBlockers, notes, smsThreadMessage, lineItems }: JobDetailPageProps) => {
+export const JobDetailPage = ({ job, customer, service, territory, team, assignedProviderId, workIntervals, serviceTasks, completeBlocked, completeBlockers, notes, smsThreadMessage, lineItems }: JobDetailPageProps) => {
   const subtotal = lineItems.reduce((sum, line) => sum + line.total_cents, 0);
   const customerName = customer ? `${customer.first_name} ${customer.last_name}`.trim() : 'Unassigned customer';
   const serviceName = service?.name || job.custom_service_name || 'Custom Service';
@@ -388,9 +466,16 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
   const canOpenSms = Boolean(smsThreadMessage);
   const smsTitle = customer ? `${customer.first_name} ${customer.last_name}`.trim() : '';
 
-  const actualDuration = job.started_at && job.completed_at
-    ? Math.round((new Date(`${job.completed_at}Z`).getTime() - new Date(`${job.started_at}Z`).getTime()) / 60000)
-    : null;
+  const completedIntervalMinutes = workIntervals
+    .filter(i => i.ended)
+    .reduce((sum, i) => sum + intervalMinutes(i.started, i.ended), 0);
+  const actualDuration = workIntervals.length > 0 && job.completed_at
+    ? completedIntervalMinutes
+    : job.started_at && job.completed_at
+      ? Math.round((new Date(`${job.completed_at}Z`).getTime() - new Date(`${job.started_at}Z`).getTime()) / 60000)
+      : null;
+  const isRunning = job.status === 'in_progress' && Boolean(job.started_at) && !job.completed_at;
+  const isPaused = job.status === 'paused';
 
   return (
     <Layout title={`${customerName} - ${serviceName}`}>
@@ -695,59 +780,87 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                     </form>
 
                     <div class="pt-4 border-t border-border/50">
-                      <div class="space-y-4">
-                        <div class="space-y-3">
-                          <p class="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Work Execution</p>
-                          <div class="flex gap-3">
-                            {!job.started_at ? (
-                              <button
-                                type="button"
-                                class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-black shadow-lg shadow-brand/20 transition-all hover:scale-[1.02]"
-                                hx-post={`/admin/jobs/${job.id}/status`}
-                                hx-vals='{"status": "in_progress"}'
-                                hx-target="#page-content"
-                                hx-select="#page-content"
-                              >
-                                START JOB
-                              </button>
-                            ) : !job.completed_at ? (
-                              <button
-                                type="button"
-                                class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-black bg-secondary border-secondary shadow-lg shadow-secondary/20 transition-all hover:scale-[1.02]"
-                                hx-post={`/admin/jobs/${job.id}/status`}
-                                hx-vals='{"status": "complete"}'
-                                hx-target="#page-content"
-                                hx-select="#page-content"
-                              >
-                                END JOB
-                              </button>
-                            ) : (
-                              <div class="flex-1 bg-muted/50 border border-border/50 h-10 rounded-xl flex items-center justify-center gap-2">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-brand"><title>Completed</title><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m22 4-10 10.01-3-3"/></svg>
-                                <span class="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Work Completed</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                       <div class="space-y-4">
+                         <div class="space-y-3">
+                           <p class="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Work Execution</p>
+                           <div class="flex flex-wrap gap-2">
+                             {!job.started_at ? (
+                               <button
+                                 type="button"
+                                 class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-black shadow-lg shadow-brand/20 transition-all hover:scale-[1.02]"
+                                 hx-post={`/admin/jobs/${job.id}/status`}
+                                 hx-vals='{"status": "in_progress"}'
+                                 hx-target="#page-content"
+                                 hx-select="#page-content"
+                               >
+                                 START JOB
+                               </button>
+                             ) : job.completed_at ? (
+                               <div class="flex-1 bg-muted/50 border border-border/50 h-10 rounded-xl flex items-center justify-center gap-2">
+                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-brand"><title>Completed</title><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m22 4-10 10.01-3-3"/></svg>
+                                 <span class="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Work Completed</span>
+                               </div>
+                             ) : (
+                               <>
+                                 {isRunning && (
+                                   <button
+                                     type="button"
+                                     class="uk-btn uk-btn-default h-10 rounded-xl font-black"
+                                     style="border-color:var(--badge-primary);color:var(--badge-primary);"
+                                     hx-post={`/admin/jobs/${job.id}/pause`}
+                                     hx-target="#page-content"
+                                     hx-select="#page-content"
+                                   >
+                                     Pause
+                                   </button>
+                                 )}
+                                 {isPaused && (
+                                   <button
+                                     type="button"
+                                     class="uk-btn uk-btn-primary h-10 rounded-xl font-black"
+                                     hx-post={`/admin/jobs/${job.id}/resume`}
+                                     hx-target="#page-content"
+                                     hx-select="#page-content"
+                                   >
+                                     Resume
+                                   </button>
+                                 )}
+                                 <button
+                                   type="button"
+                                   class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-black bg-secondary border-secondary shadow-lg shadow-secondary/20 transition-all hover:scale-[1.02]"
+                                   hx-post={`/admin/jobs/${job.id}/status`}
+                                   hx-vals='{"status": "complete"}'
+                                   hx-target="#page-content"
+                                   hx-select="#page-content"
+                                 >
+                                   END JOB
+                                 </button>
+                               </>
+                             )}
+                           </div>
+                           {workIntervals.length > 0 && (
+                             <WorkIntervals jobId={job.id} intervals={workIntervals} isActive={isRunning} />
+                           )}
+                         </div>
 
-                        <div class="bg-muted/30 rounded-xl p-3 border border-border/40">
-                          <p class="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-2">Execution Metrics</p>
-                          <div class="grid grid-cols-2 gap-3">
-                            <div>
-                              <p class="text-[9px] font-bold text-muted-foreground/70 uppercase">Start Time</p>
-                              <p class="text-xs font-black">{job.started_at ? new Date(`${job.started_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
-                            </div>
-                            <div>
-                              <p class="text-[9px] font-bold text-muted-foreground/70 uppercase">End Time</p>
-                              <p class="text-xs font-black">{job.completed_at ? new Date(`${job.completed_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
-                            </div>
-                            <div class="col-span-2 pt-2 mt-1 border-t border-border/30">
-                              <p class="text-[9px] font-bold text-muted-foreground/70 uppercase">Actual Duration</p>
-                              <p class="text-sm font-black text-brand">{actualDuration !== null ? `${actualDuration} Minutes` : 'Calculating...'}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                         <div class="bg-muted/30 rounded-xl p-3 border border-border/40">
+                           <p class="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-2">Execution Metrics</p>
+                           <div class="grid grid-cols-2 gap-3">
+                             <div>
+                               <p class="text-[9px] font-bold text-muted-foreground/70 uppercase">Start Time</p>
+                               <p class="text-xs font-black">{job.started_at ? new Date(`${job.started_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
+                             </div>
+                             <div>
+                               <p class="text-[9px] font-bold text-muted-foreground/70 uppercase">End Time</p>
+                               <p class="text-xs font-black">{job.completed_at ? new Date(`${job.completed_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
+                             </div>
+                             <div class="col-span-2 pt-2 mt-1 border-t border-border/30">
+                               <p class="text-[9px] font-bold text-muted-foreground/70 uppercase">Actual Duration</p>
+                               <p class="text-sm font-black text-brand">{actualDuration !== null ? `${actualDuration} min` : completedIntervalMinutes > 0 ? `${completedIntervalMinutes} min logged` : 'Calculating...'}</p>
+                             </div>
+                           </div>
+                         </div>
+                       </div>
                     </div>
                   </div>
                 </div>
