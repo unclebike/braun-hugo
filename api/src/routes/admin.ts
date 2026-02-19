@@ -584,6 +584,192 @@ app.post('/territories/:id/providers/:providerId/toggle', async (c) => {
   return c.body('', 200);
 });
 
+app.get('/categories', async (c) => {
+  const db = c.env.DB;
+  const categories = await db.prepare('SELECT id, name, sort_order FROM service_categories ORDER BY sort_order, name').all();
+  
+  const rows = (categories.results || []).map(cat => ({
+    name: cat.name,
+    sortOrder: cat.sort_order,
+  }));
+  
+  return c.html(TableView({
+    title: 'Service Categories',
+    columns: ['Name', 'Sort Order'],
+    rows,
+    rawIds: (categories.results || []).map(cat => cat.id as string),
+    createUrl: '/admin/categories/new',
+    detailUrlPrefix: '/admin/categories',
+    deleteUrlPrefix: '/admin/categories'
+  }));
+});
+
+app.get('/categories/new', (c) => {
+  const fields: FormField[] = [
+    { name: 'name', label: 'Name', required: true },
+    { name: 'sort_order', label: 'Sort Order', type: 'number', value: 0 }
+  ];
+  
+  return c.html(FormView({
+    title: 'Create Category',
+    fields,
+    submitUrl: '/admin/categories',
+    cancelUrl: '/admin/categories'
+  }));
+});
+
+app.post('/categories', async (c) => {
+  const db = c.env.DB;
+  const body = await c.req.parseBody();
+  const id = generateId();
+  
+  await db.prepare('INSERT INTO service_categories (id, name, sort_order) VALUES (?, ?, ?)').bind(
+    id,
+    body.name,
+    parseInt(body.sort_order as string, 10) || 0
+  ).run();
+  
+  return c.redirect('/admin/categories');
+});
+
+app.get('/categories/:id', async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param('id');
+  const category = await db.prepare('SELECT * FROM service_categories WHERE id = ?').bind(id).first<{ id: string; name: string; sort_order: number }>();
+  if (!category) return c.redirect('/admin/categories');
+  
+  const fields: FormField[] = [
+    { name: 'name', label: 'Name', required: true, value: category.name },
+    { name: 'sort_order', label: 'Sort Order', type: 'number', value: category.sort_order }
+  ];
+  
+  return c.html(FormView({
+    title: 'Edit Category',
+    fields,
+    submitUrl: `/admin/categories/${id}`,
+    cancelUrl: '/admin/categories',
+    isEdit: true,
+    deleteUrl: `/admin/categories/${id}/delete`
+  }));
+});
+
+app.post('/categories/:id', async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param('id');
+  const body = await c.req.parseBody();
+  
+  await db.prepare("UPDATE service_categories SET name = ?, sort_order = ?, updated_at = datetime('now') WHERE id = ?").bind(
+    body.name,
+    parseInt(body.sort_order as string, 10) || 0,
+    id
+  ).run();
+  
+  return c.redirect('/admin/categories');
+});
+
+app.post('/categories/:id/delete', async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param('id');
+  await db.prepare('DELETE FROM service_categories WHERE id = ?').bind(id).run();
+  
+  const isHtmx = Boolean(c.req.header('HX-Request'));
+  if (isHtmx) return c.body('', 200);
+  return c.redirect('/admin/categories');
+});
+
+app.get('/skills', async (c) => {
+  const db = c.env.DB;
+  const skills = await db.prepare('SELECT id, name, description FROM skills ORDER BY name').all();
+  
+  const rows = (skills.results || []).map(skill => ({
+    name: skill.name,
+    description: skill.description || '-',
+  }));
+  
+  return c.html(TableView({
+    title: 'Technician Skills',
+    columns: ['Name', 'Description'],
+    rows,
+    rawIds: (skills.results || []).map(skill => skill.id as string),
+    createUrl: '/admin/skills/new',
+    detailUrlPrefix: '/admin/skills',
+    deleteUrlPrefix: '/admin/skills'
+  }));
+});
+
+app.get('/skills/new', (c) => {
+  const fields: FormField[] = [
+    { name: 'name', label: 'Name', required: true },
+    { name: 'description', label: 'Description', type: 'textarea' }
+  ];
+  
+  return c.html(FormView({
+    title: 'Create Skill',
+    fields,
+    submitUrl: '/admin/skills',
+    cancelUrl: '/admin/skills'
+  }));
+});
+
+app.post('/skills', async (c) => {
+  const db = c.env.DB;
+  const body = await c.req.parseBody();
+  const id = generateId();
+  
+  await db.prepare('INSERT INTO skills (id, name, description) VALUES (?, ?, ?)').bind(
+    id,
+    body.name,
+    body.description || null
+  ).run();
+  
+  return c.redirect('/admin/skills');
+});
+
+app.get('/skills/:id', async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param('id');
+  const skill = await db.prepare('SELECT * FROM skills WHERE id = ?').bind(id).first<{ id: string; name: string; description: string | null }>();
+  if (!skill) return c.redirect('/admin/skills');
+  
+  const fields: FormField[] = [
+    { name: 'name', label: 'Name', required: true, value: skill.name },
+    { name: 'description', label: 'Description', type: 'textarea', value: skill.description || '' }
+  ];
+  
+  return c.html(FormView({
+    title: 'Edit Skill',
+    fields,
+    submitUrl: `/admin/skills/${id}`,
+    cancelUrl: '/admin/skills',
+    isEdit: true,
+    deleteUrl: `/admin/skills/${id}/delete`
+  }));
+});
+
+app.post('/skills/:id', async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param('id');
+  const body = await c.req.parseBody();
+  
+  await db.prepare("UPDATE skills SET name = ?, description = ?, updated_at = datetime('now') WHERE id = ?").bind(
+    body.name,
+    body.description || null,
+    id
+  ).run();
+  
+  return c.redirect('/admin/skills');
+});
+
+app.post('/skills/:id/delete', async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param('id');
+  await db.prepare('DELETE FROM skills WHERE id = ?').bind(id).run();
+  
+  const isHtmx = Boolean(c.req.header('HX-Request'));
+  if (isHtmx) return c.body('', 200);
+  return c.redirect('/admin/skills');
+});
+
 app.get('/services', async (c) => {
   const db = c.env.DB;
   const services = await db.prepare(`

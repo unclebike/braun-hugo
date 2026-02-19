@@ -201,7 +201,10 @@ export const ProviderDetailPage = ({ member, weeklyHours, dateOverrides, skills,
 
           <div class="uk-card uk-card-body">
             <section>
-              <h3 class="text-base font-semibold mb-4">Skills</h3>
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-semibold">Skills</h3>
+                <a href="/admin/skills" class="text-[11px] uppercase tracking-wider font-semibold uk-link" hx-get="/admin/skills" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Manage Skills</a>
+              </div>
               <div class="flex flex-wrap items-center gap-2 mb-4">
                 {skills.map((skill) => (
                   <form key={skill.id} hx-post={`/admin/team/${member.id}/skills`} hx-target="#page-content" hx-select="#page-content" class="flex items-center gap-1">
