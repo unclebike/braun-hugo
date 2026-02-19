@@ -62,7 +62,7 @@ const sourceBadge = (source: string) => {
     registration: 'uk-label',
     sms: 'uk-label uk-label-secondary',
   };
-  return <span class={cls[source] || 'uk-label'}>{source}</span>;
+  return <span class={cls[source] || 'uk-label'}><span class="badge-label">{source}</span></span>;
 };
 
 const statusBadge = (status: string) => {
@@ -75,7 +75,7 @@ const statusBadge = (status: string) => {
   if (status === 'read') {
     return <StatusIcon status="read" />;
   }
-  return <span class={cls[status] || 'uk-label'}>{status}</span>;
+  return <span class={cls[status] || 'uk-label'}><span class="badge-label">{status}</span></span>;
 };
 
 const smsStatusBadge = (status: string) => {
@@ -105,7 +105,7 @@ const smsStatusBadge = (status: string) => {
     received: { cls: 'uk-label uk-label-secondary', label: 'received' },
   };
   const info = map[status] || { cls: 'uk-label', label: status };
-  return <span class={info.cls} style="font-size:0.75rem;padding:1px 6px;">{info.label}</span>;
+  return <span class={info.cls}><span class="badge-label">{info.label}</span></span>;
 };
 
 const formatDate = (d: string | null) => {
@@ -235,7 +235,7 @@ export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164
         >
           Full screen
         </button>
-        <span class="uk-label uk-label-secondary">Live</span>
+        <span class="uk-label uk-label-secondary"><span class="badge-label">Live</span></span>
       </div>
     </div>
 

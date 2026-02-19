@@ -115,7 +115,7 @@ export const NotesList = ({
                <span class="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-tight">
                  {new Date(note.timestamp).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                </span>
-               {note.source?.type === 'sms' && <span class="uk-label uk-label-secondary text-[9px] px-1.5 py-0.5">SMS</span>}
+               {note.source?.type === 'sms' && <span class="uk-label uk-label-secondary"><span class="badge-label">SMS</span></span>}
             </div>
             <TaskSourceContext source={note.source} />
           </div>
@@ -167,7 +167,7 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage, customerName }: {
           </div>
         </div>
         {hasUnread && (
-          <span class="uk-label uk-label-destructive px-3 py-1 font-bold">New Message</span>
+          <span class="uk-label uk-label-destructive"><span class="badge-label">New Message</span></span>
         )}
       </div>
 
@@ -317,7 +317,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                     <div class="w-2 h-8 bg-brand rounded-full" />
                     <h3 class="text-xl font-black tracking-tight">Active Tasks & Notes</h3>
                   </div>
-                  <span class="uk-badge bg-muted text-muted-foreground font-bold px-3 py-1.5 rounded-lg border border-border/50 shadow-sm">{notes.length}</span>
+                  <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--badge-neutral-bg);border:1px solid var(--badge-neutral-border);color:var(--text);font-size:11px;font-weight:400;">{notes.length}</span>
                 </div>
                 
                 <div class="mb-6">

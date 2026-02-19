@@ -259,7 +259,7 @@ export const Dashboard = ({ stats, upcomingJobs, recentBookings, recentMessages 
                         >
                           {(msg.first_name && msg.last_name) ? `${msg.first_name} ${msg.last_name}` : msg.email || 'Unknown'}
                         </a>
-                        <span class={`shrink-0 ${msg.is_read === 0 ? 'uk-label' : 'uk-label uk-label-primary'}`}>{msg.is_read === 0 ? 'Unread' : 'Read'}</span>
+                        <span class={`shrink-0 ${msg.is_read === 0 ? 'uk-label' : 'uk-label uk-label-primary'}`}><span class="badge-label">{msg.is_read === 0 ? 'Unread' : 'Read'}</span></span>
                       </div>
                       <p class="text-sm mt-1 truncate min-w-0">{msg.subject}</p>
                       <p class="text-xs text-muted-foreground mt-1.5">{shortDate(msg.created_at)}</p>
@@ -294,7 +294,7 @@ export const Dashboard = ({ stats, upcomingJobs, recentBookings, recentMessages 
                         <td class="truncate max-w-xs">{msg.subject}</td>
                         <td>{shortDate(msg.created_at)}</td>
                         <td>
-                          <span class={msg.is_read === 0 ? 'uk-label' : 'uk-label uk-label-primary'}>{msg.is_read === 0 ? 'Unread' : 'Read'}</span>
+                          <span class={msg.is_read === 0 ? 'uk-label' : 'uk-label uk-label-primary'}><span class="badge-label">{msg.is_read === 0 ? 'Unread' : 'Read'}</span></span>
                         </td>
                       </tr>
                     ))}
