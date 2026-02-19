@@ -4,6 +4,8 @@ import { html } from 'hono/html';
 // biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { Fragment, jsx } from 'hono/jsx';
 
+const ADMIN_JS_VERSION = '9f11cab';
+
 export const Layout = ({ title, children }: { title: string; children: unknown }) => {
   return (
     <html lang="en">
@@ -400,7 +402,7 @@ p { color: var(--text) !important; }
 [data-theme="dark"] .uk-close { color: var(--text) !important; }
 </style>`}
         <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-        <script src="/admin.js" defer></script>
+        <script src={`/admin.js?v=${ADMIN_JS_VERSION}`} defer></script>
         <link rel="stylesheet" href="https://unpkg.com/franken-ui@2.1.2/dist/css/core.min.css" />
         <script src="https://unpkg.com/franken-ui@2.1.2/dist/js/core.iife.js"></script>
         <script src="https://cdn.tailwindcss.com/3.4.17"></script>

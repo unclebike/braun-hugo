@@ -32,7 +32,12 @@ app.use('/v1/*', cors());
 app.use('/widget/*', cors());
 app.get('/fonts/*', (c) => c.env.ASSETS.fetch(c.req.raw));
 app.get('/images/*', (c) => c.env.ASSETS.fetch(c.req.raw));
-app.get('/admin.js', (c) => c.env.ASSETS.fetch(c.req.raw));
+app.get('/admin.js', async (c) => {
+  const res = await c.env.ASSETS.fetch(c.req.raw);
+  const newRes = new Response(res.body, res);
+  newRes.headers.set('Cache-Control', 'no-cache, must-revalidate');
+  return newRes;
+});
 app.get('/admin.webmanifest', (c) => c.env.ASSETS.fetch(c.req.raw));
 app.get('/admin-sw.js', (c) => c.env.ASSETS.fetch(c.req.raw));
 app.get('/admin-offline.html', (c) => c.env.ASSETS.fetch(c.req.raw));
