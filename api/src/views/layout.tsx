@@ -79,22 +79,128 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
 <style data-fodt>
 @font-face {
   font-family: 'TideSans';
-  src: url('/fonts/TideSans-200LilMondo.otf') format('opentype');
-  font-weight: 200;
+  src: url('/fonts/TideSans-100LilBunny.otf') format('opentype');
+  font-weight: 100;
+  font-style: normal;
   font-display: block;
 }
-
+@font-face {
+  font-family: 'TideSans';
+  src: url('/fonts/TideSans-100LilBunnyItalic.otf') format('opentype');
+  font-weight: 100;
+  font-style: italic;
+  font-display: block;
+}
+@font-face {
+  font-family: 'TideSans';
+  src: url('/fonts/TideSans-200LilMondo.otf') format('opentype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'TideSans';
+  src: url('/fonts/TideSans-200LilMondoItalic.otf') format('opentype');
+  font-weight: 200;
+  font-style: italic;
+  font-display: block;
+}
+@font-face {
+  font-family: 'TideSans';
+  src: url('/fonts/TideSans-300LilKahuna.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'TideSans';
+  src: url('/fonts/TideSans-300LilKahunaItalic.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: block;
+}
+@font-face {
+  font-family: 'TideSans';
+  src: url('/fonts/TideSans-400LilDude.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'TideSans';
+  src: url('/fonts/TideSans-400LilDudeItalic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: block;
+}
 @font-face {
   font-family: 'TideSans';
   src: url('/fonts/TideSans-500Dudette.otf') format('opentype');
   font-weight: 500;
+  font-style: normal;
   font-display: block;
 }
-
+@font-face {
+  font-family: 'TideSans';
+  src: url('/fonts/TideSans-500DudetteItalic.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: block;
+}
+@font-face {
+  font-family: 'TideSans';
+  src: url('/fonts/TideSans-600Bunny.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'TideSans';
+  src: url('/fonts/TideSans-600BunnyItalic.otf') format('opentype');
+  font-weight: 600;
+  font-style: italic;
+  font-display: block;
+}
+@font-face {
+  font-family: 'TideSans';
+  src: url('/fonts/TideSans-700Mondo.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'TideSans';
+  src: url('/fonts/TideSans-700MondoItalic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: block;
+}
 @font-face {
   font-family: 'TideSans';
   src: url('/fonts/TideSans-800Kahuna.otf') format('opentype');
   font-weight: 800;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'TideSans';
+  src: url('/fonts/TideSans-800KahunaItalic.otf') format('opentype');
+  font-weight: 800;
+  font-style: italic;
+  font-display: block;
+}
+@font-face {
+  font-family: 'TideSans';
+  src: url('/fonts/TideSans-900Dude.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'TideSans';
+  src: url('/fonts/TideSans-900DudeItalic.otf') format('opentype');
+  font-weight: 900;
+  font-style: italic;
   font-display: block;
 }
 
