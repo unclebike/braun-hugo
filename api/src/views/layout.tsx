@@ -277,7 +277,7 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
   --safe-left: env(safe-area-inset-left, 0px);
 }
 
-[data-theme="dark"] {
+[data-theme='dark'] {
   --bg: #1e1e2e;
   --bg-card: #313244;
   --bg-sidebar: #11111b;
@@ -378,26 +378,26 @@ p { color: var(--text) !important; }
 .uk-nav-header { color: var(--text-secondary) !important; }
 .uk-close { color: var(--text) !important; }
 
-[data-theme="dark"] .uk-card { background: var(--bg-card) !important; border-color: var(--border) !important; color: var(--text) !important; }
-[data-theme="dark"] .bg-white { background: var(--bg-card) !important; }
-[data-theme="dark"] .border-b, [data-theme="dark"] .border-border { border-color: var(--border) !important; }
-[data-theme="dark"] .text-muted-foreground { color: var(--text-secondary) !important; }
-[data-theme="dark"] .uk-input, [data-theme="dark"] .uk-select, [data-theme="dark"] .uk-textarea { background: var(--input-bg) !important; color: var(--text) !important; border-color: var(--border) !important; }
-[data-theme="dark"] .uk-table th { color: var(--text-secondary) !important; border-color: var(--border) !important; }
-[data-theme="dark"] .uk-table td { color: var(--text) !important; }
-[data-theme="dark"] .uk-table-divider > :not(:first-child) > tr, [data-theme="dark"] .uk-table-divider > tr:not(:first-child) { border-color: var(--border) !important; }
-[data-theme="dark"] .uk-btn-default { background: var(--input-bg) !important; color: var(--text) !important; border-color: var(--border) !important; }
-[data-theme="dark"] .uk-btn-primary { background: var(--brand) !important; border-color: var(--brand) !important; color: #1e1e2e !important; }
-[data-theme="dark"] .uk-checkbox, [data-theme="dark"] .uk-toggle-switch { background: var(--input-bg) !important; border-color: var(--border) !important; }
-[data-theme="dark"] .uk-checkbox:checked { background-color: var(--brand) !important; border-color: var(--brand) !important; }
-[data-theme="dark"] .uk-toggle-switch:checked { background-color: var(--brand) !important; border-color: var(--brand) !important; }
-[data-theme="dark"] .uk-offcanvas-bar { background: var(--bg-sidebar) !important; }
-[data-theme="dark"] .uk-form-label { color: var(--text-secondary) !important; }
-[data-theme="dark"] h2, [data-theme="dark"] h3 { color: var(--text) !important; }
-[data-theme="dark"] p { color: var(--text) !important; }
-[data-theme="dark"] a.uk-link { color: var(--brand) !important; }
-[data-theme="dark"] .uk-nav-header { color: var(--text-secondary) !important; }
-[data-theme="dark"] .uk-close { color: var(--text) !important; }
+[data-theme='dark'] .uk-card { background: var(--bg-card) !important; border-color: var(--border) !important; color: var(--text) !important; }
+[data-theme='dark'] .bg-white { background: var(--bg-card) !important; }
+[data-theme='dark'] .border-b, [data-theme='dark'] .border-border { border-color: var(--border) !important; }
+[data-theme='dark'] .text-muted-foreground { color: var(--text-secondary) !important; }
+[data-theme='dark'] .uk-input, [data-theme='dark'] .uk-select, [data-theme='dark'] .uk-textarea { background: var(--input-bg) !important; color: var(--text) !important; border-color: var(--border) !important; }
+[data-theme='dark'] .uk-table th { color: var(--text-secondary) !important; border-color: var(--border) !important; }
+[data-theme='dark'] .uk-table td { color: var(--text) !important; }
+[data-theme='dark'] .uk-table-divider > :not(:first-child) > tr, [data-theme='dark'] .uk-table-divider > tr:not(:first-child) { border-color: var(--border) !important; }
+[data-theme='dark'] .uk-btn-default { background: var(--input-bg) !important; color: var(--text) !important; border-color: var(--border) !important; }
+[data-theme='dark'] .uk-btn-primary { background: var(--brand) !important; border-color: var(--brand) !important; color: #1e1e2e !important; }
+[data-theme='dark'] .uk-checkbox, [data-theme='dark'] .uk-toggle-switch { background: var(--input-bg) !important; border-color: var(--border) !important; }
+[data-theme='dark'] .uk-checkbox:checked { background-color: var(--brand) !important; border-color: var(--brand) !important; }
+[data-theme='dark'] .uk-toggle-switch:checked { background-color: var(--brand) !important; border-color: var(--brand) !important; }
+[data-theme='dark'] .uk-offcanvas-bar { background: var(--bg-sidebar) !important; }
+[data-theme='dark'] .uk-form-label { color: var(--text-secondary) !important; }
+[data-theme='dark'] h2, [data-theme='dark'] h3 { color: var(--text) !important; }
+[data-theme='dark'] p { color: var(--text) !important; }
+[data-theme='dark'] a.uk-link { color: var(--brand) !important; }
+[data-theme='dark'] .uk-nav-header { color: var(--text-secondary) !important; }
+[data-theme='dark'] .uk-close { color: var(--text) !important; }
 </style>`}
         <script src="https://unpkg.com/htmx.org@1.9.10"></script>
         <script src="/admin.js" defer></script>
@@ -1262,22 +1262,22 @@ document.addEventListener('click', function(e) {
             opacity: 1;
             transition: background 0.25s ease, transform 0.45s ease;
           }
-          [data-theme="dark"] .admin-theme-toggle .moon-or-sun,
-          [data-theme="dark"] .sidebar-theme-btn .moon-or-sun {
+          [data-theme='dark'] .admin-theme-toggle .moon-or-sun,
+          [data-theme='dark'] .sidebar-theme-btn .moon-or-sun {
             transform: scale(0.55);
             overflow: visible;
           }
-          [data-theme="dark"] .admin-theme-toggle .moon-or-sun::before,
-          [data-theme="dark"] .sidebar-theme-btn .moon-or-sun::before {
+          [data-theme='dark'] .admin-theme-toggle .moon-or-sun::before,
+          [data-theme='dark'] .sidebar-theme-btn .moon-or-sun::before {
             transform: translate(14px, -14px);
             opacity: 0;
           }
-          [data-theme="dark"] .admin-theme-toggle .moon-or-sun::after,
-          [data-theme="dark"] .sidebar-theme-btn .moon-or-sun::after {
+          [data-theme='dark'] .admin-theme-toggle .moon-or-sun::after,
+          [data-theme='dark'] .sidebar-theme-btn .moon-or-sun::after {
             transform: scale(1);
           }
-          [data-theme="dark"] .admin-theme-toggle .moon-mask,
-          [data-theme="dark"] .sidebar-theme-btn .moon-mask {
+          [data-theme='dark'] .admin-theme-toggle .moon-mask,
+          [data-theme='dark'] .sidebar-theme-btn .moon-mask {
             transform: translate(14px, -14px);
             opacity: 0;
           }
