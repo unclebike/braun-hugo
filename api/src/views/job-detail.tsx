@@ -234,27 +234,27 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
   return (
     <Layout title={`${customerName} - ${serviceName}`}>
       <div class="page-header page-header--rich bg-card border-b border-border sticky top-0 z-[100] shadow-sm">
-        <div class="page-header-info">
-          <div class="flex items-center gap-4">
-            <div class="avatar bg-brand/10 text-brand font-black w-12 h-12 text-lg rounded-2xl flex items-center justify-center">
+        <div class="page-header-info min-w-0">
+          <div class="flex items-center gap-3 sm:gap-4">
+            <div class="avatar bg-brand/10 text-brand font-black w-10 h-10 sm:w-12 sm:h-12 text-sm sm:text-lg rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0">
               {customer?.first_name?.[0]}{customer?.last_name?.[0]}
             </div>
-            <div>
-              <h2 class="text-2xl font-black tracking-tight leading-none">{customerName}</h2>
-              <div class="flex items-center gap-2 mt-2">
-                <span class="text-sm font-bold text-muted-foreground">{serviceName}</span>
-                <span class="w-1 h-1 rounded-full bg-border" />
-                <span class="text-sm font-bold text-muted-foreground">{territory?.name || 'No Territory'}</span>
+            <div class="min-w-0">
+              <h2 class="text-lg sm:text-2xl font-black tracking-tight leading-tight truncate">{customerName}</h2>
+              <div class="flex items-center gap-1.5 sm:gap-2 mt-1 sm:mt-2 overflow-hidden">
+                <span class="text-[11px] sm:text-sm font-bold text-muted-foreground truncate">{serviceName}</span>
+                <span class="w-1 h-1 rounded-full bg-border shrink-0" />
+                <span class="text-[11px] sm:text-sm font-bold text-muted-foreground truncate">{territory?.name || 'No Territory'}</span>
               </div>
             </div>
           </div>
         </div>
-        <div class="page-header-actions gap-3">
-          <div class="hidden sm:flex flex-col items-end text-right mr-4">
-            <span class="text-[10px] uppercase font-black text-muted-foreground tracking-widest leading-none mb-1">Current Status</span>
+        <div class="page-header-actions gap-2 sm:gap-3 flex-nowrap">
+          <div class="hidden md:flex flex-col items-end text-right mr-2">
+            <span class="text-[9px] uppercase font-black text-muted-foreground tracking-widest leading-none mb-1">Status</span>
             <select
               name="status"
-              class="status-select font-bold py-1 px-4 text-xs h-8"
+              class="status-select font-bold py-1 px-3 text-[10px] h-7"
               data-current={job.status}
               hx-post={`/admin/jobs/${job.id}/status`}
               hx-target="#page-content"
@@ -270,7 +270,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
           </div>
           <button
             type="button"
-            class="uk-btn uk-btn-primary uk-btn-sm font-bold h-10 px-6 rounded-xl shadow-lg shadow-brand/20 transition-all hover:scale-[1.02]"
+            class="uk-btn uk-btn-primary uk-btn-sm font-black h-9 sm:h-10 px-3 sm:px-6 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg shadow-brand/20 transition-all hover:scale-[1.02] text-xs sm:text-sm"
             data-sms-thread-modal-open={canOpenSms ? 'true' : undefined}
             data-sms-thread-modal-title={canOpenSms ? smsTitle : undefined}
             hx-get={canOpenSms ? `/admin/inbox/${smsThreadMessage?.id}/sms-thread-panel` : undefined}
@@ -281,8 +281,8 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
           >
             Message
           </button>
-          <a href="/admin/jobs" class="uk-btn uk-btn-default uk-btn-sm h-10 w-10 p-0 rounded-xl flex items-center justify-center border-2 border-border hover:bg-muted" hx-get="/admin/jobs" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Back to Jobs</title><path d="M19 12H5m7 7-7-7 7-7"/></svg>
+          <a href="/admin/jobs" class="uk-btn uk-btn-default uk-btn-sm h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-lg sm:rounded-xl flex items-center justify-center border-2 border-border hover:bg-muted shrink-0" hx-get="/admin/jobs" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="sm:w-5 sm:h-5"><title>Back to Jobs</title><path d="M19 12H5m7 7-7-7 7-7"/></svg>
           </a>
         </div>
       </div>
@@ -356,7 +356,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                 <div class="uk-card uk-card-body border border-border rounded-2xl shadow-sm bg-card/50">
                   <div class="grid gap-8">
                     <form
-                      class="autosave grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3"
+                      class="autosave grid gap-x-4 gap-y-3 grid-cols-2 lg:grid-cols-3"
                       hx-post={`/admin/jobs/${job.id}`}
                       hx-target="#page-content"
                       hx-select="#page-content"
@@ -366,49 +366,49 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                     >
                       <input type="hidden" name="_section" value="details" />
                       
-                      <div class="space-y-1.5">
-                        <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="scheduled-date">Service Date</label>
-                        <input id="scheduled-date" name="scheduled_date" type="date" class="uk-input rounded-xl border-2 font-bold h-11" value={job.scheduled_date} />
+                      <div class="space-y-1">
+                        <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="scheduled-date">Service Date</label>
+                        <input id="scheduled-date" name="scheduled_date" type="date" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 px-2 text-xs sm:text-sm" value={job.scheduled_date} />
                       </div>
-                      <div class="space-y-1.5">
-                        <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="scheduled-time">Arrival Time</label>
-                        <input id="scheduled-time" name="scheduled_start_time" type="time" class="uk-input rounded-xl border-2 font-bold h-11" value={job.scheduled_start_time} />
+                      <div class="space-y-1">
+                        <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="scheduled-time">Arrival Time</label>
+                        <input id="scheduled-time" name="scheduled_start_time" type="time" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 px-2 text-xs sm:text-sm" value={job.scheduled_start_time} />
                       </div>
-                      <div class="space-y-1.5">
-                        <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="duration">Est. duration</label>
+                      <div class="space-y-1">
+                        <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="duration">Est. duration</label>
                         <div class="relative">
-                          <input id="duration" name="duration_minutes" type="number" min={1} class="uk-input rounded-xl border-2 font-bold h-11 pr-12" value={job.duration_minutes} />
-                          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-muted-foreground uppercase">Min</span>
+                          <input id="duration" name="duration_minutes" type="number" min={1} class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 pr-8 sm:pr-12 pl-2 text-xs sm:text-sm" value={job.duration_minutes} />
+                          <span class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase">Min</span>
                         </div>
                       </div>
-                      <div class="space-y-1.5 sm:col-span-2 lg:col-span-1">
-                        <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="provider-id">Primary Provider</label>
-                        <select id="provider-id" name="provider_id" class="uk-select rounded-xl border-2 font-bold h-11">
+                      <div class="space-y-1 col-span-2 lg:col-span-1">
+                        <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="provider-id">Primary Provider</label>
+                        <select id="provider-id" name="provider_id" class="uk-select rounded-xl border-2 font-bold h-10 sm:h-11 px-2 text-xs sm:text-sm">
                           <option value="">Unassigned</option>
                           {team.map((p) => <option key={p.id} value={p.id} selected={assignedProviderId === p.id}>{p.first_name} {p.last_name}</option>)}
                         </select>
                       </div>
-                      <div class="space-y-1.5">
-                        <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="base-price">Base Price</label>
+                      <div class="space-y-1">
+                        <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="base-price">Base Price</label>
                         <div class="relative">
-                          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">$</span>
-                          <input id="base-price" name="base_price" type="number" step="0.01" class="uk-input rounded-xl border-2 font-bold h-11 pl-8" value={(job.base_price_cents / 100).toFixed(2)} />
+                          <span class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
+                          <input id="base-price" name="base_price" type="number" step="0.01" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 pl-6 sm:pl-8 pr-2 text-xs sm:text-sm" value={(job.base_price_cents / 100).toFixed(2)} />
                         </div>
                       </div>
-                      <div class="space-y-1.5">
-                        <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="total-price">Total Price</label>
+                      <div class="space-y-1">
+                        <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="total-price">Total Price</label>
                         <div class="relative">
-                          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">$</span>
-                          <input id="total-price" name="total_price" type="number" step="0.01" class="uk-input rounded-xl border-2 font-bold h-11 pl-8" value={(job.total_price_cents / 100).toFixed(2)} />
+                          <span class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
+                          <input id="total-price" name="total_price" type="number" step="0.01" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 pl-6 sm:pl-8 pr-2 text-xs sm:text-sm" value={(job.total_price_cents / 100).toFixed(2)} />
                         </div>
                       </div>
                       
-                      <div class="sm:col-span-2 lg:col-span-3 flex items-center justify-between mt-2">
-                        <p class="text-[10px] text-muted-foreground/60 font-medium italic flex items-center gap-2">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Auto-save</title><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 6v6l4 2"/></svg>
-                          Changes to logistics auto-save
+                      <div class="col-span-2 lg:col-span-3 flex items-center justify-between mt-1 sm:mt-2">
+                        <p class="text-[9px] sm:text-[10px] text-muted-foreground/60 font-medium italic flex items-center gap-1.5 sm:gap-2">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="sm:w-3 sm:h-3"><title>Auto-save</title><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 6v6l4 2"/></svg>
+                          Changes auto-save
                         </p>
-                        <span class="save-indicator font-black text-[10px] uppercase tracking-widest text-brand"></span>
+                        <span class="save-indicator font-black text-[9px] sm:text-[10px] uppercase tracking-widest text-brand"></span>
                       </div>
                     </form>
 
