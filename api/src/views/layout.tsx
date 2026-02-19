@@ -1193,18 +1193,18 @@ document.addEventListener('click', function(e) {
             text-align: left;
           }
           .admin-theme-toggle:hover { color: var(--text-sidebar-hover); background: var(--sidebar-hover-bg); }
-          .admin-theme-toggle .theme-toggle-icon,
-          .sidebar-theme-btn .theme-toggle-icon {
-            position: relative;
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
-          }
-          .admin-theme-toggle .moon-or-sun,
-          .sidebar-theme-btn .moon-or-sun {
-            position: relative;
-            width: 20px;
-            height: 20px;
+           .admin-theme-toggle .theme-toggle-icon,
+           .sidebar-theme-btn .theme-toggle-icon {
+             position: relative;
+             width: 24px;
+             height: 24px;
+             flex-shrink: 0;
+           }
+           .admin-theme-toggle .moon-or-sun,
+           .sidebar-theme-btn .moon-or-sun {
+             position: relative;
+             width: 24px;
+             height: 24px;
             border-radius: 50%;
             border: 1px solid currentColor;
             background: currentColor;
