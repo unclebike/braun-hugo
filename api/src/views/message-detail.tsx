@@ -314,7 +314,7 @@ export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164
   );
 };
 
-export const MessageDetailPage = ({ message, smsHistory, twilioEnabled, phoneE164, jobOptions, selectedJobId, completedTaskSmsIds, sendResult, taskResult }: Props) => {
+export const MessageDetailContent = ({ message, smsHistory, twilioEnabled, phoneE164, jobOptions, selectedJobId, completedTaskSmsIds, sendResult, taskResult }: Props) => {
   let meta: MessageMeta | null = null;
   if (message.metadata) {
     try {
@@ -332,12 +332,24 @@ export const MessageDetailPage = ({ message, smsHistory, twilioEnabled, phoneE16
   );
 
   return (
-    <Layout title={`Message — ${senderName}`}>
+    <>
       <div class="page-header">
         <div class="page-header-info">
           <h2 style="white-space:normal;word-break:break-word;">{senderName}</h2>
         </div>
         <div class="page-header-actions">
+          <button
+            type="button"
+            class="uk-btn uk-btn-default uk-btn-sm inbox-back-btn"
+            onclick="document.getElementById('inbox-detail').classList.remove('inbox-detail--populated')"
+            aria-label="Back to inbox"
+            title="Back to inbox"
+            style="padding:0 10px;"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M15 18L9 12L15 6"></path>
+            </svg>
+          </button>
           {message.status !== 'archived' && (
             <button
               type="button"
@@ -345,6 +357,7 @@ export const MessageDetailPage = ({ message, smsHistory, twilioEnabled, phoneE16
               hx-post={`/admin/inbox/${message.id}/archive`}
               hx-target="#page-content"
               hx-select="#page-content"
+              hx-swap="outerHTML"
               aria-label="Archive message"
               title="Archive message"
               style="padding:0 10px;"
@@ -356,22 +369,6 @@ export const MessageDetailPage = ({ message, smsHistory, twilioEnabled, phoneE16
               </svg>
             </button>
           )}
-          <a
-            href="/admin/inbox"
-            class="uk-btn uk-btn-default uk-btn-sm"
-            hx-get="/admin/inbox"
-            hx-target="#page-content"
-            hx-select="#page-content"
-            hx-push-url="true"
-            aria-label="Back to inbox"
-            title="Back to inbox"
-            style="padding:0 10px;position:relative;"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M15 18L9 12L15 6"></path>
-            </svg>
-            <span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Back to inbox</span>
-          </a>
         </div>
       </div>
 
@@ -499,6 +496,15 @@ export const MessageDetailPage = ({ message, smsHistory, twilioEnabled, phoneE16
 
         </div>
       </div>
+    </>
+  );
+};
+
+export const MessageDetailPage = (props: Props) => {
+  const senderName = [props.message.first_name, props.message.last_name].filter(Boolean).join(' ') || props.message.email || 'Unknown';
+  return (
+    <Layout title={`Message — ${senderName}`}>
+      <MessageDetailContent {...props} />
     </Layout>
   );
 };

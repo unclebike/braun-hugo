@@ -21,21 +21,49 @@ const SOURCE_CLS: Record<string, string> = {
 };
 
 const INBOX_CSS = `
-.inbox-list { overflow: hidden; }
+.inbox-shell {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  height: 100dvh;
+  overflow: hidden;
+}
+.inbox-pane-list {
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-card);
+}
+.inbox-pane-header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--bg-card);
+}
+.inbox-pane-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+.inbox-list-scroll { overflow-y: auto; flex: 1; }
+
 .inbox-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 9px 16px;
+  gap: 8px;
+  padding: 9px 12px;
   text-decoration: none;
   color: var(--text);
   transition: background .12s;
   border-bottom: 1px solid var(--border);
+  cursor: pointer;
 }
 .inbox-row:last-child { border-bottom: none; }
 .inbox-row:hover { background: var(--sidebar-hover-bg); }
 .inbox-row--unread { background: var(--badge-primary-bg); }
 .inbox-row--unread:hover { background: var(--sidebar-hover-bg); }
+.inbox-row--active { background: var(--sidebar-active-bg) !important; }
 
 .inbox-dot {
   width: 6px; height: 6px;
@@ -45,116 +73,145 @@ const INBOX_CSS = `
 }
 .inbox-row--unread .inbox-dot { background: var(--badge-primary); }
 
-.inbox-sender {
-  width: 160px;
-  flex-shrink: 0;
-  min-width: 0;
-}
-.inbox-sender-name {
-  display: block;
-  font-size: 0.875rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--text-secondary);
-  font-weight: 400;
-}
-.inbox-row--unread .inbox-sender-name { color: var(--text); font-weight: 600; }
-
-.inbox-subject-line {
+.inbox-thread {
   flex: 1;
   min-width: 0;
   overflow: hidden;
+}
+.inbox-thread-sender {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.875rem;
+  line-height: 1.35;
+}
+.inbox-row--unread .inbox-thread-sender { color: var(--text); font-weight: 600; }
+
+.inbox-thread-subject {
+  display: block;
+  font-size: 0.72rem;
   color: var(--text-secondary);
-}
-.inbox-row--unread .inbox-subject-line { color: var(--text); font-weight: 500; }
-
-.inbox-subject-sub { display: none; }
-
-.inbox-source {
-  font-size: 0.7rem !important;
-  padding: 1px 6px !important;
-  border-radius: 4px !important;
-  flex-shrink: 0;
-  opacity: 0.75;
-  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.7;
+  line-height: 1.3;
+  margin-top: 1px;
 }
 
-.inbox-date {
-  font-size: 0.75rem;
+.inbox-thread-date {
+  font-size: 0.7rem;
   color: var(--text-secondary);
   flex-shrink: 0;
   white-space: nowrap;
-  min-width: 108px;
-  text-align: right;
+  opacity: 0.75;
+  align-self: flex-start;
+  padding-top: 1px;
 }
 
-@media (max-width: 767px) {
-  .inbox-row { align-items: flex-start; padding: 10px 12px; gap: 8px; }
-  .inbox-sender { width: auto; flex: 1; min-width: 0; }
-  .inbox-subject-line { display: none; }
-  .inbox-subject-sub {
-    display: block;
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-top: 2px;
+.inbox-pane-detail {
+  overflow-y: auto;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+.inbox-empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  opacity: 0.5;
+}
+
+.inbox-back-btn { display: none !important; }
+
+@media (max-width: 768px) {
+  .inbox-shell { display: block; height: auto; overflow: visible; }
+  .inbox-pane-header { padding: calc(12px + var(--safe-top)) 16px 12px calc(52px + var(--safe-left)); }
+  .inbox-pane-list { min-height: 50dvh; }
+  .inbox-pane-detail {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    transform: translateX(100%);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    background: var(--bg);
   }
-  .inbox-source { display: none; }
-  .inbox-date { min-width: auto; font-size: 0.75rem; padding-top: 1px; }
+  .inbox-detail--populated { transform: translateX(0); }
+  .inbox-back-btn { display: inline-flex !important; }
 }
 `;
 
-export const InboxPage = ({ items, title }: { items: InboxItem[]; title: string }) => (
+const InboxEmptyState = () => (
+  <div class="inbox-empty-state">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <polyline points="22,6 12,13 2,6" />
+    </svg>
+    <span>Select a message</span>
+  </div>
+);
+
+export const InboxShell = ({
+  items,
+  title,
+  activeId,
+  detail,
+}: {
+  items: InboxItem[];
+  title: string;
+  activeId?: string;
+  detail?: unknown;
+}) => (
   <Layout title={title}>
     <style>{INBOX_CSS}</style>
+    <div class="inbox-shell">
 
-    <div class="page-header">
-      <h2>{title}</h2>
-    </div>
-
-    <div class="p-4 md:p-8">
-      {items.length === 0 ? (
-        <div class="uk-card uk-card-body">
-          <p class="text-sm text-muted-foreground text-center py-8">No messages.</p>
+      <div class="inbox-pane-list">
+        <div class="inbox-pane-header">
+          <h2 class="inbox-pane-title">{title}</h2>
         </div>
-      ) : (
-        <div class="uk-card inbox-list">
-          {items.map((item) => (
-            <a
-              key={item.id}
-              href={`/admin/inbox/${item.id}`}
-              hx-get={`/admin/inbox/${item.id}`}
-              hx-target="#page-content"
-              hx-select="#page-content"
-              hx-push-url="true"
-              class={`inbox-row${!item.is_read ? ' inbox-row--unread' : ''}`}
-            >
-              <div class="inbox-dot" />
-
-              <StatusIcon status={item.status} />
-
-              <div class="inbox-sender">
-                <span class="inbox-sender-name">{item.sender}</span>
-                <span class="inbox-subject-sub">{item.subject}</span>
-              </div>
-
-              <span class="inbox-subject-line">{item.subject}</span>
-
-              <span class={`inbox-source ${SOURCE_CLS[item.source] || 'uk-label'}`}>
-                {item.source}
-              </span>
-
-              <span class="inbox-date">{item.date}</span>
-            </a>
-          ))}
+        <div class="inbox-list-scroll">
+          {items.length === 0 ? (
+            <p style="padding:24px 16px;font-size:0.875rem;color:var(--text-secondary);">No messages.</p>
+          ) : (
+            items.map((item) => (
+              <a
+                key={item.id}
+                href={`/admin/inbox/${item.id}`}
+                hx-get={`/admin/inbox/${item.id}`}
+                hx-target="#inbox-detail"
+                hx-select="#inbox-detail"
+                hx-swap="outerHTML"
+                hx-push-url="true"
+                {...{'hx-on::after-swap': "document.querySelectorAll('.inbox-row--active').forEach(function(r){r.classList.remove('inbox-row--active')});this.classList.add('inbox-row--active')"}}
+                class={`inbox-row${!item.is_read ? ' inbox-row--unread' : ''}${item.id === activeId ? ' inbox-row--active' : ''}`}
+              >
+                <div class="inbox-dot" />
+                <StatusIcon status={item.status} />
+                <div class="inbox-thread">
+                  <span class="inbox-thread-sender">{item.sender}</span>
+                  <span class="inbox-thread-subject">{item.subject}</span>
+                </div>
+                <span class="inbox-thread-date">{item.date}</span>
+              </a>
+            ))
+          )}
         </div>
-      )}
+      </div>
+
+      <div id="inbox-detail" class={`inbox-pane-detail${detail ? ' inbox-detail--populated' : ''}`}>
+        {detail ?? <InboxEmptyState />}
+      </div>
+
     </div>
   </Layout>
 );
