@@ -5,7 +5,8 @@ import { sendJobSms, sendDirectSms, normalizePhoneE164, getTwilioConfig, isTwili
 import type { TemplateVars } from '../services/twilio';
 import { buildServiceBaseLine, normalizeLine, parseEditableText, parsePriceLines, subtotalFromLines, type PriceLineItem } from '../utils/line-items';
 import { type FormField, FormView, TableView } from '../views/components';
-import { type InboxItem, InboxPage } from '../views/inbox';
+import { type InboxItem, InboxShell } from '../views/inbox';
+import { MessageDetailContent } from '../views/message-detail';
 import { BrandingPage } from '../views/branding';
 import { MessageDetailPage, SmsHistoryList, SmsThreadPanel } from '../views/message-detail';
 import type { SmsLogRow } from '../views/message-detail';
@@ -3686,25 +3687,16 @@ app.post('/webhooks/:id/delete', async (c) => {
   return c.redirect('/admin/webhooks');
 });
 
-app.get('/inbox', async (c) => {
-  const db = c.env.DB;
-  const { source } = c.req.query();
-
+const fetchInboxItems = async (db: D1Database, source?: string): Promise<{ items: InboxItem[]; title: string }> => {
   let sql = 'SELECT id, source, status, first_name, last_name, email, subject, is_read, created_at FROM messages';
   const params: unknown[] = [];
-
-  if (source) {
-    sql += ' WHERE source = ?';
-    params.push(source);
-  }
-
+  if (source) { sql += ' WHERE source = ?'; params.push(source); }
   sql += ' ORDER BY created_at DESC LIMIT 100';
-
   const stmt = db.prepare(sql);
-  const messages = await (params.length > 0 ? stmt.bind(...params) : stmt).all();
-
-  const unreadCount = await db.prepare('SELECT COUNT(*) as count FROM messages WHERE is_read = 0').first<{ count: number }>();
-
+  const [messages, unreadCount] = await Promise.all([
+    (params.length > 0 ? stmt.bind(...params) : stmt).all(),
+    db.prepare('SELECT COUNT(*) as count FROM messages WHERE is_read = 0').first<{ count: number }>(),
+  ]);
   const items: InboxItem[] = (messages.results || []).map((m: Record<string, unknown>) => ({
     id: m.id as string,
     source: (m.source as string) || 'contact',
@@ -3714,10 +3706,15 @@ app.get('/inbox', async (c) => {
     is_read: Boolean(m.is_read),
     date: formatTorontoDate(`${m.created_at as string}Z`, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) || (m.created_at as string),
   }));
-
   const title = `Inbox${(unreadCount?.count || 0) > 0 ? ` (${unreadCount?.count})` : ''}`;
+  return { items, title };
+};
 
-  return c.html(InboxPage({ items, title }));
+app.get('/inbox', async (c) => {
+  const db = c.env.DB;
+  const { source } = c.req.query();
+  const { items, title } = await fetchInboxItems(db, source);
+  return c.html(InboxShell({ items, title }));
 });
 
 async function getInboxSmsContext(db: D1Database, messageId: string) {
@@ -3799,27 +3796,34 @@ app.get('/inbox/:id', async (c) => {
     if (msg.status === 'new') msg.status = 'read';
   }
 
-  const twilioEnabled = await isTwilioEnabled(db);
-  const { phoneE164, smsHistory } = await getInboxSmsContext(db, id);
-  const { jobOptions, selectedJobId } = await getInboxJobContext(db, id);
-  const completedTaskSmsIds = await getCompletedSmsTaskIds(db, selectedJobId);
+  const [{ items, title }, twilioEnabled, smsCtx, jobCtx] = await Promise.all([
+    fetchInboxItems(db),
+    isTwilioEnabled(db),
+    getInboxSmsContext(db, id),
+    getInboxJobContext(db, id),
+  ]);
+  const completedTaskSmsIds = await getCompletedSmsTaskIds(db, jobCtx.selectedJobId);
 
-  return c.html(MessageDetailPage({
-    message: msg as {
-      id: string; source: string; status: string;
-      first_name: string | null; last_name: string | null; email: string | null;
-      phone: string | null; postal_code: string | null; reason: string | null;
-      subject: string | null; body: string | null; metadata: string | null;
-      is_read: number; read_at: string | null; replied_at: string | null;
-      created_at: string; updated_at: string;
-    },
-    smsHistory,
+  const typedMsg = msg as {
+    id: string; source: string; status: string;
+    first_name: string | null; last_name: string | null; email: string | null;
+    phone: string | null; postal_code: string | null; reason: string | null;
+    subject: string | null; body: string | null; metadata: string | null;
+    is_read: number; read_at: string | null; replied_at: string | null;
+    created_at: string; updated_at: string;
+  };
+
+  const detail = MessageDetailContent({
+    message: typedMsg,
+    smsHistory: smsCtx.smsHistory,
     twilioEnabled,
-    phoneE164,
-    jobOptions,
-    selectedJobId,
+    phoneE164: smsCtx.phoneE164,
+    jobOptions: jobCtx.jobOptions,
+    selectedJobId: jobCtx.selectedJobId,
     completedTaskSmsIds,
-  }));
+  });
+
+  return c.html(InboxShell({ items, title, activeId: id, detail }));
 });
 
 app.get('/inbox/:id/sms-thread', async (c) => {
