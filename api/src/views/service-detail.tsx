@@ -97,7 +97,10 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
                     <textarea id="service-description" name="description" class="uk-textarea" rows={3}>{service.description || ''}</textarea>
                   </div>
                   <div class="grid gap-2 sm:col-span-2">
-                    <label class="uk-form-label" for="service-category">Category</label>
+                    <div class="flex items-center justify-between">
+                      <label class="uk-form-label" for="service-category">Category</label>
+                      <a href="/admin/categories" class="text-[11px] uppercase tracking-wider font-semibold uk-link" hx-get="/admin/categories" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Manage Categories</a>
+                    </div>
                     <select id="service-category" name="category_id" class="uk-select">
                       <option value="">Select...</option>
                       {categories.map((cat) => (

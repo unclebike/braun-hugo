@@ -1,21 +1,9 @@
+import { jsx as _jsx, jsxs as _jsxs } from "hono/jsx/jsx-runtime";
 /** @jsx jsx */
 /** @jsxFrag Fragment */
 import { html } from 'hono/html';
-// biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
-import { Fragment, jsx } from 'hono/jsx';
-
-export const Layout = ({ title, children }: { title: string; children: unknown }) => {
-  return (
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-        <title>{title} - GOATkit Admin</title>
-        <link rel="manifest" href="/admin/manifest.webmanifest" />
-        <meta name="theme-color" content="#eff1f5" id="theme-color-meta" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-          {html`<script>
+export const Layout = ({ title, children }) => {
+    return (_jsxs("html", { lang: "en", children: [_jsxs("head", { children: [_jsx("meta", { charset: "UTF-8" }), _jsx("meta", { name: "viewport", content: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" }), _jsxs("title", { children: [title, " - GOATkit Admin"] }), _jsx("link", { rel: "manifest", href: "/admin/manifest.webmanifest" }), _jsx("meta", { name: "theme-color", content: "#eff1f5", id: "theme-color-meta" }), _jsx("meta", { name: "apple-mobile-web-app-capable", content: "yes" }), _jsx("meta", { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" }), html `<script>
 (function(){
   function autoThemeFromLocalTime() {
     // Heuristic: use Mocha in the evening/night unless user explicitly chose.
@@ -195,7 +183,10 @@ html, body {
   background: var(--bg);
 }
 
-/* iOS: headers extend under translucent status bar via .page-header padding-top. */
+/* iOS: allow headers to extend under translucent status bar, but keep content readable. */
+.sticky.top-0.z-50 {
+  padding-top: var(--safe-top);
+}
 
 /* Apply Catppuccin variables to Franken/UIkit components in light mode too.
    (Dark mode already has explicit overrides; these base rules bring Latte in line.) */
@@ -266,13 +257,7 @@ p { color: var(--text) !important; }
 [data-theme="dark"] a.uk-link { color: var(--brand) !important; }
 [data-theme="dark"] .uk-nav-header { color: var(--text-secondary) !important; }
 [data-theme="dark"] .uk-close { color: var(--text) !important; }
-</style>`}
-        <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-        <script src="/admin.js" defer></script>
-        <link rel="stylesheet" href="https://unpkg.com/franken-ui@2.1.2/dist/css/core.min.css" />
-        <script src="https://unpkg.com/franken-ui@2.1.2/dist/js/core.iife.js"></script>
-        <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-        {html`<script>tailwind.config = { corePlugins: { preflight: false } };
+</style>`, _jsx("script", { src: "https://unpkg.com/htmx.org@1.9.10" }), _jsx("script", { src: "/admin.js", defer: true }), _jsx("link", { rel: "stylesheet", href: "https://unpkg.com/franken-ui@2.1.2/dist/css/core.min.css" }), _jsx("script", { src: "https://unpkg.com/franken-ui@2.1.2/dist/js/core.iife.js" }), _jsx("script", { src: "https://cdn.tailwindcss.com/3.4.17" }), html `<script>tailwind.config = { corePlugins: { preflight: false } };
 (function() {
   var fk = document.querySelector('link[href*="franken"]');
   if (!fk) return;
@@ -287,14 +272,7 @@ p { color: var(--text) !important; }
   obs.observe(document.head, { childList: true });
   document.addEventListener('DOMContentLoaded', function() { fixOrder(); obs.disconnect(); });
 })();
-</script>`}
-
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-        <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.css" />
-        <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.js"></script>
-        <style>{`.leaflet-container img { max-width: none !important; max-height: none !important; }`}</style>
-        {html`<script>
+</script>`, _jsx("link", { rel: "stylesheet", href: "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" }), _jsx("script", { src: "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" }), _jsx("link", { rel: "stylesheet", href: "https://unpkg.com/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.css" }), _jsx("script", { src: "https://unpkg.com/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.js" }), _jsx("style", { children: `.leaflet-container img { max-width: none !important; max-height: none !important; }` }), html `<script>
 function _onRadiusMilesInput() { updateRadius(); }
 function _onRadiusLatChange() { updateRadius(); }
 function _onRadiusLngChange() { updateRadius(); }
@@ -927,8 +905,7 @@ document.addEventListener('click', function(e) {
   if (!btn) return;
   if (btn._disarmTimer) clearTimeout(btn._disarmTimer);
 });
-        </script>`}
-        <style>{`
+        </script>`, _jsx("style", { children: `
           *, *::before, *::after { box-sizing: border-box; }
           html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
           body { background: var(--bg); color: var(--text); overscroll-behavior: none; -webkit-font-smoothing: antialiased; }
@@ -950,7 +927,7 @@ document.addEventListener('click', function(e) {
 
           .page-header {
             background: var(--bg-card);
-            padding: calc(16px + var(--safe-top)) 32px 16px calc(52px + var(--safe-left));
+            padding: 16px 32px 16px 52px;
             border-bottom: 1px solid var(--border);
             display: grid;
             grid-template-columns: 1fr auto;
@@ -978,32 +955,6 @@ document.addEventListener('click', function(e) {
           .status-icon--secondary { color: var(--badge-secondary); }
           .status-icon--destructive { color: var(--badge-destructive); }
 
-          .status-select {
-            -webkit-appearance: none;
-            appearance: none;
-            padding: 2px 22px 2px 10px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.02em;
-            cursor: pointer;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 7px center;
-            border: 1px solid var(--badge-neutral-border);
-            background-color: var(--badge-neutral-bg);
-            color: var(--badge-neutral-text);
-            transition: border-color 0.15s, background-color 0.15s;
-          }
-          .status-select:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
-          .status-select[data-current="complete"],
-          .status-select[data-current="paid"] { border-color: var(--badge-primary-border); background-color: var(--badge-primary-bg); color: var(--badge-primary); }
-          .status-select[data-current="in_progress"],
-          .status-select[data-current="enroute"],
-          .status-select[data-current="pending"] { border-color: var(--badge-secondary-border); background-color: var(--badge-secondary-bg); color: var(--badge-secondary); }
-          .status-select[data-current="cancelled"],
-          .status-select[data-current="void"] { border-color: var(--badge-destructive-border); background-color: var(--badge-destructive-bg); color: var(--badge-destructive); }
-
           .danger-card { border-color: var(--destructive-border, var(--border)) !important; }
           .danger-card h3 { color: var(--text-secondary) !important; font-size: 13px !important; }
 
@@ -1018,7 +969,7 @@ document.addEventListener('click', function(e) {
             .admin-layout { display: flex; }
             .desktop-sidebar { display: flex; flex-direction: column; width: 260px; min-width: 260px; background: var(--bg-sidebar); min-height: 100vh; min-height: 100dvh; position: sticky; top: 0; height: 100vh; height: 100dvh; overflow-y: auto; padding: 24px 0; }
             .mobile-menu-btn { display: none !important; }
-            .page-header { padding: calc(20px + var(--safe-top)) 32px 20px 32px; }
+            .page-header { padding: 20px 32px; }
           }
 
           table { width: 100%; border-collapse: collapse; }
@@ -1057,11 +1008,16 @@ document.addEventListener('click', function(e) {
             color: var(--text);
             cursor: pointer;
             position: fixed;
-            top: var(--safe-top);
-            left: var(--safe-left);
-            height: 48px;
-            width: 48px;
+            top: 0;
+            left: 0;
+            height: calc(48px + var(--safe-top));
+            width: calc(48px + var(--safe-left));
+            padding-top: var(--safe-top);
+            padding-left: var(--safe-left);
             z-index: 100;
+          }
+          .mobile-menu-btn svg {
+            transform: translateY(0px);
           }
 
           .sidebar-nav { padding: 0 4px; }
@@ -1178,7 +1134,7 @@ document.addEventListener('click', function(e) {
           }
 
           @media (max-width: 768px) {
-            .page-header { padding: calc(12px + var(--safe-top)) 16px 12px calc(52px + var(--safe-left)); }
+            .page-header { padding: 12px 16px 12px 52px; }
             .page-header h2 { font-size: 17px; }
             .page-header--rich { grid-template-columns: 1fr; }
             .page-header--rich .page-header-actions { grid-column: 1; grid-row: auto; justify-self: start; }
@@ -1349,135 +1305,7 @@ document.addEventListener('click', function(e) {
               overflow: hidden;
             }
           }
-        `}</style>
-      </head>
-      <body>
-        <div id="offcanvas-nav" data-uk-offcanvas="mode: slide; overlay: true">
-          <div class="uk-offcanvas-bar" style="background: var(--bg-sidebar); width: 260px;">
-            <button class="uk-offcanvas-close" type="button" data-uk-close style="color: var(--text-sidebar-active);"></button>
-            <div class="sidebar-logo" style="padding: 0 16px;">
-              <img src="/images/uncle-logo.svg" alt="" />
-              <span>Uncle Bike</span>
-            </div>
-            <ul class="uk-nav uk-nav-default sidebar-nav" data-uk-nav>
-              <li class="uk-nav-header">Overview</li>
-              <li><a href="/admin" hx-get="/admin" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Dashboard</a></li>
-              <li class="uk-nav-divider"></li>
-              <li class="uk-nav-header">Operations</li>
-              <li><a href="/admin/inbox" hx-get="/admin/inbox" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Inbox</a></li>
-              <li><a href="/admin/jobs" hx-get="/admin/jobs" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Jobs</a></li>
-              <li><a href="/admin/customers" hx-get="/admin/customers" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Customers</a></li>
-              <li><a href="/admin/recurring" hx-get="/admin/recurring" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Recurring</a></li>
-              <li><a href="/admin/invoices" hx-get="/admin/invoices" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Invoices</a></li>
-              <li class="uk-nav-divider"></li>
-              <li class="uk-nav-header">Setup</li>
-              <li><a href="/admin/territories" hx-get="/admin/territories" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Territories</a></li>
-              <li><a href="/admin/categories" hx-get="/admin/categories" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Categories</a></li>
-              <li><a href="/admin/services" hx-get="/admin/services" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Services</a></li>
-              <li><a href="/admin/team" hx-get="/admin/team" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Team</a></li>
-              <li><a href="/admin/skills" hx-get="/admin/skills" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Skills</a></li>
-              <li class="uk-nav-divider"></li>
-              <li class="uk-nav-header">Config</li>
-              <li><a href="/admin/branding" hx-get="/admin/branding" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Branding</a></li>
-              <li><a href="/admin/coupons" hx-get="/admin/coupons" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Coupons</a></li>
-              <li><a href="/admin/webhooks" hx-get="/admin/webhooks" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Webhooks</a></li>
-              <li><a href="/admin/sms-settings" hx-get="/admin/sms-settings" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">SMS</a></li>
-              <li><a href="/admin/push-settings" hx-get="/admin/push-settings" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Push</a></li>
-              <li><a href="/admin/settings" hx-get="/admin/settings" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Settings</a></li>
-              <li class="uk-nav-divider"></li>
-              <li>
-                <button type="button" class="admin-theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-                  <div class="theme-toggle-icon">
-                    <div class="moon-or-sun">
-                      <div class="moon-mask"></div>
-                    </div>
-                  </div>
-                  <span class="theme-label"></span>
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="admin-layout">
-          <aside class="desktop-sidebar">
-            <div class="sidebar-logo">
-              <img src="/images/uncle-logo.svg" alt="" />
-              <span>Uncle Bike</span>
-            </div>
-            <ul class="uk-nav uk-nav-default sidebar-nav" data-uk-nav>
-              <li class="uk-nav-header">Overview</li>
-              <li><a href="/admin" hx-get="/admin" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Dashboard</a></li>
-              <li class="uk-nav-divider"></li>
-              <li class="uk-nav-header">Operations</li>
-              <li><a href="/admin/inbox" hx-get="/admin/inbox" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Inbox</a></li>
-              <li><a href="/admin/jobs" hx-get="/admin/jobs" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Jobs</a></li>
-              <li><a href="/admin/customers" hx-get="/admin/customers" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Customers</a></li>
-              <li><a href="/admin/recurring" hx-get="/admin/recurring" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Recurring</a></li>
-              <li><a href="/admin/invoices" hx-get="/admin/invoices" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Invoices</a></li>
-              <li class="uk-nav-divider"></li>
-              <li class="uk-nav-header">Setup</li>
-              <li><a href="/admin/territories" hx-get="/admin/territories" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Territories</a></li>
-              <li><a href="/admin/categories" hx-get="/admin/categories" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Categories</a></li>
-              <li><a href="/admin/services" hx-get="/admin/services" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Services</a></li>
-              <li><a href="/admin/team" hx-get="/admin/team" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Team</a></li>
-              <li><a href="/admin/skills" hx-get="/admin/skills" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Skills</a></li>
-              <li class="uk-nav-divider"></li>
-              <li class="uk-nav-header">Config</li>
-              <li><a href="/admin/branding" hx-get="/admin/branding" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Branding</a></li>
-              <li><a href="/admin/coupons" hx-get="/admin/coupons" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Coupons</a></li>
-              <li><a href="/admin/webhooks" hx-get="/admin/webhooks" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Webhooks</a></li>
-              <li><a href="/admin/sms-settings" hx-get="/admin/sms-settings" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">SMS</a></li>
-              <li><a href="/admin/push-settings" hx-get="/admin/push-settings" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Push</a></li>
-              <li><a href="/admin/settings" hx-get="/admin/settings" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML" hx-push-url="true">Settings</a></li>
-              <li class="uk-nav-divider"></li>
-              <li>
-                <button type="button" class="admin-theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-                  <div class="theme-toggle-icon">
-                    <div class="moon-or-sun">
-                      <div class="moon-mask"></div>
-                    </div>
-                  </div>
-                  <span class="theme-label"></span>
-                </button>
-              </li>
-            </ul>
-          </aside>
-          <main class="main-content" id="main-content">
-            <button type="button" class="mobile-menu-btn" data-uk-toggle="target: #offcanvas-nav" aria-label="Open menu">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><title>Menu</title><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            </button>
-            <div id="page-content">
-              {children}
-            </div>
-          </main>
-        </div>
-
-        <div id="sms-thread-modal-overlay" hidden>
-          <div id="sms-thread-modal-panel" role="dialog" aria-modal="true" aria-label="SMS conversation">
-            <div id="sms-thread-modal-header">
-              <h3>Conversation</h3>
-              <div id="sms-thread-modal-actions">
-                <a id="sms-thread-modal-open-inbox" class="uk-btn uk-btn-default uk-btn-sm" href="/admin/inbox" style="display:none;">Inbox</a>
-                <button type="button" class="uk-btn uk-btn-default uk-btn-sm" data-sms-thread-modal-close aria-label="Close conversation">Close</button>
-              </div>
-            </div>
-            <div id="sms-thread-modal-content">
-              <div id="sms-thread-modal-status">
-                <div id="sms-thread-modal-loading" aria-live="polite" aria-busy="true">
-                  <div class="skel">
-                    <div class="skel-row"><div class="skel-dot"></div><div class="skel-line w-70"></div></div>
-                    <div class="skel-row"><div class="skel-dot"></div><div class="skel-line w-85"></div></div>
-                    <div class="skel-row"><div class="skel-dot"></div><div class="skel-line w-45"></div></div>
-                  </div>
-                </div>
-                <div id="sms-thread-modal-error" role="alert"></div>
-              </div>
-              <div id="sms-thread-modal-body"></div>
-            </div>
-          </div>
-        </div>
-
-        {html`<script>
+        ` })] }), _jsxs("body", { children: [_jsx("div", { id: "offcanvas-nav", "data-uk-offcanvas": "mode: slide; overlay: true", children: _jsxs("div", { class: "uk-offcanvas-bar", style: "background: var(--bg-sidebar); width: 260px;", children: [_jsx("button", { class: "uk-offcanvas-close", type: "button", "data-uk-close": true, style: "color: var(--text-sidebar-active);" }), _jsxs("div", { class: "sidebar-logo", style: "padding: 0 16px;", children: [_jsx("img", { src: "/images/uncle-logo.svg", alt: "" }), _jsx("span", { children: "Uncle Bike" })] }), _jsxs("ul", { class: "uk-nav uk-nav-default sidebar-nav", "data-uk-nav": true, children: [_jsx("li", { class: "uk-nav-header", children: "Overview" }), _jsx("li", { children: _jsx("a", { href: "/admin", "hx-get": "/admin", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Dashboard" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Operations" }), _jsx("li", { children: _jsx("a", { href: "/admin/inbox", "hx-get": "/admin/inbox", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Inbox" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/jobs", "hx-get": "/admin/jobs", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Jobs" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/customers", "hx-get": "/admin/customers", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Customers" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/recurring", "hx-get": "/admin/recurring", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Recurring" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/invoices", "hx-get": "/admin/invoices", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Invoices" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Setup" }), _jsx("li", { children: _jsx("a", { href: "/admin/territories", "hx-get": "/admin/territories", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Territories" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/services", "hx-get": "/admin/services", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Services" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/team", "hx-get": "/admin/team", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Team" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Config" }), _jsx("li", { children: _jsx("a", { href: "/admin/branding", "hx-get": "/admin/branding", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Branding" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/coupons", "hx-get": "/admin/coupons", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Coupons" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/webhooks", "hx-get": "/admin/webhooks", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Webhooks" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/sms-settings", "hx-get": "/admin/sms-settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "SMS" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/push-settings", "hx-get": "/admin/push-settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Push" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/settings", "hx-get": "/admin/settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Settings" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { children: _jsxs("button", { type: "button", class: "admin-theme-toggle", onclick: "toggleTheme()", "aria-label": "Toggle theme", children: [_jsx("div", { class: "theme-toggle-icon", children: _jsx("div", { class: "moon-or-sun", children: _jsx("div", { class: "moon-mask" }) }) }), _jsx("span", { class: "theme-label" })] }) })] })] }) }), _jsxs("div", { class: "admin-layout", children: [_jsxs("aside", { class: "desktop-sidebar", children: [_jsxs("div", { class: "sidebar-logo", children: [_jsx("img", { src: "/images/uncle-logo.svg", alt: "" }), _jsx("span", { children: "Uncle Bike" })] }), _jsxs("ul", { class: "uk-nav uk-nav-default sidebar-nav", "data-uk-nav": true, children: [_jsx("li", { class: "uk-nav-header", children: "Overview" }), _jsx("li", { children: _jsx("a", { href: "/admin", "hx-get": "/admin", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Dashboard" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Operations" }), _jsx("li", { children: _jsx("a", { href: "/admin/inbox", "hx-get": "/admin/inbox", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Inbox" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/jobs", "hx-get": "/admin/jobs", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Jobs" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/customers", "hx-get": "/admin/customers", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Customers" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/recurring", "hx-get": "/admin/recurring", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Recurring" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/invoices", "hx-get": "/admin/invoices", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Invoices" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Setup" }), _jsx("li", { children: _jsx("a", { href: "/admin/territories", "hx-get": "/admin/territories", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Territories" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/services", "hx-get": "/admin/services", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Services" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/team", "hx-get": "/admin/team", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Team" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Config" }), _jsx("li", { children: _jsx("a", { href: "/admin/branding", "hx-get": "/admin/branding", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Branding" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/coupons", "hx-get": "/admin/coupons", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Coupons" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/webhooks", "hx-get": "/admin/webhooks", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Webhooks" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/sms-settings", "hx-get": "/admin/sms-settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "SMS" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/push-settings", "hx-get": "/admin/push-settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Push" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/settings", "hx-get": "/admin/settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Settings" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { children: _jsxs("button", { type: "button", class: "admin-theme-toggle", onclick: "toggleTheme()", "aria-label": "Toggle theme", children: [_jsx("div", { class: "theme-toggle-icon", children: _jsx("div", { class: "moon-or-sun", children: _jsx("div", { class: "moon-mask" }) }) }), _jsx("span", { class: "theme-label" })] }) })] })] }), _jsxs("main", { class: "main-content", id: "main-content", children: [_jsx("button", { type: "button", class: "mobile-menu-btn", "data-uk-toggle": "target: #offcanvas-nav", "aria-label": "Open menu", children: _jsxs("svg", { width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2", children: [_jsx("title", { children: "Menu" }), _jsx("line", { x1: "3", y1: "6", x2: "21", y2: "6" }), _jsx("line", { x1: "3", y1: "12", x2: "21", y2: "12" }), _jsx("line", { x1: "3", y1: "18", x2: "21", y2: "18" })] }) }), _jsx("div", { id: "page-content", children: children })] })] }), _jsx("div", { id: "sms-thread-modal-overlay", hidden: true, children: _jsxs("div", { id: "sms-thread-modal-panel", role: "dialog", "aria-modal": "true", "aria-label": "SMS conversation", children: [_jsxs("div", { id: "sms-thread-modal-header", children: [_jsx("h3", { children: "Conversation" }), _jsxs("div", { id: "sms-thread-modal-actions", children: [_jsx("a", { id: "sms-thread-modal-open-inbox", class: "uk-btn uk-btn-default uk-btn-sm", href: "/admin/inbox", style: "display:none;", children: "Inbox" }), _jsx("button", { type: "button", class: "uk-btn uk-btn-default uk-btn-sm", "data-sms-thread-modal-close": true, "aria-label": "Close conversation", children: "Close" })] })] }), _jsxs("div", { id: "sms-thread-modal-content", children: [_jsxs("div", { id: "sms-thread-modal-status", children: [_jsx("div", { id: "sms-thread-modal-loading", "aria-live": "polite", "aria-busy": "true", children: _jsxs("div", { class: "skel", children: [_jsxs("div", { class: "skel-row", children: [_jsx("div", { class: "skel-dot" }), _jsx("div", { class: "skel-line w-70" })] }), _jsxs("div", { class: "skel-row", children: [_jsx("div", { class: "skel-dot" }), _jsx("div", { class: "skel-line w-85" })] }), _jsxs("div", { class: "skel-row", children: [_jsx("div", { class: "skel-dot" }), _jsx("div", { class: "skel-line w-45" })] })] }) }), _jsx("div", { id: "sms-thread-modal-error", role: "alert" })] }), _jsx("div", { id: "sms-thread-modal-body" })] })] }) }), html `<script>
 function toggleTheme() {
   var cur = document.documentElement.getAttribute('data-theme');
   var next = cur === 'dark' ? 'light' : 'dark';
@@ -1494,8 +1322,6 @@ function updateThemeLabels(t) {
 updateThemeLabels(document.documentElement.getAttribute('data-theme') || 'light');
 window.updateThemeLabels = updateThemeLabels;
 requestAnimationFrame(function(){requestAnimationFrame(function(){document.body.classList.add('ready')})});
-</script>`}
-      </body>
-    </html>
-  );
+</script>`] })] }));
 };
+//# sourceMappingURL=layout.js.map
