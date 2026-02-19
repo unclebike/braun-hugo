@@ -316,14 +316,18 @@ html, body {
 .uk-label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 2px 10px;
+  gap: 5px;
+  padding: 2px 8px;
   border-radius: 999px;
   border: 1px solid var(--badge-neutral-border) !important;
   background: var(--badge-neutral-bg) !important;
   color: var(--badge-neutral-text) !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.02em;
+  font-weight: 400 !important;
+  letter-spacing: 0em;
+}
+@media (max-width: 767px) {
+  .uk-label { padding: 3px 5px; }
+  .uk-label .badge-label { display: none; }
 }
 .uk-label-primary {
   border-color: var(--badge-primary-border) !important;

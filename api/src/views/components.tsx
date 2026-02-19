@@ -628,7 +628,7 @@ const StatusBadge = ({ status }: { status: string }) => {
   return (
     <span class={BADGE_CLASS_MAP[s] || 'uk-label'}>
       {hasIcon && <StatusIconSvg status={s} />}
-      {label}
+      <span class="badge-label">{label}</span>
     </span>
   );
 };
