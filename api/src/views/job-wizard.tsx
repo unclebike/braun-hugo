@@ -1,4 +1,6 @@
+// biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
+import { html } from 'hono/html';
 import { Layout } from './layout';
 import { formatTorontoDate } from '../utils/datetime';
 
@@ -316,7 +318,7 @@ const quickCreateBody = (props: NewJobProps) => {
         </form>
       </div>
 
-      <script>{`
+      {html`<script>
         (function () {
           if (window.__jobWizardCustomerBind) return;
           window.__jobWizardCustomerBind = true;
@@ -336,7 +338,7 @@ const quickCreateBody = (props: NewJobProps) => {
             }
           });
         })();
-      `}</script>
+      </script>`}
     </div>
   );
 };
@@ -409,7 +411,7 @@ const wizardFlowBody = (props: WizardFlowProps) => {
               </select>
             </div>
             <button type="submit" class="uk-btn uk-btn-primary">Continue</button>
-            <script>{`
+            {html`<script>
               (function () {
                 var select = document.getElementById('wizard-service-id');
                 var nameEl = document.getElementById('wizard-service-name');
@@ -425,7 +427,7 @@ const wizardFlowBody = (props: WizardFlowProps) => {
                 select.addEventListener('change', sync);
                 sync();
               })();
-            `}</script>
+            </script>`}
           </form>
         </div>
       )}

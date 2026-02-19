@@ -1,5 +1,6 @@
 // biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { jsx } from 'hono/jsx';
+import { html } from 'hono/html';
 import { Layout } from './layout';
 
 export const BrandingPage = ({ primaryColor }: { primaryColor: string }) => {
@@ -69,7 +70,7 @@ export const BrandingPage = ({ primaryColor }: { primaryColor: string }) => {
         </div>
       </div>
 
-      <script>{`
+      {html`<script>
         (function() {
           var colorInput = document.getElementById('widget-primary-color');
           var textInput = document.getElementById('widget-primary-color-text');
@@ -112,7 +113,7 @@ export const BrandingPage = ({ primaryColor }: { primaryColor: string }) => {
 
           applyColor(colorInput.value);
         })();
-      `}</script>
+      </script>`}
     </Layout>
   );
 };
