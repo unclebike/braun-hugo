@@ -2299,7 +2299,13 @@ app.get('/jobs/:id', async (c) => {
     created_at: string;
     started_at?: string | null;
     completed_at?: string | null;
+    paused_at?: string | null;
   };
+
+  const workIntervals: Array<{ started: string; ended: string | null }> = (() => {
+    try { return JSON.parse((job.work_intervals_json as string | null) || '[]'); }
+    catch { return []; }
+  })();
 
   const notes = JSON.parse(notesJson) as Array<{ text: string; timestamp: string; completed: number }>;
   const lineItems = parsedLineItems.length > 0
@@ -2332,6 +2338,7 @@ app.get('/jobs/:id', async (c) => {
       last_name: p.last_name as string,
     })),
     assignedProviderId: assignedProviderId || null,
+    workIntervals,
     serviceTasks,
     completeBlocked,
     completeBlockers,
@@ -2437,6 +2444,33 @@ app.get('/jobs/:id/notes-list', async (c) => {
   const notes = job?.notes_json ? JSON.parse(job.notes_json) : [];
   c.header('Cache-Control', 'no-store');
   return c.html(NotesList({ jobId, notes, listId: 'notes-main-list' }));
+});
+
+app.post('/jobs/:id/pause', async (c) => {
+  const db = c.env.DB;
+  const jobId = c.req.param('id');
+  const job = await db.prepare('SELECT status, work_intervals_json FROM jobs WHERE id = ?').bind(jobId).first<{ status: string; work_intervals_json: string | null }>();
+  if (!job || job.status !== 'in_progress') return c.redirect(`/admin/jobs/${jobId}`);
+  const intervals: Array<{ started: string; ended: string | null }> = JSON.parse(job.work_intervals_json || '[]');
+  const now = new Date().toISOString().replace('T', ' ').split('.')[0];
+  const open = intervals.findIndex(i => !i.ended);
+  if (open >= 0) intervals[open].ended = now;
+  await db.prepare("UPDATE jobs SET status = 'paused', paused_at = datetime('now'), work_intervals_json = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(JSON.stringify(intervals), jobId).run();
+  return c.redirect(`/admin/jobs/${jobId}`);
+});
+
+app.post('/jobs/:id/resume', async (c) => {
+  const db = c.env.DB;
+  const jobId = c.req.param('id');
+  const job = await db.prepare('SELECT status, work_intervals_json FROM jobs WHERE id = ?').bind(jobId).first<{ status: string; work_intervals_json: string | null }>();
+  if (!job || job.status !== 'paused') return c.redirect(`/admin/jobs/${jobId}`);
+  const intervals: Array<{ started: string; ended: string | null }> = JSON.parse(job.work_intervals_json || '[]');
+  const now = new Date().toISOString().replace('T', ' ').split('.')[0];
+  intervals.push({ started: now, ended: null });
+  await db.prepare("UPDATE jobs SET status = 'in_progress', paused_at = NULL, work_intervals_json = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(JSON.stringify(intervals), jobId).run();
+  return c.redirect(`/admin/jobs/${jobId}`);
 });
 
 app.post('/jobs/:id/notes/add', async (c) => {
@@ -2608,9 +2642,21 @@ app.post('/jobs/:id/status', async (c) => {
       return c.redirect(`/admin/jobs/${jobId}?complete_blocked=1&blockers=${encodeURIComponent(JSON.stringify(blockerTitles))}`);
     }
   }
-  
-  const updates: string[] = ['status = ?', "updated_at = datetime('now')"];
-  const binds: unknown[] = [status];
+
+  const currentJob = await db.prepare('SELECT work_intervals_json, started_at FROM jobs WHERE id = ?').bind(jobId).first<{ work_intervals_json: string | null; started_at: string | null }>();
+  const intervals: Array<{ started: string; ended: string | null }> = JSON.parse(currentJob?.work_intervals_json || '[]');
+  const nowIso = new Date().toISOString().replace('T', ' ').split('.')[0];
+
+  if (status === 'in_progress' && !currentJob?.started_at) {
+    intervals.push({ started: nowIso, ended: null });
+  }
+  if (status === 'complete') {
+    const open = intervals.findIndex(i => !i.ended);
+    if (open >= 0) intervals[open].ended = nowIso;
+  }
+
+  const updates: string[] = ['status = ?', "updated_at = datetime('now')", 'work_intervals_json = ?'];
+  const binds: unknown[] = [status, JSON.stringify(intervals)];
   if (status === 'complete') updates.push("completed_at = datetime('now')");
   if (status === 'in_progress') updates.push("started_at = datetime('now')");
   if (status === 'cancelled') updates.push("cancelled_at = datetime('now')");
