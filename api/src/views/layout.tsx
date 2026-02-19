@@ -1149,7 +1149,8 @@ document.addEventListener('click', function(e) {
           .save-pending { color: var(--text-secondary); }
           .autosave .save-indicator, #territory-services .save-indicator, #territory-providers .save-indicator { display: inline-block; }
 
-          .delete-btn { color: var(--destructive); background: var(--bg-card); border: 1px solid var(--destructive-border); padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: var(--text-xxs); font-weight: var(--font-weight-medium); transition: all 0.15s; }
+          .delete-btn { color: var(--destructive); background: var(--bg-card); border: 1px solid var(--destructive-border); padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: var(--text-xxs) !important; font-weight: var(--font-weight-medium); transition: all 0.15s; }
+          .uk-btn-sm { font-size: var(--text-xxs) !important; }
           .delete-btn:hover { background: var(--destructive-soft); border-color: var(--destructive-hover); color: var(--destructive-hover); }
           .delete-btn.delete-armed { background: var(--destructive); color: #fff; border-color: var(--destructive); font-weight: var(--font-weight-medium); }
           .delete-btn.delete-armed:hover { background: var(--destructive-hover); border-color: var(--destructive-hover); }
