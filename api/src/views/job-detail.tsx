@@ -28,6 +28,7 @@ interface JobDetailPageProps {
     started_at?: string | null;
     completed_at?: string | null;
     paused_at?: string | null;
+    is_paused?: number;
   };
   customer?: { id: string; first_name: string; last_name: string; email?: string; phone?: string };
   service?: { id: string; name: string; description?: string };
@@ -68,7 +69,7 @@ interface JobDetailPageProps {
   }>;
 }
 
-const STATUS_OPTIONS = ['created', 'assigned', 'enroute', 'in_progress', 'paused', 'complete', 'cancelled'];
+const STATUS_OPTIONS = ['created', 'assigned', 'enroute', 'in_progress', 'complete', 'cancelled'];
 
 const TaskSourceContext = ({ source }: { source?: JobDetailPageProps['notes'][number]['source'] }) => {
   if (!source || source.type !== 'sms' || !source.excerpt) return null;
@@ -474,8 +475,8 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
     : job.started_at && job.completed_at
       ? Math.round((new Date(`${job.completed_at}Z`).getTime() - new Date(`${job.started_at}Z`).getTime()) / 60000)
       : null;
-  const isRunning = job.status === 'in_progress' && Boolean(job.started_at) && !job.completed_at;
-  const isPaused = job.status === 'paused';
+  const isRunning = job.status === 'in_progress' && !job.is_paused && Boolean(job.started_at) && !job.completed_at;
+  const isPaused = job.status === 'in_progress' && Boolean(job.is_paused) && !job.completed_at;
 
   return (
     <Layout title={`${customerName} - ${serviceName}`}>

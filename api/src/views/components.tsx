@@ -556,7 +556,6 @@ const STATUS_ICON_MAP: Record<string, { cls: string; label: string }> = {
   assigned:    { cls: 'status-icon--neutral',     label: 'Assigned' },
   enroute:     { cls: 'status-icon--secondary',   label: 'En route' },
   in_progress: { cls: 'status-icon--secondary',   label: 'In progress' },
-  paused:      { cls: 'status-icon--neutral',     label: 'Paused' },
   complete:    { cls: 'status-icon--primary',     label: 'Complete' },
   cancelled:   { cls: 'status-icon--destructive', label: 'Cancelled' },
   pending:     { cls: 'status-icon--secondary',   label: 'Pending' },
