@@ -849,7 +849,7 @@ window.openSmsTaskModal = function(config) {
 
   var overlay = document.createElement('div');
   overlay.id = 'sms-task-modal-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1100;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1300;display:flex;align-items:center;justify-content:center;padding:16px;';
 
   var panel = document.createElement('div');
   panel.id = 'sms-task-modal-panel';
@@ -857,11 +857,11 @@ window.openSmsTaskModal = function(config) {
 
   var title = document.createElement('div');
   title.textContent = 'Add Task';
-  title.style.cssText = 'font-weight:600;font-size:16px;color:var(--text,#1f2937);margin-bottom:10px;';
+  title.style.cssText = 'font-weight:600;font-size:1.8rem;color:var(--text,#1f2937);margin-bottom:10px;';
 
   var labelTask = document.createElement('label');
   labelTask.textContent = 'Task title';
-  labelTask.style.cssText = 'display:block;font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--text-secondary,#6b7280);margin-bottom:6px;';
+  labelTask.style.cssText = 'display:block;font-size:1.0rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-secondary,#6b7280);margin-bottom:6px;';
 
   var taskInput = document.createElement('input');
   taskInput.type = 'text';
@@ -873,7 +873,7 @@ window.openSmsTaskModal = function(config) {
 
   var labelJob = document.createElement('label');
   labelJob.textContent = 'Task target';
-  labelJob.style.cssText = 'display:block;font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--text-secondary,#6b7280);margin-bottom:6px;';
+  labelJob.style.cssText = 'display:block;font-size:1.0rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-secondary,#6b7280);margin-bottom:6px;';
 
   var jobSelect = document.createElement('select');
   jobSelect.className = 'uk-select';
