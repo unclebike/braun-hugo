@@ -43,6 +43,7 @@ interface ServiceDetailPageProps {
   requiredSkills: Array<{ id: string; name: string }>;
   allSkills: Array<{ id: string; name: string }>;
   territories: Array<{ id: string; name: string }>;
+  taskTemplates: Array<{ id: string; title: string; type: string; is_required: number; sort_order: number }>;
 }
 
 const formatRuleDetails = (rule: ServiceDetailPageProps['priceRules'][number]) => {
@@ -53,7 +54,7 @@ const formatRuleDetails = (rule: ServiceDetailPageProps['priceRules'][number]) =
   return '-';
 };
 
-export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, requiredSkills, allSkills, territories }: ServiceDetailPageProps) => {
+export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, requiredSkills, allSkills, territories, taskTemplates }: ServiceDetailPageProps) => {
   return (
     <Layout title={service.name || 'Service'}>
       <div class="page-header">
@@ -357,6 +358,95 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
                   </select>
                 </div>
                 <button type="submit" class="uk-btn uk-btn-default">Add</button>
+              </form>
+            </section>
+          </div>
+
+          <div class="uk-card uk-card-body" id="service-checklist">
+            <section>
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-semibold">Service Checklist</h3>
+                <span class="text-xs text-muted-foreground">{taskTemplates.length} task{taskTemplates.length !== 1 ? 's' : ''}</span>
+              </div>
+              <p class="text-xs text-muted-foreground mb-4">These tasks are automatically added to every job when this service is booked. Technicians must complete them before marking the job done.</p>
+
+              <div class="uk-overflow-auto mb-4">
+                <table class="uk-table uk-table-divider uk-table-hover uk-table-sm text-sm">
+                  <thead>
+                    <tr>
+                      <th class="text-left">#</th>
+                      <th class="text-left">Task</th>
+                      <th class="text-left">Type</th>
+                      <th class="text-left">Required</th>
+                      <th class="text-left">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {taskTemplates.map((t, i) => (
+                      <tr key={t.id}>
+                        <td class="text-muted-foreground text-xs w-8">{i + 1}</td>
+                        <td class="font-medium">{t.title}</td>
+                        <td>
+                          <span class={`uk-label ${t.type === 'check' ? '' : t.type === 'yesno' ? 'uk-label-primary' : 'uk-label-secondary'}`}>
+                            <span class="badge-label">{t.type === 'check' ? 'Checkbox' : t.type === 'yesno' ? 'Yes / No' : 'Question'}</span>
+                          </span>
+                        </td>
+                        <td>{t.is_required ? <span class="text-destructive font-bold text-xs">Required</span> : <span class="text-muted-foreground text-xs">Optional</span>}</td>
+                        <td>
+                          <button
+                            type="button"
+                            class="delete-btn"
+                            hx-post={`/admin/services/${service.id}/tasks/${t.id}/delete`}
+                            data-confirm="arm"
+                            hx-target="#service-checklist"
+                            hx-select="#service-checklist"
+                            hx-swap="outerHTML"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {taskTemplates.length === 0 && (
+                      <tr>
+                        <td colspan={5} class="text-muted-foreground italic">No checklist tasks yet. Add tasks below.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <form
+                hx-post={`/admin/services/${service.id}/tasks`}
+                hx-target="#service-checklist"
+                hx-select="#service-checklist"
+                hx-swap="outerHTML"
+                hx-on="htmx:afterRequest: if(event.detail.xhr?.status < 300) this.reset();"
+              >
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <div class="grid gap-2 sm:col-span-2">
+                    <label class="uk-form-label" for="task-title">Task Description</label>
+                    <input id="task-title" name="title" class="uk-input" placeholder="e.g. Lubed and adjusted chain" required />
+                  </div>
+                  <div class="grid gap-2">
+                    <label class="uk-form-label" for="task-type">Type</label>
+                    <select id="task-type" name="type" class="uk-select">
+                      <option value="check">Checkbox — done / not done</option>
+                      <option value="yesno">Yes / No question</option>
+                      <option value="text">Free text answer</option>
+                    </select>
+                  </div>
+                  <div class="grid gap-2">
+                    <label class="uk-form-label" for="task-required">Required</label>
+                    <label class="flex items-center gap-2 text-sm h-10 cursor-pointer">
+                      <input id="task-required" name="is_required" type="checkbox" class="uk-checkbox" />
+                      Must be completed before job can close
+                    </label>
+                  </div>
+                </div>
+                <div class="mt-4">
+                  <button type="submit" class="uk-btn uk-btn-default">Add Task</button>
+                </div>
               </form>
             </section>
           </div>

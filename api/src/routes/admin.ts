@@ -929,13 +929,14 @@ const renderServiceDetail = async (c: AdminContext, serviceId: string) => {
   const service = await db.prepare('SELECT * FROM services WHERE id = ?').bind(serviceId).first();
   if (!service) return c.redirect('/admin/services');
 
-  const [categories, modifiers, priceRules, reqSkills, allSkills, territories] = await Promise.all([
+  const [categories, modifiers, priceRules, reqSkills, allSkills, territories, taskTemplates] = await Promise.all([
     db.prepare('SELECT id, name FROM service_categories ORDER BY sort_order, name').all(),
     db.prepare('SELECT * FROM service_modifiers WHERE service_id = ? ORDER BY sort_order').bind(serviceId).all(),
     db.prepare('SELECT par.*, t.name as territory_name FROM price_adjustment_rules par LEFT JOIN territories t ON par.territory_id = t.id WHERE par.service_id = ?').bind(serviceId).all(),
     db.prepare('SELECT s.id, s.name FROM service_required_skills srs JOIN skills s ON srs.skill_id = s.id WHERE srs.service_id = ?').bind(serviceId).all(),
     db.prepare('SELECT id, name FROM skills ORDER BY name').all(),
-    db.prepare('SELECT id, name FROM territories ORDER BY name').all()
+    db.prepare('SELECT id, name FROM territories ORDER BY name').all(),
+    db.prepare('SELECT id, title, type, is_required, sort_order FROM service_task_templates WHERE service_id = ? ORDER BY sort_order, created_at').bind(serviceId).all(),
   ]);
 
   const serviceModel = service as unknown as {
@@ -996,6 +997,14 @@ const renderServiceDetail = async (c: AdminContext, serviceId: string) => {
     name: r.name as string,
   }));
 
+  const taskTemplateList = (taskTemplates.results || []).map(r => ({
+    id: r.id as string,
+    title: r.title as string,
+    type: r.type as string,
+    is_required: Number(r.is_required || 0),
+    sort_order: Number(r.sort_order || 0),
+  }));
+
   return c.html(ServiceDetailPage({
     service: serviceModel,
     categories: categoryList,
@@ -1003,7 +1012,8 @@ const renderServiceDetail = async (c: AdminContext, serviceId: string) => {
     priceRules: ruleList,
     requiredSkills: requiredSkillList,
     allSkills: allSkillList,
-    territories: territoryList
+    territories: territoryList,
+    taskTemplates: taskTemplateList,
   }));
 };
 
@@ -1077,6 +1087,29 @@ app.post('/services/:id/skills', async (c) => {
     await db.prepare('INSERT INTO service_required_skills (service_id, skill_id) VALUES (?, ?)').bind(serviceId, sid).run();
   }
   return c.redirect(`/admin/services/${serviceId}`);
+});
+
+app.post('/services/:id/tasks', async (c) => {
+  const db = c.env.DB;
+  const serviceId = c.req.param('id');
+  const body = await c.req.parseBody();
+  const title = (body.title as string || '').trim();
+  const type = (body.type as string) || 'check';
+  const isRequired = body.is_required ? 1 : 0;
+  if (!title) return renderServiceDetail(c, serviceId);
+  const maxOrder = await db.prepare('SELECT COALESCE(MAX(sort_order), 0) as m FROM service_task_templates WHERE service_id = ?').bind(serviceId).first<{ m: number }>();
+  await db.prepare(
+    'INSERT INTO service_task_templates (id, service_id, title, type, is_required, sort_order) VALUES (?, ?, ?, ?, ?, ?)'
+  ).bind(generateId(), serviceId, title, type, isRequired, (maxOrder?.m || 0) + 1).run();
+  return renderServiceDetail(c, serviceId);
+});
+
+app.post('/services/:id/tasks/:taskId/delete', async (c) => {
+  const db = c.env.DB;
+  const serviceId = c.req.param('id');
+  await db.prepare('DELETE FROM service_task_templates WHERE id = ? AND service_id = ?')
+    .bind(c.req.param('taskId'), serviceId).run();
+  return renderServiceDetail(c, serviceId);
 });
 
 app.get('/customers', async (c) => {
