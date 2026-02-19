@@ -105,7 +105,7 @@ const smsStatusBadge = (status: string) => {
     received: { cls: 'uk-label uk-label-secondary', label: 'received' },
   };
   const info = map[status] || { cls: 'uk-label', label: status };
-  return <span class={info.cls} style="font-size:10px;padding:1px 6px;">{info.label}</span>;
+  return <span class={info.cls} style="font-size:0.75rem;padding:1px 6px;">{info.label}</span>;
 };
 
 const formatDate = (d: string | null) => {
@@ -149,7 +149,7 @@ export const SmsHistoryList = ({
                   : 'background:var(--surface-elevated,#eff1f5);color:var(--text-primary,#333);border:1px solid var(--border,#ccd0da);border-bottom-left-radius:4px;'}`}>
                   <div class="text-sm" style="white-space:pre-wrap;word-break:break-word;">{smsBodyText(sms)}</div>
                   <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-                    <span style={`font-size:11px;opacity:0.7;${sms.direction === 'outbound' ? 'color:#fff;' : ''}`}>{formatTime(sms.created_at)}</span>
+                    <span style={`font-size:0.875rem;opacity:0.7;${sms.direction === 'outbound' ? 'color:#fff;' : ''}`}>{formatTime(sms.created_at)}</span>
                     <div style="display:flex;align-items:center;gap:6px;">
                       {sms.direction === 'outbound' && smsStatusBadge(sms.status)}
                       {sms.direction === 'inbound' && canCreateTask && !taskCompleted && (
@@ -291,7 +291,7 @@ export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164
           class="uk-textarea"
           rows={3}
           placeholder="Write a reply..."
-          style="resize:vertical;min-height:84px;font-size:16px;"
+          style="resize:vertical;min-height:84px;font-size:1.8rem;"
           maxlength={1600}
           oninput="var c=this.value.length;var s=c<=160?1:Math.ceil(c/153);var n=this.form&&this.form.querySelector('[data-sms-counter]');if(n){n.textContent=c+' chars · '+s+' segment'+(s>1?'s':'');}"
         ></textarea>

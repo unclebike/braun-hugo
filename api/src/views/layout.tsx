@@ -648,11 +648,11 @@ window.openSmsTaskModal = function(config) {
 
   var title = document.createElement('div');
   title.textContent = 'Add Task';
-  title.style.cssText = 'font-weight:600;font-size:16px;color:var(--text,#1f2937);margin-bottom:10px;';
+  title.style.cssText = 'font-weight:600;font-size:1.8rem;color:var(--text,#1f2937);margin-bottom:10px;';
 
   var labelTask = document.createElement('label');
   labelTask.textContent = 'Task title';
-  labelTask.style.cssText = 'display:block;font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--text-secondary,#6b7280);margin-bottom:6px;';
+  labelTask.style.cssText = 'display:block;font-size:1.2rem;font-weight:600;letter-spacing:.02em;color:var(--text-secondary,#6b7280);margin-bottom:6px;';
 
   var taskInput = document.createElement('input');
   taskInput.type = 'text';
@@ -664,7 +664,7 @@ window.openSmsTaskModal = function(config) {
 
   var labelJob = document.createElement('label');
   labelJob.textContent = 'Task target';
-  labelJob.style.cssText = 'display:block;font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--text-secondary,#6b7280);margin-bottom:6px;';
+  labelJob.style.cssText = 'display:block;font-size:1.2rem;font-weight:600;letter-spacing:.02em;color:var(--text-secondary,#6b7280);margin-bottom:6px;';
 
   var jobSelect = document.createElement('select');
   jobSelect.className = 'uk-select';
@@ -934,7 +934,7 @@ document.addEventListener('click', function(e) {
           body { background: var(--bg); color: var(--text); overscroll-behavior: none; -webkit-font-smoothing: antialiased; }
 
           @layer base {
-            input, select, textarea, button { font-size: 16px; }
+            input, select, textarea, button { font-size: var(--text-base); }
             input[type="time"], input[type="date"] { -webkit-appearance: none; appearance: none; }
           }
           select:not(.uk-select) { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
@@ -961,10 +961,10 @@ document.addEventListener('click', function(e) {
             top: 0;
             z-index: 50;
           }
-          .page-header h2 { font-size: 20px; color: var(--text); font-weight: 600; letter-spacing: -0.3px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .page-header h2 { font-size: var(--text-lg); color: var(--text); font-weight: var(--font-weight-bold); letter-spacing: -0.01em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
           .page-header-info { grid-column: 1; min-width: 0; }
           .page-header-actions { grid-column: 2; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-          .page-header-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; font-size: 13px; color: var(--text-secondary); }
+          .page-header-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; font-size: var(--text-xs); color: var(--text-secondary); }
           .page-header-meta > span:not(:first-child)::before { content: '·'; margin-right: 6px; opacity: 0.5; }
           .page-header-meta > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
           .page-header--rich { grid-template-rows: auto auto; }
@@ -983,8 +983,8 @@ document.addEventListener('click', function(e) {
             appearance: none;
             padding: 2px 22px 2px 10px;
             border-radius: 999px;
-            font-size: 11px;
-            font-weight: 600;
+            font-size: var(--text-xs);
+            font-weight: var(--font-weight-medium);
             letter-spacing: 0.02em;
             cursor: pointer;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
@@ -1005,7 +1005,7 @@ document.addEventListener('click', function(e) {
           .status-select[data-current="void"] { border-color: var(--badge-destructive-border); background-color: var(--badge-destructive-bg); color: var(--badge-destructive); }
 
           .danger-card { border-color: var(--destructive-border, var(--border)) !important; }
-          .danger-card h3 { color: var(--text-secondary) !important; font-size: 13px !important; }
+          .danger-card h3 { color: var(--text-secondary) !important; font-size: var(--text-xs) !important; }
 
           .wizard-progress { display: flex; align-items: center; gap: 4px; }
           .wizard-progress-step { width: 28px; height: 4px; border-radius: 2px; background: var(--border); }
@@ -1029,23 +1029,23 @@ document.addEventListener('click', function(e) {
           /* Customer create/edit forms don't wrap the input in .search-box, so absolute positioning can land off-screen.
              For those inline address result containers, render results as a normal block list. */
           #address-results .search-results { position: static; border-top: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 18px rgba(0,0,0,0.12); }
-          .search-item { padding: 10px 16px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text); }
+          .search-item { padding: 10px 16px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: var(--text-sm); color: var(--text); }
           .search-item:hover { background: rgba(127,127,127,0.08); }
-          .search-item .name { font-weight: 600; }
-          .search-item .meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+          .search-item .name { font-weight: var(--font-weight-medium); }
+          .search-item .meta { font-size: var(--text-xs); color: var(--text-secondary); margin-top: 2px; }
 
-          .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--brand); color: #1e1e2e; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0; }
-          .avatar-sm { width: 32px; height: 32px; font-size: 13px; }
+          .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--brand); color: #1e1e2e; display: flex; align-items: center; justify-content: center; font-weight: var(--font-weight-medium); font-size: var(--text-sm); flex-shrink: 0; }
+          .avatar-sm { width: 32px; height: 32px; font-size: var(--text-xs); }
 
-          .save-indicator { font-size: 12px; font-weight: 600; transition: opacity 0.3s; opacity: 0; margin-left: 8px; }
+          .save-indicator { font-size: var(--text-xs); font-weight: var(--font-weight-regular); transition: opacity 0.3s; opacity: 0; margin-left: 8px; }
           .save-ok { color: #16a34a; }
           .save-err { color: #dc2626; }
           .save-pending { color: var(--text-secondary); }
           .autosave .save-indicator, #territory-services .save-indicator, #territory-providers .save-indicator { display: inline-block; }
 
-          .delete-btn { color: var(--destructive); background: var(--bg-card); border: 1px solid var(--destructive-border); padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.15s; }
+          .delete-btn { color: var(--destructive); background: var(--bg-card); border: 1px solid var(--destructive-border); padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: var(--text-xs); font-weight: var(--font-weight-medium); transition: all 0.15s; }
           .delete-btn:hover { background: var(--destructive-soft); border-color: var(--destructive-hover); color: var(--destructive-hover); }
-          .delete-btn.delete-armed { background: var(--destructive); color: #fff; border-color: var(--destructive); font-weight: 600; }
+          .delete-btn.delete-armed { background: var(--destructive); color: #fff; border-color: var(--destructive); font-weight: var(--font-weight-medium); }
           .delete-btn.delete-armed:hover { background: var(--destructive-hover); border-color: var(--destructive-hover); }
 
           .mobile-menu-btn {
@@ -1065,12 +1065,12 @@ document.addEventListener('click', function(e) {
           }
 
           .sidebar-nav { padding: 0 4px; }
-          .sidebar-nav .uk-nav-header { color: var(--text-sidebar); font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; padding: 16px 12px 6px; margin: 0; }
+          .sidebar-nav .uk-nav-header { color: var(--text-sidebar); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; font-weight: var(--font-weight-medium); padding: 16px 12px 6px; margin: 0; }
           .sidebar-nav .uk-nav-header:first-child { padding-top: 4px; }
           .sidebar-nav .uk-nav-divider { border-color: var(--sidebar-divider); margin: 8px 12px; }
-          .sidebar-nav > li > a { color: var(--text-sidebar); padding: 8px 12px; border-radius: 6px; font-size: 14px; font-weight: 400; transition: all 0.15s; display: block; text-decoration: none; }
+          .sidebar-nav > li > a { color: var(--text-sidebar); padding: 8px 12px; border-radius: 6px; font-size: var(--text-sm); font-weight: var(--font-weight-regular); transition: all 0.15s; display: block; text-decoration: none; }
           .sidebar-nav > li > a:hover { color: var(--text-sidebar-hover); background: var(--sidebar-hover-bg); }
-          .sidebar-nav > li.uk-active > a { color: var(--text-sidebar-active); background: var(--sidebar-active-bg); font-weight: 600; }
+          .sidebar-nav > li.uk-active > a { color: var(--text-sidebar-active); background: var(--sidebar-active-bg); font-weight: var(--font-weight-medium); }
 
           .admin-theme-toggle {
             width: 100%;
@@ -1082,7 +1082,7 @@ document.addEventListener('click', function(e) {
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 14px;
+            font-size: var(--text-sm);
             cursor: pointer;
             text-align: left;
           }
@@ -1170,7 +1170,7 @@ document.addEventListener('click', function(e) {
           
           .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 0 20px; margin-bottom: 24px; }
           .sidebar-logo img { width: 36px; height: 36px; }
-          .sidebar-logo span { font-size: 18px; color: var(--text-sidebar-active); letter-spacing: -0.3px; font-weight: 600; }
+          .sidebar-logo span { font-size: var(--text-sm); color: var(--text-sidebar-active); letter-spacing: -0.01em; font-weight: var(--font-weight-medium); }
 
           /* iOS PWA: give offcanvas enough top room under translucent status bar. */
           #offcanvas-nav .uk-offcanvas-bar {
@@ -1179,7 +1179,7 @@ document.addEventListener('click', function(e) {
 
           @media (max-width: 768px) {
             .page-header { padding: calc(12px + var(--safe-top)) 16px 12px calc(52px + var(--safe-left)); }
-            .page-header h2 { font-size: 17px; }
+            .page-header h2 { font-size: var(--text-md); }
             .page-header--rich { grid-template-columns: 1fr; }
             .page-header--rich .page-header-actions { grid-column: 1; grid-row: auto; justify-self: start; }
             .page-header-meta > span { max-width: 140px; }
@@ -1217,7 +1217,7 @@ document.addEventListener('click', function(e) {
             border-bottom: 1px solid var(--border);
             background: var(--bg-card);
           }
-          #sms-thread-modal-header h3 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -0.2px; line-height: 1.2; }
+          #sms-thread-modal-header h3 { margin: 0; font-size: var(--text-lg); font-weight: var(--font-weight-bold); letter-spacing: -0.01em; line-height: var(--lh-tight); }
           #sms-thread-modal-actions { display: inline-flex; align-items: center; gap: 8px; }
           #sms-thread-modal-open-inbox { text-decoration: none; }
           #sms-thread-modal-content {
@@ -1272,11 +1272,11 @@ document.addEventListener('click', function(e) {
             display: none;
             padding: 12px;
             border: 1px solid rgba(239,68,68,0.35);
-            border-radius: 12px;
-            background: rgba(239,68,68,0.08);
-            color: #b91c1c;
-            font-size: 13px;
-            margin-bottom: 12px;
+             border-radius: 12px;
+             background: rgba(239,68,68,0.08);
+             color: #b91c1c;
+             font-size: var(--text-xs);
+             margin-bottom: 12px;
           }
           #sms-thread-modal-error[data-open="true"] { display: block; }
           #sms-thread-modal-body {
@@ -1334,7 +1334,7 @@ document.addEventListener('click', function(e) {
           }
 
           @media (min-width: 768px) {
-            #sms-thread-modal-header h3 { font-size: 16px; }
+            #sms-thread-modal-header h3 { font-size: var(--text-base); }
             #sms-thread-modal-overlay {
               padding: 24px;
               align-items: center;
