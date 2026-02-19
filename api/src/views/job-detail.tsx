@@ -165,19 +165,19 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage, customerName }: {
   return (
     <div
       id="job-sms-thread-card"
-      class={`uk-card uk-card-body border-2 ${hasUnread ? 'border-destructive shadow-lg shadow-destructive/5' : 'border-border shadow-sm'}`}
+      class={`rounded-2xl border bg-card shadow-sm overflow-hidden ${hasUnread ? 'border-destructive shadow-destructive/5' : 'border-border'}`}
       hx-get={`/admin/jobs/${jobId}/sms-thread-card`}
       hx-trigger="every 15s"
       hx-swap="outerHTML"
     >
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between px-4 pt-4 pb-3">
         <div class="flex items-center gap-3">
-          <div class={`w-10 h-10 rounded-full flex items-center justify-center ${hasUnread ? 'bg-destructive text-white animate-pulse' : 'bg-muted text-muted-foreground'}`}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><title>SMS Message</title><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <div class={`w-8 h-8 rounded-xl flex items-center justify-center ${hasUnread ? 'bg-destructive text-white animate-pulse' : 'bg-muted text-muted-foreground'}`}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><title>SMS Message</title><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           </div>
           <div>
-            <h3 class="text-base font-bold leading-none">Conversation</h3>
-            <p class="text-[11px] text-muted-foreground mt-1 uppercase font-semibold tracking-wider">SMS Thread</p>
+            <h3 class="text-sm font-bold leading-none">Conversation</h3>
+            <p class="text-[10px] text-muted-foreground mt-0.5 uppercase font-semibold tracking-wider">SMS Thread</p>
           </div>
         </div>
         {hasUnread && (
@@ -186,18 +186,18 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage, customerName }: {
       </div>
 
       {smsThreadMessage ? (
-        <div class="grid gap-4">
-          <div class="bg-muted/40 p-4 rounded-xl border border-border/50">
+        <div class="grid gap-3 px-4 pb-4">
+          <div class="bg-muted/30 p-3 rounded-xl border border-border/50">
             <p class="text-sm leading-relaxed text-foreground italic">
               {smsThreadMessage.body ? `"${smsThreadMessage.body}"` : 'Conversation linked.'}
             </p>
-            <p class="text-[10px] text-muted-foreground mt-3 font-medium uppercase tracking-widest">
+            <p class="text-[10px] text-muted-foreground mt-2 font-medium uppercase tracking-widest">
               {updatedLabel ? `Last updated ${updatedLabel}` : ''}
             </p>
           </div>
           <button
             type="button"
-            class="uk-btn uk-btn-primary w-full py-2.5 font-bold shadow-md shadow-brand/10"
+            class="uk-btn uk-btn-primary w-full py-2.5 font-bold rounded-xl shadow-md shadow-brand/10"
             data-sms-thread-modal-open="true"
             data-sms-thread-modal-title={customerName || ''}
             hx-get={`/admin/inbox/${smsThreadMessage.id}/sms-thread-panel`}
@@ -209,7 +209,7 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage, customerName }: {
           </button>
         </div>
       ) : (
-        <div class="py-6 text-center">
+        <div class="py-6 px-4 pb-4 text-center">
           <p class="text-sm text-muted-foreground">No active conversation linked to this job.</p>
         </div>
       )}
@@ -548,138 +548,6 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                 </div>
               </section>
 
-              <section id="logistics">
-                <div class="flex items-center gap-3 mb-6">
-                  <div class="w-2 h-8 bg-muted-foreground rounded-full" />
-                  <h3 class="text-xl font-black tracking-tight">Logistics & Timing</h3>
-                </div>
-                
-                <div class="uk-card uk-card-body border border-border rounded-2xl shadow-sm bg-card/50">
-                  <div class="grid gap-8">
-                    <form
-                      class="autosave grid gap-x-4 gap-y-3 grid-cols-2 lg:grid-cols-3"
-                      hx-post={`/admin/jobs/${job.id}`}
-                      hx-target="#page-content"
-                      hx-select="#page-content"
-                      hx-swap="none"
-                      hx-trigger="input delay:800ms, change"
-                      hx-sync="this:queue last"
-                    >
-                      <input type="hidden" name="_section" value="details" />
-                      
-                      <div class="space-y-1">
-                        <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="scheduled-date">Service Date</label>
-                        <input id="scheduled-date" name="scheduled_date" type="date" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 px-2 text-xs sm:text-sm" value={job.scheduled_date} />
-                      </div>
-                      <div class="space-y-1">
-                        <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="scheduled-time">Arrival Time</label>
-                        <input id="scheduled-time" name="scheduled_start_time" type="time" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 px-2 text-xs sm:text-sm" value={job.scheduled_start_time} />
-                      </div>
-                      <div class="space-y-1">
-                        <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="duration">Est. duration</label>
-                        <div class="relative">
-                          <input id="duration" name="duration_minutes" type="number" min={1} class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 pr-8 sm:pr-12 pl-2 text-xs sm:text-sm" value={job.duration_minutes} />
-                          <span class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase">Min</span>
-                        </div>
-                      </div>
-                      <div class="space-y-1 col-span-2 lg:col-span-1">
-                        <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="provider-id">Primary Provider</label>
-                        <select id="provider-id" name="provider_id" class="uk-select rounded-xl border-2 font-bold h-10 sm:h-11 px-2 text-xs sm:text-sm">
-                          <option value="">Unassigned</option>
-                          {team.map((p) => <option key={p.id} value={p.id} selected={assignedProviderId === p.id}>{p.first_name} {p.last_name}</option>)}
-                        </select>
-                      </div>
-                      <div class="space-y-1">
-                        <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="base-price">Base Price</label>
-                        <div class="relative">
-                          <span class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
-                          <input id="base-price" name="base_price" type="number" step="0.01" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 pl-6 sm:pl-8 pr-2 text-xs sm:text-sm" value={(job.base_price_cents / 100).toFixed(2)} />
-                        </div>
-                      </div>
-                      <div class="space-y-1">
-                        <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="total-price">Total Price</label>
-                        <div class="relative">
-                          <span class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
-                          <input id="total-price" name="total_price" type="number" step="0.01" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 pl-6 sm:pl-8 pr-2 text-xs sm:text-sm" value={(job.total_price_cents / 100).toFixed(2)} />
-                        </div>
-                      </div>
-                      
-                      <div class="col-span-2 lg:col-span-3 flex items-center justify-between mt-1 sm:mt-2">
-                        <p class="text-[9px] sm:text-[10px] text-muted-foreground/60 font-medium italic flex items-center gap-1.5 sm:gap-2">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="sm:w-3 sm:h-3"><title>Auto-save</title><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 6v6l4 2"/></svg>
-                          Changes auto-save
-                        </p>
-                        <span class="save-indicator font-black text-[9px] sm:text-[10px] uppercase tracking-widest text-brand"></span>
-                      </div>
-                    </form>
-
-                    <div class="pt-6 border-t border-border/50">
-                      <div class="grid sm:grid-cols-2 gap-6">
-                        <div class="space-y-4">
-                          <p class="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Work Execution</p>
-                          <div class="flex flex-wrap gap-3">
-                            {!job.started_at ? (
-                              <button
-                                type="button"
-                                class="uk-btn uk-btn-primary flex-1 h-12 rounded-xl font-black shadow-lg shadow-brand/20 transition-all hover:scale-[1.02]"
-                                hx-post={`/admin/jobs/${job.id}/status`}
-                                hx-vals='{"status": "in_progress"}'
-                                hx-target="#page-content"
-                                hx-select="#page-content"
-                              >
-                                START JOB
-                              </button>
-                            ) : !job.completed_at ? (
-                              <button
-                                type="button"
-                                class="uk-btn uk-btn-primary flex-1 h-12 rounded-xl font-black bg-secondary border-secondary shadow-lg shadow-secondary/20 transition-all hover:scale-[1.02]"
-                                hx-post={`/admin/jobs/${job.id}/status`}
-                                hx-vals='{"status": "complete"}'
-                                hx-target="#page-content"
-                                hx-select="#page-content"
-                              >
-                                END JOB
-                              </button>
-                            ) : (
-                              <div class="flex-1 bg-muted/50 border border-border/50 h-12 rounded-xl flex items-center justify-center gap-2">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-brand"><title>Completed</title><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m22 4-10 10.01-3-3"/></svg>
-                                <span class="text-xs font-black uppercase tracking-widest text-muted-foreground">Work Completed</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div class="bg-muted/30 rounded-2xl p-4 border border-border/40 flex flex-col justify-center">
-                          <p class="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Execution Metrics</p>
-                          <div class="grid grid-cols-2 gap-4">
-                            <div>
-                              <p class="text-[9px] font-bold text-muted-foreground/70 uppercase">Start Time</p>
-                              <p class="text-sm font-black">{job.started_at ? new Date(`${job.started_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
-                            </div>
-                            <div>
-                              <p class="text-[9px] font-bold text-muted-foreground/70 uppercase">End Time</p>
-                              <p class="text-sm font-black">{job.completed_at ? new Date(`${job.completed_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
-                            </div>
-                            <div class="col-span-2 pt-2 mt-2 border-t border-border/30">
-                              <p class="text-[9px] font-bold text-muted-foreground/70 uppercase">Actual Duration</p>
-                              <p class="text-lg font-black text-brand">{actualDuration !== null ? `${actualDuration} Minutes` : 'Calculating...'}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-            </div>
-
-            <aside class="grid gap-8 content-start">
-              <SmsThreadCard
-                jobId={job.id}
-                smsThreadMessage={smsThreadMessage}
-                customerName={customerName}
-              />
-
               <section id="billing">
                 <div class="flex items-center justify-between mb-4 px-1">
                   <h3 class="text-lg font-black tracking-tight leading-none">Job Billing</h3>
@@ -742,6 +610,137 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                       </div>
                       <button type="submit" class="uk-btn uk-btn-default w-full py-2 text-[10px] font-black uppercase tracking-widest h-10 mt-1 rounded-xl shadow-sm">Add Billing Item</button>
                     </form>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <aside class="grid gap-8 content-start">
+              <SmsThreadCard
+                jobId={job.id}
+                smsThreadMessage={smsThreadMessage}
+                customerName={customerName}
+              />
+
+              <section id="logistics">
+                <div class="flex items-center gap-3 mb-4 px-1">
+                  <h3 class="text-lg font-black tracking-tight leading-none">Logistics & Timing</h3>
+                </div>
+                
+                <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+                  <div class="p-4 grid gap-6">
+                    <form
+                      class="autosave grid gap-x-3 gap-y-3 grid-cols-2"
+                      hx-post={`/admin/jobs/${job.id}`}
+                      hx-target="#page-content"
+                      hx-select="#page-content"
+                      hx-swap="none"
+                      hx-trigger="input delay:800ms, change"
+                      hx-sync="this:queue last"
+                    >
+                      <input type="hidden" name="_section" value="details" />
+                      
+                      <div class="space-y-1">
+                        <label class="text-[9px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="scheduled-date">Service Date</label>
+                        <input id="scheduled-date" name="scheduled_date" type="date" class="uk-input rounded-xl border-2 font-bold h-10 px-2 text-xs" value={job.scheduled_date} />
+                      </div>
+                      <div class="space-y-1">
+                        <label class="text-[9px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="scheduled-time">Arrival Time</label>
+                        <input id="scheduled-time" name="scheduled_start_time" type="time" class="uk-input rounded-xl border-2 font-bold h-10 px-2 text-xs" value={job.scheduled_start_time} />
+                      </div>
+                      <div class="space-y-1">
+                        <label class="text-[9px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="duration">Duration</label>
+                        <div class="relative">
+                          <input id="duration" name="duration_minutes" type="number" min={1} class="uk-input rounded-xl border-2 font-bold h-10 pr-8 pl-2 text-xs" value={job.duration_minutes} />
+                          <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] font-black text-muted-foreground uppercase">Min</span>
+                        </div>
+                      </div>
+                      <div class="space-y-1">
+                        <label class="text-[9px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="provider-id">Provider</label>
+                        <select id="provider-id" name="provider_id" class="uk-select rounded-xl border-2 font-bold h-10 px-2 text-xs">
+                          <option value="">Unassigned</option>
+                          {team.map((p) => <option key={p.id} value={p.id} selected={assignedProviderId === p.id}>{p.first_name} {p.last_name}</option>)}
+                        </select>
+                      </div>
+                      <div class="space-y-1">
+                        <label class="text-[9px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="base-price">Base Price</label>
+                        <div class="relative">
+                          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
+                          <input id="base-price" name="base_price" type="number" step="0.01" class="uk-input rounded-xl border-2 font-bold h-10 pl-6 pr-2 text-xs" value={(job.base_price_cents / 100).toFixed(2)} />
+                        </div>
+                      </div>
+                      <div class="space-y-1">
+                        <label class="text-[9px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="total-price">Total Price</label>
+                        <div class="relative">
+                          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
+                          <input id="total-price" name="total_price" type="number" step="0.01" class="uk-input rounded-xl border-2 font-bold h-10 pl-6 pr-2 text-xs" value={(job.total_price_cents / 100).toFixed(2)} />
+                        </div>
+                      </div>
+                      
+                      <div class="col-span-2 flex items-center justify-between mt-1">
+                        <p class="text-[9px] text-muted-foreground/60 font-medium italic flex items-center gap-1.5">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Auto-save</title><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 6v6l4 2"/></svg>
+                          Changes auto-save
+                        </p>
+                        <span class="save-indicator font-black text-[9px] uppercase tracking-widest text-brand"></span>
+                      </div>
+                    </form>
+
+                    <div class="pt-4 border-t border-border/50">
+                      <div class="space-y-4">
+                        <div class="space-y-3">
+                          <p class="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Work Execution</p>
+                          <div class="flex gap-3">
+                            {!job.started_at ? (
+                              <button
+                                type="button"
+                                class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-black shadow-lg shadow-brand/20 transition-all hover:scale-[1.02]"
+                                hx-post={`/admin/jobs/${job.id}/status`}
+                                hx-vals='{"status": "in_progress"}'
+                                hx-target="#page-content"
+                                hx-select="#page-content"
+                              >
+                                START JOB
+                              </button>
+                            ) : !job.completed_at ? (
+                              <button
+                                type="button"
+                                class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-black bg-secondary border-secondary shadow-lg shadow-secondary/20 transition-all hover:scale-[1.02]"
+                                hx-post={`/admin/jobs/${job.id}/status`}
+                                hx-vals='{"status": "complete"}'
+                                hx-target="#page-content"
+                                hx-select="#page-content"
+                              >
+                                END JOB
+                              </button>
+                            ) : (
+                              <div class="flex-1 bg-muted/50 border border-border/50 h-10 rounded-xl flex items-center justify-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-brand"><title>Completed</title><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m22 4-10 10.01-3-3"/></svg>
+                                <span class="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Work Completed</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div class="bg-muted/30 rounded-xl p-3 border border-border/40">
+                          <p class="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-2">Execution Metrics</p>
+                          <div class="grid grid-cols-2 gap-3">
+                            <div>
+                              <p class="text-[9px] font-bold text-muted-foreground/70 uppercase">Start Time</p>
+                              <p class="text-xs font-black">{job.started_at ? new Date(`${job.started_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
+                            </div>
+                            <div>
+                              <p class="text-[9px] font-bold text-muted-foreground/70 uppercase">End Time</p>
+                              <p class="text-xs font-black">{job.completed_at ? new Date(`${job.completed_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
+                            </div>
+                            <div class="col-span-2 pt-2 mt-1 border-t border-border/30">
+                              <p class="text-[9px] font-bold text-muted-foreground/70 uppercase">Actual Duration</p>
+                              <p class="text-sm font-black text-brand">{actualDuration !== null ? `${actualDuration} Minutes` : 'Calculating...'}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </section>
