@@ -183,10 +183,7 @@ html, body {
   background: var(--bg);
 }
 
-/* iOS: allow headers to extend under translucent status bar, but keep content readable. */
-.sticky.top-0.z-50 {
-  padding-top: var(--safe-top);
-}
+/* iOS: headers extend under translucent status bar via .page-header padding-top. */
 
 /* Apply Catppuccin variables to Franken/UIkit components in light mode too.
    (Dark mode already has explicit overrides; these base rules bring Latte in line.) */
@@ -626,11 +623,11 @@ window.openSmsTaskModal = function(config) {
 
   var title = document.createElement('div');
   title.textContent = 'Add Task';
-  title.style.cssText = 'font-weight:600;font-size:16px;color:var(--text,#1f2937);margin-bottom:10px;';
+  title.style.cssText = 'font-weight:600;font-size:1.8rem;color:var(--text,#1f2937);margin-bottom:10px;';
 
   var labelTask = document.createElement('label');
   labelTask.textContent = 'Task title';
-  labelTask.style.cssText = 'display:block;font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--text-secondary,#6b7280);margin-bottom:6px;';
+  labelTask.style.cssText = 'display:block;font-size:1.2rem;font-weight:600;letter-spacing:.02em;color:var(--text-secondary,#6b7280);margin-bottom:6px;';
 
   var taskInput = document.createElement('input');
   taskInput.type = 'text';
@@ -642,7 +639,7 @@ window.openSmsTaskModal = function(config) {
 
   var labelJob = document.createElement('label');
   labelJob.textContent = 'Task target';
-  labelJob.style.cssText = 'display:block;font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--text-secondary,#6b7280);margin-bottom:6px;';
+  labelJob.style.cssText = 'display:block;font-size:1.2rem;font-weight:600;letter-spacing:.02em;color:var(--text-secondary,#6b7280);margin-bottom:6px;';
 
   var jobSelect = document.createElement('select');
   jobSelect.className = 'uk-select';
@@ -911,7 +908,7 @@ document.addEventListener('click', function(e) {
           body { background: var(--bg); color: var(--text); overscroll-behavior: none; -webkit-font-smoothing: antialiased; }
 
           @layer base {
-            input, select, textarea, button { font-size: 16px; }
+            input, select, textarea, button { font-size: var(--text-base); }
             input[type="time"], input[type="date"] { -webkit-appearance: none; appearance: none; }
           }
           select:not(.uk-select) { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
@@ -927,7 +924,7 @@ document.addEventListener('click', function(e) {
 
           .page-header {
             background: var(--bg-card);
-            padding: 16px 32px 16px 52px;
+            padding: calc(16px + var(--safe-top)) 32px 16px calc(52px + var(--safe-left));
             border-bottom: 1px solid var(--border);
             display: grid;
             grid-template-columns: 1fr auto;
@@ -938,10 +935,10 @@ document.addEventListener('click', function(e) {
             top: 0;
             z-index: 50;
           }
-          .page-header h2 { font-size: 20px; color: var(--text); font-weight: 600; letter-spacing: -0.3px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .page-header h2 { font-size: var(--text-lg); color: var(--text); font-weight: var(--font-weight-bold); letter-spacing: -0.01em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
           .page-header-info { grid-column: 1; min-width: 0; }
           .page-header-actions { grid-column: 2; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-          .page-header-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; font-size: 13px; color: var(--text-secondary); }
+          .page-header-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; font-size: var(--text-xs); color: var(--text-secondary); }
           .page-header-meta > span:not(:first-child)::before { content: '·'; margin-right: 6px; opacity: 0.5; }
           .page-header-meta > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
           .page-header--rich { grid-template-rows: auto auto; }
@@ -955,8 +952,34 @@ document.addEventListener('click', function(e) {
           .status-icon--secondary { color: var(--badge-secondary); }
           .status-icon--destructive { color: var(--badge-destructive); }
 
+          .status-select {
+            -webkit-appearance: none;
+            appearance: none;
+            padding: 2px 22px 2px 10px;
+            border-radius: 999px;
+            font-size: var(--text-xs);
+            font-weight: var(--font-weight-medium);
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 7px center;
+            border: 1px solid var(--badge-neutral-border);
+            background-color: var(--badge-neutral-bg);
+            color: var(--badge-neutral-text);
+            transition: border-color 0.15s, background-color 0.15s;
+          }
+          .status-select:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
+          .status-select[data-current="complete"],
+          .status-select[data-current="paid"] { border-color: var(--badge-primary-border); background-color: var(--badge-primary-bg); color: var(--badge-primary); }
+          .status-select[data-current="in_progress"],
+          .status-select[data-current="enroute"],
+          .status-select[data-current="pending"] { border-color: var(--badge-secondary-border); background-color: var(--badge-secondary-bg); color: var(--badge-secondary); }
+          .status-select[data-current="cancelled"],
+          .status-select[data-current="void"] { border-color: var(--badge-destructive-border); background-color: var(--badge-destructive-bg); color: var(--badge-destructive); }
+
           .danger-card { border-color: var(--destructive-border, var(--border)) !important; }
-          .danger-card h3 { color: var(--text-secondary) !important; font-size: 13px !important; }
+          .danger-card h3 { color: var(--text-secondary) !important; font-size: var(--text-xs) !important; }
 
           .wizard-progress { display: flex; align-items: center; gap: 4px; }
           .wizard-progress-step { width: 28px; height: 4px; border-radius: 2px; background: var(--border); }
@@ -969,7 +992,7 @@ document.addEventListener('click', function(e) {
             .admin-layout { display: flex; }
             .desktop-sidebar { display: flex; flex-direction: column; width: 260px; min-width: 260px; background: var(--bg-sidebar); min-height: 100vh; min-height: 100dvh; position: sticky; top: 0; height: 100vh; height: 100dvh; overflow-y: auto; padding: 24px 0; }
             .mobile-menu-btn { display: none !important; }
-            .page-header { padding: 20px 32px; }
+            .page-header { padding: calc(20px + var(--safe-top)) 32px 20px 32px; }
           }
 
           table { width: 100%; border-collapse: collapse; }
@@ -980,23 +1003,23 @@ document.addEventListener('click', function(e) {
           /* Customer create/edit forms don't wrap the input in .search-box, so absolute positioning can land off-screen.
              For those inline address result containers, render results as a normal block list. */
           #address-results .search-results { position: static; border-top: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 18px rgba(0,0,0,0.12); }
-          .search-item { padding: 10px 16px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text); }
+          .search-item { padding: 10px 16px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: var(--text-sm); color: var(--text); }
           .search-item:hover { background: rgba(127,127,127,0.08); }
-          .search-item .name { font-weight: 500; }
-          .search-item .meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+          .search-item .name { font-weight: var(--font-weight-medium); }
+          .search-item .meta { font-size: var(--text-xs); color: var(--text-secondary); margin-top: 2px; }
 
-          .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--brand); color: #1e1e2e; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0; }
-          .avatar-sm { width: 32px; height: 32px; font-size: 13px; }
+          .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--brand); color: #1e1e2e; display: flex; align-items: center; justify-content: center; font-weight: var(--font-weight-medium); font-size: var(--text-sm); flex-shrink: 0; }
+          .avatar-sm { width: 32px; height: 32px; font-size: var(--text-xs); }
 
-          .save-indicator { font-size: 12px; font-weight: 500; transition: opacity 0.3s; opacity: 0; margin-left: 8px; }
+          .save-indicator { font-size: var(--text-xs); font-weight: var(--font-weight-regular); transition: opacity 0.3s; opacity: 0; margin-left: 8px; }
           .save-ok { color: #16a34a; }
           .save-err { color: #dc2626; }
           .save-pending { color: var(--text-secondary); }
           .autosave .save-indicator, #territory-services .save-indicator, #territory-providers .save-indicator { display: inline-block; }
 
-          .delete-btn { color: var(--destructive); background: var(--bg-card); border: 1px solid var(--destructive-border); padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+          .delete-btn { color: var(--destructive); background: var(--bg-card); border: 1px solid var(--destructive-border); padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: var(--text-xs); font-weight: var(--font-weight-medium); transition: all 0.15s; }
           .delete-btn:hover { background: var(--destructive-soft); border-color: var(--destructive-hover); color: var(--destructive-hover); }
-          .delete-btn.delete-armed { background: var(--destructive); color: #fff; border-color: var(--destructive); font-weight: 600; }
+          .delete-btn.delete-armed { background: var(--destructive); color: #fff; border-color: var(--destructive); font-weight: var(--font-weight-medium); }
           .delete-btn.delete-armed:hover { background: var(--destructive-hover); border-color: var(--destructive-hover); }
 
           .mobile-menu-btn {
@@ -1008,25 +1031,20 @@ document.addEventListener('click', function(e) {
             color: var(--text);
             cursor: pointer;
             position: fixed;
-            top: 0;
-            left: 0;
-            height: calc(48px + var(--safe-top));
-            width: calc(48px + var(--safe-left));
-            padding-top: var(--safe-top);
-            padding-left: var(--safe-left);
+            top: var(--safe-top);
+            left: var(--safe-left);
+            height: 48px;
+            width: 48px;
             z-index: 100;
-          }
-          .mobile-menu-btn svg {
-            transform: translateY(0px);
           }
 
           .sidebar-nav { padding: 0 4px; }
-          .sidebar-nav .uk-nav-header { color: var(--text-sidebar); font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; padding: 16px 12px 6px; margin: 0; }
+          .sidebar-nav .uk-nav-header { color: var(--text-sidebar); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; font-weight: var(--font-weight-medium); padding: 16px 12px 6px; margin: 0; }
           .sidebar-nav .uk-nav-header:first-child { padding-top: 4px; }
           .sidebar-nav .uk-nav-divider { border-color: var(--sidebar-divider); margin: 8px 12px; }
-          .sidebar-nav > li > a { color: var(--text-sidebar); padding: 8px 12px; border-radius: 6px; font-size: 14px; font-weight: 450; transition: all 0.15s; display: block; text-decoration: none; }
+          .sidebar-nav > li > a { color: var(--text-sidebar); padding: 8px 12px; border-radius: 6px; font-size: var(--text-sm); font-weight: var(--font-weight-regular); transition: all 0.15s; display: block; text-decoration: none; }
           .sidebar-nav > li > a:hover { color: var(--text-sidebar-hover); background: var(--sidebar-hover-bg); }
-          .sidebar-nav > li.uk-active > a { color: var(--text-sidebar-active); background: var(--sidebar-active-bg); font-weight: 500; }
+          .sidebar-nav > li.uk-active > a { color: var(--text-sidebar-active); background: var(--sidebar-active-bg); font-weight: var(--font-weight-medium); }
 
           .admin-theme-toggle {
             width: 100%;
@@ -1038,7 +1056,7 @@ document.addEventListener('click', function(e) {
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 14px;
+            font-size: var(--text-sm);
             cursor: pointer;
             text-align: left;
           }
@@ -1126,7 +1144,7 @@ document.addEventListener('click', function(e) {
           
           .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 0 20px; margin-bottom: 24px; }
           .sidebar-logo img { width: 36px; height: 36px; }
-          .sidebar-logo span { font-size: 18px; color: var(--text-sidebar-active); letter-spacing: -0.3px; font-weight: 600; }
+          .sidebar-logo span { font-size: var(--text-sm); color: var(--text-sidebar-active); letter-spacing: -0.01em; font-weight: var(--font-weight-medium); }
 
           /* iOS PWA: give offcanvas enough top room under translucent status bar. */
           #offcanvas-nav .uk-offcanvas-bar {
@@ -1134,8 +1152,8 @@ document.addEventListener('click', function(e) {
           }
 
           @media (max-width: 768px) {
-            .page-header { padding: 12px 16px 12px 52px; }
-            .page-header h2 { font-size: 17px; }
+            .page-header { padding: calc(12px + var(--safe-top)) 16px 12px calc(52px + var(--safe-left)); }
+            .page-header h2 { font-size: var(--text-md); }
             .page-header--rich { grid-template-columns: 1fr; }
             .page-header--rich .page-header-actions { grid-column: 1; grid-row: auto; justify-self: start; }
             .page-header-meta > span { max-width: 140px; }
@@ -1173,7 +1191,7 @@ document.addEventListener('click', function(e) {
             border-bottom: 1px solid var(--border);
             background: var(--bg-card);
           }
-          #sms-thread-modal-header h3 { margin: 0; font-size: 15px; font-weight: 650; letter-spacing: -0.2px; line-height: 1.2; }
+          #sms-thread-modal-header h3 { margin: 0; font-size: var(--text-lg); font-weight: var(--font-weight-bold); letter-spacing: -0.01em; line-height: var(--lh-tight); }
           #sms-thread-modal-actions { display: inline-flex; align-items: center; gap: 8px; }
           #sms-thread-modal-open-inbox { text-decoration: none; }
           #sms-thread-modal-content {
@@ -1228,11 +1246,11 @@ document.addEventListener('click', function(e) {
             display: none;
             padding: 12px;
             border: 1px solid rgba(239,68,68,0.35);
-            border-radius: 12px;
-            background: rgba(239,68,68,0.08);
-            color: #b91c1c;
-            font-size: 13px;
-            margin-bottom: 12px;
+             border-radius: 12px;
+             background: rgba(239,68,68,0.08);
+             color: #b91c1c;
+             font-size: var(--text-xs);
+             margin-bottom: 12px;
           }
           #sms-thread-modal-error[data-open="true"] { display: block; }
           #sms-thread-modal-body {
@@ -1290,7 +1308,7 @@ document.addEventListener('click', function(e) {
           }
 
           @media (min-width: 768px) {
-            #sms-thread-modal-header h3 { font-size: 16px; }
+            #sms-thread-modal-header h3 { font-size: var(--text-base); }
             #sms-thread-modal-overlay {
               padding: 24px;
               align-items: center;
@@ -1305,7 +1323,7 @@ document.addEventListener('click', function(e) {
               overflow: hidden;
             }
           }
-        ` })] }), _jsxs("body", { children: [_jsx("div", { id: "offcanvas-nav", "data-uk-offcanvas": "mode: slide; overlay: true", children: _jsxs("div", { class: "uk-offcanvas-bar", style: "background: var(--bg-sidebar); width: 260px;", children: [_jsx("button", { class: "uk-offcanvas-close", type: "button", "data-uk-close": true, style: "color: var(--text-sidebar-active);" }), _jsxs("div", { class: "sidebar-logo", style: "padding: 0 16px;", children: [_jsx("img", { src: "/images/uncle-logo.svg", alt: "" }), _jsx("span", { children: "Uncle Bike" })] }), _jsxs("ul", { class: "uk-nav uk-nav-default sidebar-nav", "data-uk-nav": true, children: [_jsx("li", { class: "uk-nav-header", children: "Overview" }), _jsx("li", { children: _jsx("a", { href: "/admin", "hx-get": "/admin", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Dashboard" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Operations" }), _jsx("li", { children: _jsx("a", { href: "/admin/inbox", "hx-get": "/admin/inbox", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Inbox" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/jobs", "hx-get": "/admin/jobs", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Jobs" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/customers", "hx-get": "/admin/customers", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Customers" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/recurring", "hx-get": "/admin/recurring", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Recurring" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/invoices", "hx-get": "/admin/invoices", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Invoices" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Setup" }), _jsx("li", { children: _jsx("a", { href: "/admin/territories", "hx-get": "/admin/territories", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Territories" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/services", "hx-get": "/admin/services", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Services" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/team", "hx-get": "/admin/team", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Team" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Config" }), _jsx("li", { children: _jsx("a", { href: "/admin/branding", "hx-get": "/admin/branding", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Branding" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/coupons", "hx-get": "/admin/coupons", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Coupons" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/webhooks", "hx-get": "/admin/webhooks", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Webhooks" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/sms-settings", "hx-get": "/admin/sms-settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "SMS" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/push-settings", "hx-get": "/admin/push-settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Push" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/settings", "hx-get": "/admin/settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Settings" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { children: _jsxs("button", { type: "button", class: "admin-theme-toggle", onclick: "toggleTheme()", "aria-label": "Toggle theme", children: [_jsx("div", { class: "theme-toggle-icon", children: _jsx("div", { class: "moon-or-sun", children: _jsx("div", { class: "moon-mask" }) }) }), _jsx("span", { class: "theme-label" })] }) })] })] }) }), _jsxs("div", { class: "admin-layout", children: [_jsxs("aside", { class: "desktop-sidebar", children: [_jsxs("div", { class: "sidebar-logo", children: [_jsx("img", { src: "/images/uncle-logo.svg", alt: "" }), _jsx("span", { children: "Uncle Bike" })] }), _jsxs("ul", { class: "uk-nav uk-nav-default sidebar-nav", "data-uk-nav": true, children: [_jsx("li", { class: "uk-nav-header", children: "Overview" }), _jsx("li", { children: _jsx("a", { href: "/admin", "hx-get": "/admin", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Dashboard" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Operations" }), _jsx("li", { children: _jsx("a", { href: "/admin/inbox", "hx-get": "/admin/inbox", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Inbox" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/jobs", "hx-get": "/admin/jobs", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Jobs" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/customers", "hx-get": "/admin/customers", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Customers" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/recurring", "hx-get": "/admin/recurring", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Recurring" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/invoices", "hx-get": "/admin/invoices", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Invoices" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Setup" }), _jsx("li", { children: _jsx("a", { href: "/admin/territories", "hx-get": "/admin/territories", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Territories" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/services", "hx-get": "/admin/services", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Services" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/team", "hx-get": "/admin/team", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Team" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Config" }), _jsx("li", { children: _jsx("a", { href: "/admin/branding", "hx-get": "/admin/branding", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Branding" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/coupons", "hx-get": "/admin/coupons", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Coupons" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/webhooks", "hx-get": "/admin/webhooks", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Webhooks" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/sms-settings", "hx-get": "/admin/sms-settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "SMS" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/push-settings", "hx-get": "/admin/push-settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Push" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/settings", "hx-get": "/admin/settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Settings" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { children: _jsxs("button", { type: "button", class: "admin-theme-toggle", onclick: "toggleTheme()", "aria-label": "Toggle theme", children: [_jsx("div", { class: "theme-toggle-icon", children: _jsx("div", { class: "moon-or-sun", children: _jsx("div", { class: "moon-mask" }) }) }), _jsx("span", { class: "theme-label" })] }) })] })] }), _jsxs("main", { class: "main-content", id: "main-content", children: [_jsx("button", { type: "button", class: "mobile-menu-btn", "data-uk-toggle": "target: #offcanvas-nav", "aria-label": "Open menu", children: _jsxs("svg", { width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2", children: [_jsx("title", { children: "Menu" }), _jsx("line", { x1: "3", y1: "6", x2: "21", y2: "6" }), _jsx("line", { x1: "3", y1: "12", x2: "21", y2: "12" }), _jsx("line", { x1: "3", y1: "18", x2: "21", y2: "18" })] }) }), _jsx("div", { id: "page-content", children: children })] })] }), _jsx("div", { id: "sms-thread-modal-overlay", hidden: true, children: _jsxs("div", { id: "sms-thread-modal-panel", role: "dialog", "aria-modal": "true", "aria-label": "SMS conversation", children: [_jsxs("div", { id: "sms-thread-modal-header", children: [_jsx("h3", { children: "Conversation" }), _jsxs("div", { id: "sms-thread-modal-actions", children: [_jsx("a", { id: "sms-thread-modal-open-inbox", class: "uk-btn uk-btn-default uk-btn-sm", href: "/admin/inbox", style: "display:none;", children: "Inbox" }), _jsx("button", { type: "button", class: "uk-btn uk-btn-default uk-btn-sm", "data-sms-thread-modal-close": true, "aria-label": "Close conversation", children: "Close" })] })] }), _jsxs("div", { id: "sms-thread-modal-content", children: [_jsxs("div", { id: "sms-thread-modal-status", children: [_jsx("div", { id: "sms-thread-modal-loading", "aria-live": "polite", "aria-busy": "true", children: _jsxs("div", { class: "skel", children: [_jsxs("div", { class: "skel-row", children: [_jsx("div", { class: "skel-dot" }), _jsx("div", { class: "skel-line w-70" })] }), _jsxs("div", { class: "skel-row", children: [_jsx("div", { class: "skel-dot" }), _jsx("div", { class: "skel-line w-85" })] }), _jsxs("div", { class: "skel-row", children: [_jsx("div", { class: "skel-dot" }), _jsx("div", { class: "skel-line w-45" })] })] }) }), _jsx("div", { id: "sms-thread-modal-error", role: "alert" })] }), _jsx("div", { id: "sms-thread-modal-body" })] })] }) }), html `<script>
+        ` })] }), _jsxs("body", { children: [_jsx("div", { id: "offcanvas-nav", "data-uk-offcanvas": "mode: slide; overlay: true", children: _jsxs("div", { class: "uk-offcanvas-bar", style: "background: var(--bg-sidebar); width: 260px;", children: [_jsx("button", { class: "uk-offcanvas-close", type: "button", "data-uk-close": true, style: "color: var(--text-sidebar-active);" }), _jsxs("div", { class: "sidebar-logo", style: "padding: 0 16px;", children: [_jsx("img", { src: "/images/uncle-logo.svg", alt: "" }), _jsx("span", { children: "Uncle Bike" })] }), _jsxs("ul", { class: "uk-nav uk-nav-default sidebar-nav", "data-uk-nav": true, children: [_jsx("li", { class: "uk-nav-header", children: "Overview" }), _jsx("li", { children: _jsx("a", { href: "/admin", "hx-get": "/admin", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Dashboard" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Operations" }), _jsx("li", { children: _jsx("a", { href: "/admin/inbox", "hx-get": "/admin/inbox", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Inbox" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/jobs", "hx-get": "/admin/jobs", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Jobs" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/customers", "hx-get": "/admin/customers", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Customers" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/recurring", "hx-get": "/admin/recurring", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Recurring" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/invoices", "hx-get": "/admin/invoices", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Invoices" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Setup" }), _jsx("li", { children: _jsx("a", { href: "/admin/territories", "hx-get": "/admin/territories", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Territories" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/categories", "hx-get": "/admin/categories", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Categories" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/services", "hx-get": "/admin/services", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Services" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/team", "hx-get": "/admin/team", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Team" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/skills", "hx-get": "/admin/skills", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Skills" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Config" }), _jsx("li", { children: _jsx("a", { href: "/admin/branding", "hx-get": "/admin/branding", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Branding" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/coupons", "hx-get": "/admin/coupons", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Coupons" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/webhooks", "hx-get": "/admin/webhooks", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Webhooks" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/sms-settings", "hx-get": "/admin/sms-settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "SMS" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/push-settings", "hx-get": "/admin/push-settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Push" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/settings", "hx-get": "/admin/settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Settings" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { children: _jsxs("button", { type: "button", class: "admin-theme-toggle", onclick: "toggleTheme()", "aria-label": "Toggle theme", children: [_jsx("div", { class: "theme-toggle-icon", children: _jsx("div", { class: "moon-or-sun", children: _jsx("div", { class: "moon-mask" }) }) }), _jsx("span", { class: "theme-label" })] }) })] })] }) }), _jsxs("div", { class: "admin-layout", children: [_jsxs("aside", { class: "desktop-sidebar", children: [_jsxs("div", { class: "sidebar-logo", children: [_jsx("img", { src: "/images/uncle-logo.svg", alt: "" }), _jsx("span", { children: "Uncle Bike" })] }), _jsxs("ul", { class: "uk-nav uk-nav-default sidebar-nav", "data-uk-nav": true, children: [_jsx("li", { class: "uk-nav-header", children: "Overview" }), _jsx("li", { children: _jsx("a", { href: "/admin", "hx-get": "/admin", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Dashboard" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Operations" }), _jsx("li", { children: _jsx("a", { href: "/admin/inbox", "hx-get": "/admin/inbox", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Inbox" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/jobs", "hx-get": "/admin/jobs", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Jobs" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/customers", "hx-get": "/admin/customers", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Customers" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/recurring", "hx-get": "/admin/recurring", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Recurring" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/invoices", "hx-get": "/admin/invoices", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Invoices" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Setup" }), _jsx("li", { children: _jsx("a", { href: "/admin/territories", "hx-get": "/admin/territories", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Territories" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/categories", "hx-get": "/admin/categories", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Categories" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/services", "hx-get": "/admin/services", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Services" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/team", "hx-get": "/admin/team", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Team" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/skills", "hx-get": "/admin/skills", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Skills" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { class: "uk-nav-header", children: "Config" }), _jsx("li", { children: _jsx("a", { href: "/admin/branding", "hx-get": "/admin/branding", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Branding" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/coupons", "hx-get": "/admin/coupons", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Coupons" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/webhooks", "hx-get": "/admin/webhooks", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Webhooks" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/sms-settings", "hx-get": "/admin/sms-settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "SMS" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/push-settings", "hx-get": "/admin/push-settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Push" }) }), _jsx("li", { children: _jsx("a", { href: "/admin/settings", "hx-get": "/admin/settings", "hx-target": "#page-content", "hx-select": "#page-content", "hx-swap": "outerHTML", "hx-push-url": "true", children: "Settings" }) }), _jsx("li", { class: "uk-nav-divider" }), _jsx("li", { children: _jsxs("button", { type: "button", class: "admin-theme-toggle", onclick: "toggleTheme()", "aria-label": "Toggle theme", children: [_jsx("div", { class: "theme-toggle-icon", children: _jsx("div", { class: "moon-or-sun", children: _jsx("div", { class: "moon-mask" }) }) }), _jsx("span", { class: "theme-label" })] }) })] })] }), _jsxs("main", { class: "main-content", id: "main-content", children: [_jsx("button", { type: "button", class: "mobile-menu-btn", "data-uk-toggle": "target: #offcanvas-nav", "aria-label": "Open menu", children: _jsxs("svg", { width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2", children: [_jsx("title", { children: "Menu" }), _jsx("line", { x1: "3", y1: "6", x2: "21", y2: "6" }), _jsx("line", { x1: "3", y1: "12", x2: "21", y2: "12" }), _jsx("line", { x1: "3", y1: "18", x2: "21", y2: "18" })] }) }), _jsx("div", { id: "page-content", children: children })] })] }), _jsx("div", { id: "sms-thread-modal-overlay", hidden: true, children: _jsxs("div", { id: "sms-thread-modal-panel", role: "dialog", "aria-modal": "true", "aria-label": "SMS conversation", children: [_jsxs("div", { id: "sms-thread-modal-header", children: [_jsx("h3", { children: "Conversation" }), _jsxs("div", { id: "sms-thread-modal-actions", children: [_jsx("a", { id: "sms-thread-modal-open-inbox", class: "uk-btn uk-btn-default uk-btn-sm", href: "/admin/inbox", style: "display:none;", children: "Inbox" }), _jsx("button", { type: "button", class: "uk-btn uk-btn-default uk-btn-sm", "data-sms-thread-modal-close": true, "aria-label": "Close conversation", children: "Close" })] })] }), _jsxs("div", { id: "sms-thread-modal-content", children: [_jsxs("div", { id: "sms-thread-modal-status", children: [_jsx("div", { id: "sms-thread-modal-loading", "aria-live": "polite", "aria-busy": "true", children: _jsxs("div", { class: "skel", children: [_jsxs("div", { class: "skel-row", children: [_jsx("div", { class: "skel-dot" }), _jsx("div", { class: "skel-line w-70" })] }), _jsxs("div", { class: "skel-row", children: [_jsx("div", { class: "skel-dot" }), _jsx("div", { class: "skel-line w-85" })] }), _jsxs("div", { class: "skel-row", children: [_jsx("div", { class: "skel-dot" }), _jsx("div", { class: "skel-line w-45" })] })] }) }), _jsx("div", { id: "sms-thread-modal-error", role: "alert" })] }), _jsx("div", { id: "sms-thread-modal-body" })] })] }) }), html `<script>
 function toggleTheme() {
   var cur = document.documentElement.getAttribute('data-theme');
   var next = cur === 'dark' ? 'light' : 'dark';

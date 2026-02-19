@@ -9,6 +9,8 @@ interface JobDetailPageProps {
         total_price_cents: number;
         custom_service_name?: string | null;
         created_at: string;
+        started_at?: string | null;
+        completed_at?: string | null;
     };
     customer?: {
         id: string;
