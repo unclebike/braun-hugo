@@ -1731,10 +1731,30 @@ app.get('/jobs/new', async (c) => {
     if (addrRow) customerAddress = addrRow as { line_1?: string; city?: string; state?: string; postal_code?: string; lat?: string; lng?: string };
   }
 
-  const territoriesRes = await db.prepare('SELECT id, name FROM territories WHERE is_active = 1 ORDER BY name').all();
+  const territoriesRes = await db.prepare('SELECT id, name, service_area_type, service_area_data FROM territories WHERE is_active = 1 ORDER BY name').all();
   const territories = (territoriesRes.results || []).map(t => ({ id: t.id as string, name: t.name as string }));
 
   let selectedTerritoryId = territoryIdQ;
+
+  if (!selectedTerritoryId) {
+    const detectLat = c.req.query('address_lat') || (customerAddress?.lat ? String(customerAddress.lat) : undefined);
+    const detectLng = c.req.query('address_lng') || (customerAddress?.lng ? String(customerAddress.lng) : undefined);
+    const detectPostal = c.req.query('address_postal') || customerAddress?.postal_code;
+    if (detectLat || detectPostal) {
+      for (const t of territoriesRes.results || []) {
+        const match = checkServiceArea(
+          t.service_area_type as string,
+          t.service_area_data as string,
+          {
+            lat: detectLat ? parseFloat(detectLat) : undefined,
+            lng: detectLng ? parseFloat(detectLng) : undefined,
+            postalCode: detectPostal,
+          }
+        );
+        if (match.within) { selectedTerritoryId = t.id as string; break; }
+      }
+    }
+  }
   const onlyTerritory = territories.length === 1 ? territories[0] : undefined;
   if (!selectedTerritoryId && onlyTerritory) selectedTerritoryId = onlyTerritory.id;
 
@@ -1969,6 +1989,24 @@ app.get('/api/address/search', async (c) => {
   } catch {
     return c.html(AddressSearchResults({ results: [], targetPrefix }));
   }
+});
+
+app.get('/api/territory/detect', async (c) => {
+  const db = c.env.DB;
+  const lat = parseFloat(c.req.query('lat') || '');
+  const lng = parseFloat(c.req.query('lng') || '');
+  const postal = c.req.query('postal') || '';
+  if (!Number.isFinite(lat) && !postal) return c.json(null);
+  const territoriesRes = await db.prepare('SELECT id, name, service_area_type, service_area_data FROM territories WHERE is_active = 1 ORDER BY name').all();
+  for (const t of territoriesRes.results || []) {
+    const match = checkServiceArea(
+      t.service_area_type as string,
+      t.service_area_data as string,
+      { lat: Number.isFinite(lat) ? lat : undefined, lng: Number.isFinite(lng) ? lng : undefined, postalCode: postal }
+    );
+    if (match.within) return c.json({ id: t.id, name: t.name });
+  }
+  return c.json(null);
 });
 
 app.get('/api/address/reverse', async (c) => {

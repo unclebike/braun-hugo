@@ -353,6 +353,24 @@ function renderAddressMessage(resultsSelector, message) {
   resultsEl.innerHTML = '<div class="search-results"><div class="search-item text-muted-foreground">' + message + '</div></div>';
 }
 
+function detectAndSetTerritory(lat, lng, postal) {
+  var params = '';
+  if (lat != null && lng != null) params += 'lat=' + encodeURIComponent(String(lat)) + '&lng=' + encodeURIComponent(String(lng));
+  if (postal) params += (params ? '&' : '') + 'postal=' + encodeURIComponent(String(postal));
+  if (!params) return;
+  fetch('/admin/api/territory/detect?' + params, { headers: { 'HX-Request': 'true' } })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (!data || !data.id) return;
+      var sel = document.querySelector('select[name="territory_id"]');
+      if (sel) {
+        sel.value = data.id;
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    })
+    .catch(function() {});
+}
+
 function reverseLookupCurrentLocation(lat, lng, inputSelector, resultsSelector) {
   var url = '/admin/api/address/reverse?lat=' + encodeURIComponent(String(lat)) + '&lng=' + encodeURIComponent(String(lng));
   return fetch(url, { headers: { 'HX-Request': 'true' } })
@@ -369,6 +387,10 @@ function reverseLookupCurrentLocation(lat, lng, inputSelector, resultsSelector) 
       if (first && input) {
         var line1 = first.getAttribute('data-line1') || '';
         if (line1) input.value = line1;
+        var fLat = first.getAttribute('data-lat');
+        var fLng = first.getAttribute('data-lng');
+        var fPostal = first.getAttribute('data-postal');
+        if (fLat && fLng) detectAndSetTerritory(fLat, fLng, fPostal);
       }
     });
 }
@@ -481,6 +503,7 @@ document.addEventListener('click', function(e) {
     for (var id in ids) { var el = document.getElementById(id); if (el) el.value = ids[id]; }
     var ar = document.getElementById('address-results');
     if (ar) ar.innerHTML = '';
+    if (d.lat && d.lng) detectAndSetTerritory(d.lat, d.lng, d.postal);
   }
 });
 
