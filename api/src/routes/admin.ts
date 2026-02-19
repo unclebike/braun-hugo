@@ -1737,9 +1737,25 @@ app.get('/jobs/new', async (c) => {
   let selectedTerritoryId = territoryIdQ;
 
   if (!selectedTerritoryId) {
-    const detectLat = c.req.query('address_lat') || (customerAddress?.lat ? String(customerAddress.lat) : undefined);
-    const detectLng = c.req.query('address_lng') || (customerAddress?.lng ? String(customerAddress.lng) : undefined);
-    const detectPostal = c.req.query('address_postal') || customerAddress?.postal_code;
+    let detectLat = c.req.query('address_lat') || (customerAddress?.lat ? String(customerAddress.lat) : '');
+    let detectLng = c.req.query('address_lng') || (customerAddress?.lng ? String(customerAddress.lng) : '');
+    const detectPostal = c.req.query('address_postal') || customerAddress?.postal_code || '';
+
+    if ((!detectLat || !detectLng) && (customerAddress?.line_1 || detectPostal)) {
+      try {
+        const mapboxToken = c.env?.MAPBOX_ACCESS_TOKEN || '';
+        if (mapboxToken) {
+          const geoQuery = [customerAddress?.line_1, customerAddress?.city, detectPostal].filter(Boolean).join(' ');
+          const geoRes = await fetch(`https://api.mapbox.com/search/geocode/v6/forward?q=${encodeURIComponent(geoQuery)}&country=ca&limit=1&access_token=${mapboxToken}`);
+          if (geoRes.ok) {
+            const geoData = await geoRes.json() as { features?: Array<{ geometry: { coordinates: [number, number] } }> };
+            const coords = geoData.features?.[0]?.geometry?.coordinates;
+            if (coords) { detectLat = String(coords[1]); detectLng = String(coords[0]); }
+          }
+        }
+      } catch { }
+    }
+
     if (detectLat || detectPostal) {
       for (const t of territoriesRes.results || []) {
         const match = checkServiceArea(
