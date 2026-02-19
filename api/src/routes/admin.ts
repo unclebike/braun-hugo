@@ -929,15 +929,15 @@ const renderServiceDetail = async (c: AdminContext, serviceId: string) => {
   const service = await db.prepare('SELECT * FROM services WHERE id = ?').bind(serviceId).first();
   if (!service) return c.redirect('/admin/services');
 
-  const [categories, modifiers, priceRules, reqSkills, allSkills, territories, taskTemplates] = await Promise.all([
+  const [categories, modifiers, priceRules, reqSkills, allSkills, territories] = await Promise.all([
     db.prepare('SELECT id, name FROM service_categories ORDER BY sort_order, name').all(),
     db.prepare('SELECT * FROM service_modifiers WHERE service_id = ? ORDER BY sort_order').bind(serviceId).all(),
     db.prepare('SELECT par.*, t.name as territory_name FROM price_adjustment_rules par LEFT JOIN territories t ON par.territory_id = t.id WHERE par.service_id = ?').bind(serviceId).all(),
     db.prepare('SELECT s.id, s.name FROM service_required_skills srs JOIN skills s ON srs.skill_id = s.id WHERE srs.service_id = ?').bind(serviceId).all(),
     db.prepare('SELECT id, name FROM skills ORDER BY name').all(),
     db.prepare('SELECT id, name FROM territories ORDER BY name').all(),
-    db.prepare('SELECT id, title, type, is_required, sort_order FROM service_task_templates WHERE service_id = ? ORDER BY sort_order, created_at').bind(serviceId).all(),
   ]);
+  const taskTemplates = await db.prepare('SELECT id, title, type, is_required, sort_order FROM service_task_templates WHERE service_id = ? ORDER BY sort_order, created_at').bind(serviceId).all().catch(() => ({ results: [] }));
 
   const serviceModel = service as unknown as {
     id: string;
@@ -2162,14 +2162,14 @@ app.get('/jobs/:id', async (c) => {
   const notesJson = (job.notes_json as string) || '[]';
   const parsedLineItems = parsePriceLines((job.line_items_json as string) || '[]');
   
-  const [customer, service, territory, jobProviders, teamProviders, serviceTasksResult] = await Promise.all([
+  const [customer, service, territory, jobProviders, teamProviders] = await Promise.all([
     job.customer_id ? db.prepare('SELECT id, first_name, last_name, email, phone, phone_e164 FROM customers WHERE id = ?').bind(job.customer_id).first() : null,
     job.service_id ? db.prepare('SELECT id, name, description FROM services WHERE id = ?').bind(job.service_id).first() : null,
     job.territory_id ? db.prepare('SELECT id, name FROM territories WHERE id = ?').bind(job.territory_id).first() : null,
     db.prepare('SELECT tm.id, tm.first_name, tm.last_name FROM job_providers jp JOIN team_members tm ON jp.team_member_id = tm.id WHERE jp.job_id = ?').bind(id).all(),
     db.prepare("SELECT id, first_name, last_name FROM team_members WHERE role = 'provider' ORDER BY last_name, first_name").all(),
-    db.prepare('SELECT id, title, type, is_required, sort_order, completed, answer, completed_at FROM job_service_tasks WHERE job_id = ? ORDER BY sort_order, created_at').bind(id).all(),
   ]);
+  const serviceTasksResult = await db.prepare('SELECT id, title, type, is_required, sort_order, completed, answer, completed_at FROM job_service_tasks WHERE job_id = ? ORDER BY sort_order, created_at').bind(id).all().catch(() => ({ results: [] }));
 
   const customerPhone = (customer as { phone_e164?: string | null; phone?: string | null } | null)?.phone_e164
     || normalizePhoneE164((customer as { phone?: string | null } | null)?.phone || null);
@@ -2494,7 +2494,7 @@ app.post('/jobs/:id/status', async (c) => {
   if (status === 'complete') {
     const blockers = await db.prepare(
       'SELECT id, title FROM job_service_tasks WHERE job_id = ? AND is_required = 1 AND completed = 0 AND answer IS NULL'
-    ).bind(jobId).all();
+    ).bind(jobId).all().catch(() => ({ results: [] }));
     if ((blockers.results || []).length > 0) {
       const blockerTitles = (blockers.results || []).map(t => t.title as string);
       return c.redirect(`/admin/jobs/${jobId}?complete_blocked=1&blockers=${encodeURIComponent(JSON.stringify(blockerTitles))}`);
