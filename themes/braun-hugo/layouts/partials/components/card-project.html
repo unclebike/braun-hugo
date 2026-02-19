@@ -26,7 +26,10 @@
                 {{ if $ctx.Params.tags }}
                     <div class="tags-list">
                         {{ range first 2 $ctx.Params.tags }}
-                            <div class="sub-heading tag-item">{{ . }}</div>
+                            <div class="tag-item">
+                                {{ partial "icons/feather-icons" (. | lower | urlize) }}
+                                <span class="tag-badge-text">{{ . }}</span>
+                            </div>
                         {{ end }}
                     </div>
                 {{ end }}

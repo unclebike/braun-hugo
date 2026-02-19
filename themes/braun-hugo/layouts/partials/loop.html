@@ -8,7 +8,10 @@
         {{ if .Params.tags }}
             {{ with index .Params.tags 0 }}
             <div class="feed-tag">
-                <span class="feed-tag-item sub-heading">{{ . }}</span>
+                <span class="feed-tag-item tag-badge">
+                    {{ partial "icons/feather-icons" (. | lower | urlize) }}
+                    <span class="tag-badge-text">{{ . }}</span>
+                </span>
             </div>
             {{ end }}
         {{ end }}
