@@ -37,6 +37,10 @@ jobs:
         working-directory: api
         run: npm ci
 
+      - name: Build TypeScript
+        working-directory: api
+        run: npx tsc
+
       - name: Deploy Worker
         working-directory: api
         env:

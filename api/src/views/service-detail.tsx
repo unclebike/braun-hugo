@@ -87,57 +87,57 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
                   <span class="save-indicator"></span>
                 </div>
 
-                <div class="grid gap-x-6 gap-y-4 sm:grid-cols-2">
-                  <div class="grid gap-1.5 sm:col-span-2">
-                    <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="service-name">Service Name</label>
-                    <input id="service-name" name="name" class="uk-input rounded-xl border-2 font-bold h-11" value={service.name} />
+                <div class="grid gap-x-4 gap-y-3 grid-cols-2">
+                  <div class="grid gap-1 col-span-2">
+                    <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="service-name">Service Name</label>
+                    <input id="service-name" name="name" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3" value={service.name} />
                   </div>
-                  <div class="grid gap-1.5 sm:col-span-2">
-                    <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="service-description">Internal Description</label>
-                    <textarea id="service-description" name="description" class="uk-textarea rounded-xl border-2 font-medium" rows={2}>{service.description || ''}</textarea>
+                  <div class="grid gap-1 col-span-2">
+                    <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="service-description">Internal Description</label>
+                    <textarea id="service-description" name="description" class="uk-textarea rounded-xl border-2 font-medium text-xs sm:text-sm px-2 sm:px-3" rows={2}>{service.description || ''}</textarea>
                   </div>
-                  <div class="grid gap-1.5 sm:col-span-2">
+                  <div class="grid gap-1 col-span-2">
                     <div class="flex items-center justify-between mb-0.5">
-                      <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="service-category">Category</label>
-                      <a href="/admin/categories" class="text-[9px] uppercase tracking-widest font-black uk-link" hx-get="/admin/categories" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Manage Groups</a>
+                      <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="service-category">Category</label>
+                      <a href="/admin/categories" class="text-[8px] sm:text-[9px] uppercase tracking-widest font-black uk-link" hx-get="/admin/categories" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Groups</a>
                     </div>
-                    <select id="service-category" name="category_id" class="uk-select rounded-xl border-2 font-bold h-11">
+                    <select id="service-category" name="category_id" class="uk-select rounded-xl border-2 font-bold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3">
                       <option value="">No Category</option>
                       {categories.map((cat) => (
                         <option value={cat.id} selected={service.category_id === cat.id} key={cat.id}>{cat.name}</option>
                       ))}
                     </select>
                   </div>
-                  <div class="grid gap-1.5">
-                    <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="service-price">Base Price</label>
+                  <div class="grid gap-1">
+                    <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="service-price">Base Price</label>
                     <div class="relative">
-                      <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">$</span>
-                      <input id="service-price" name="base_price" type="number" min={0} step={0.01} class="uk-input rounded-xl border-2 font-bold h-11 pl-8" value={(service.base_price_cents / 100).toFixed(2)} />
+                      <span class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
+                      <input id="service-price" name="base_price" type="number" min={0} step={0.01} class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 pl-6 sm:pl-8 pr-2 text-xs sm:text-sm" value={(service.base_price_cents / 100).toFixed(2)} />
                     </div>
                   </div>
-                  <div class="grid gap-1.5">
-                    <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="service-duration">Est. Duration</label>
+                  <div class="grid gap-1">
+                    <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="service-duration">Est. Duration</label>
                     <div class="relative">
-                      <input id="service-duration" name="base_duration_minutes" type="number" min={1} class="uk-input rounded-xl border-2 font-bold h-11 pr-12" value={service.base_duration_minutes} />
-                      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-muted-foreground uppercase">Min</span>
+                      <input id="service-duration" name="base_duration_minutes" type="number" min={1} class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 pr-8 sm:pr-12 pl-2 text-xs sm:text-sm" value={service.base_duration_minutes} />
+                      <span class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase">Min</span>
                     </div>
                   </div>
-                  <div class="grid gap-1.5">
-                    <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="assign-method">Assignment Logic</label>
-                    <select id="assign-method" name="auto_assign_method" class="uk-select rounded-xl border-2 font-bold h-11">
-                      <option value="balanced" selected={service.auto_assign_method === 'balanced'}>Balanced Load</option>
-                      <option value="prioritized" selected={service.auto_assign_method === 'prioritized'}>Prioritized Staff</option>
-                      <option value="drive_time" selected={service.auto_assign_method === 'drive_time'}>Drive Time Optimized</option>
+                  <div class="grid gap-1 col-span-2 sm:col-span-1">
+                    <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="assign-method">Assignment Logic</label>
+                    <select id="assign-method" name="auto_assign_method" class="uk-select rounded-xl border-2 font-bold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3">
+                      <option value="balanced" selected={service.auto_assign_method === 'balanced'}>Balanced</option>
+                      <option value="prioritized" selected={service.auto_assign_method === 'prioritized'}>Prioritized</option>
+                      <option value="drive_time" selected={service.auto_assign_method === 'drive_time'}>Drive Time</option>
                     </select>
                   </div>
-                  <div class="flex flex-col justify-end gap-3 pb-1">
-                    <label class="uk-form-label flex items-center gap-2 cursor-pointer text-xs font-bold uppercase tracking-tight">
+                  <div class="flex flex-col justify-end gap-2 pb-0.5">
+                    <label class="uk-form-label flex items-center gap-2 cursor-pointer text-[10px] sm:text-xs font-bold uppercase tracking-tight">
                       <input type="checkbox" name="auto_assign_enabled" checked={Boolean(service.auto_assign_enabled)} class="uk-toggle-switch uk-toggle-switch-primary" />
-                      Auto-assign new jobs
+                      Auto-assign
                     </label>
-                    <label class="uk-form-label flex items-center gap-2 cursor-pointer text-xs font-bold uppercase tracking-tight">
+                    <label class="uk-form-label flex items-center gap-2 cursor-pointer text-[10px] sm:text-xs font-bold uppercase tracking-tight">
                       <input type="checkbox" name="is_active" checked={Boolean(service.is_active)} class="uk-toggle-switch uk-toggle-switch-primary" />
-                      Service is Active
+                      Active
                     </label>
                   </div>
                 </div>
