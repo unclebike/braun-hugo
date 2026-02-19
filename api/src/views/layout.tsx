@@ -1036,12 +1036,68 @@ document.addEventListener('click', function(e) {
         </script>`}
         {html`<style>
           *, *::before, *::after { box-sizing: border-box; }
-          html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-          body { background: var(--bg); color: var(--text); overscroll-behavior: none; -webkit-font-smoothing: antialiased; }
+
+          html {
+            font-size: 10px !important;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+          }
+
+          body {
+            font-size: var(--text-base);
+            line-height: var(--lh-normal);
+            background: var(--bg);
+            color: var(--text);
+            overscroll-behavior: none;
+            -webkit-font-smoothing: antialiased;
+          }
+
+          h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-sans) !important;
+            font-weight: var(--font-weight-bold) !important;
+            line-height: var(--lh-tight) !important;
+            margin: 0;
+            color: var(--text) !important;
+          }
+          h1 { font-size: var(--text-lg) !important; }
+          h2 { font-size: var(--text-md) !important; }
+          h3 { font-size: var(--text-sm) !important; }
+          h4 { font-size: var(--text-xs) !important; font-weight: var(--font-weight-medium) !important; }
+          h5, h6 { font-size: var(--text-xxs) !important; font-weight: var(--font-weight-medium) !important; text-transform: uppercase; letter-spacing: 0.06em; }
+
+          p {
+            font-size: var(--text-base);
+            line-height: var(--lh-normal);
+            color: var(--text) !important;
+            margin: 0;
+          }
 
           @layer base {
-            input, select, textarea, button { font-size: var(--text-base); }
+            input, select, textarea { font-size: var(--text-sm); line-height: var(--lh-normal); }
+            button { font-size: var(--text-xs); line-height: var(--lh-tight); }
             input[type="time"], input[type="date"] { -webkit-appearance: none; appearance: none; }
+          }
+
+          label, .uk-form-label {
+            font-size: var(--text-xxs) !important;
+            font-weight: var(--font-weight-medium) !important;
+            line-height: var(--lh-normal) !important;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+          }
+
+          button, .uk-btn {
+            font-weight: var(--font-weight-bold) !important;
+            letter-spacing: 0.01em;
+          }
+          .uk-btn-primary, .uk-btn-default, .uk-btn-secondary {
+            font-size: var(--text-xs) !important;
+            font-weight: var(--font-weight-bold) !important;
+            line-height: var(--lh-tight) !important;
+          }
+          .mobile-menu-btn {
+            font-size: 0 !important;
+            line-height: 0 !important;
           }
           select:not(.uk-select) { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
           a, button, input, select, textarea, label, [role="switch"], [hx-post], [hx-get], [hx-delete] { touch-action: manipulation; }
@@ -1067,7 +1123,7 @@ document.addEventListener('click', function(e) {
             top: 0;
             z-index: 50;
           }
-          .page-header h2 { font-size: var(--text-sm); color: var(--text); font-weight: var(--font-weight-bold); letter-spacing: -0.01em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .page-header h2 { font-size: var(--text-sm) !important; line-height: var(--lh-tight) !important; color: var(--text); font-weight: var(--font-weight-bold); letter-spacing: -0.01em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
           .page-header-info { grid-column: 1; min-width: 0; }
           .page-header-actions { grid-column: 2; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
           .page-header-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; font-size: var(--text-xs); color: var(--text-secondary); }
@@ -1111,7 +1167,7 @@ document.addEventListener('click', function(e) {
           .status-select[data-current="void"] { border-color: var(--badge-destructive-border); background-color: var(--badge-destructive-bg); color: var(--badge-destructive); }
 
           .danger-card { border-color: var(--destructive-border, var(--border)) !important; }
-          .danger-card h3 { color: var(--text-secondary) !important; font-size: var(--text-xs) !important; }
+          .danger-card h3 { color: var(--text-secondary) !important; font-size: var(--text-xs) !important; font-weight: var(--font-weight-medium) !important; }
 
           .wizard-progress { display: flex; align-items: center; gap: 4px; }
           .wizard-progress-step { width: 28px; height: 4px; border-radius: 2px; background: var(--border); }
@@ -1329,7 +1385,7 @@ document.addEventListener('click', function(e) {
             border-bottom: 1px solid var(--border);
             background: var(--bg-card);
           }
-          #sms-thread-modal-header h3 { margin: 0; font-size: var(--text-lg); font-weight: var(--font-weight-bold); letter-spacing: -0.01em; line-height: var(--lh-tight); }
+          #sms-thread-modal-header h3 { margin: 0; font-size: var(--text-sm) !important; font-weight: var(--font-weight-bold) !important; letter-spacing: -0.01em; line-height: var(--lh-tight) !important; }
           #sms-thread-modal-actions { display: inline-flex; align-items: center; gap: 8px; }
           #sms-thread-modal-open-inbox { text-decoration: none; }
           #sms-thread-modal-content {
@@ -1446,7 +1502,7 @@ document.addEventListener('click', function(e) {
           }
 
           @media (min-width: 768px) {
-            #sms-thread-modal-header h3 { font-size: var(--text-base); }
+            #sms-thread-modal-header h3 { font-size: var(--text-sm) !important; }
             #sms-thread-modal-overlay {
               padding: 24px;
               align-items: center;
