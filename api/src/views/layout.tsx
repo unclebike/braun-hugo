@@ -425,7 +425,7 @@ p { color: var(--text) !important; }
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.css" />
         <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.js"></script>
-        <style>{`.leaflet-container img { max-width: none !important; max-height: none !important; }`}</style>
+        {html`<style>.leaflet-container img { max-width: none !important; max-height: none !important; }</style>`}
         {html`<script>
 function _onRadiusMilesInput() { updateRadius(); }
 function _onRadiusLatChange() { updateRadius(); }
