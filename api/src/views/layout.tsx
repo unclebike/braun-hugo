@@ -1031,19 +1031,19 @@ document.addEventListener('click', function(e) {
           #address-results .search-results { position: static; border-top: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 18px rgba(0,0,0,0.12); }
           .search-item { padding: 10px 16px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text); }
           .search-item:hover { background: rgba(127,127,127,0.08); }
-          .search-item .name { font-weight: 500; }
+          .search-item .name { font-weight: 600; }
           .search-item .meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 
           .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--brand); color: #1e1e2e; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0; }
           .avatar-sm { width: 32px; height: 32px; font-size: 13px; }
 
-          .save-indicator { font-size: 12px; font-weight: 500; transition: opacity 0.3s; opacity: 0; margin-left: 8px; }
+          .save-indicator { font-size: 12px; font-weight: 600; transition: opacity 0.3s; opacity: 0; margin-left: 8px; }
           .save-ok { color: #16a34a; }
           .save-err { color: #dc2626; }
           .save-pending { color: var(--text-secondary); }
           .autosave .save-indicator, #territory-services .save-indicator, #territory-providers .save-indicator { display: inline-block; }
 
-          .delete-btn { color: var(--destructive); background: var(--bg-card); border: 1px solid var(--destructive-border); padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+          .delete-btn { color: var(--destructive); background: var(--bg-card); border: 1px solid var(--destructive-border); padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.15s; }
           .delete-btn:hover { background: var(--destructive-soft); border-color: var(--destructive-hover); color: var(--destructive-hover); }
           .delete-btn.delete-armed { background: var(--destructive); color: #fff; border-color: var(--destructive); font-weight: 600; }
           .delete-btn.delete-armed:hover { background: var(--destructive-hover); border-color: var(--destructive-hover); }
@@ -1068,9 +1068,9 @@ document.addEventListener('click', function(e) {
           .sidebar-nav .uk-nav-header { color: var(--text-sidebar); font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; padding: 16px 12px 6px; margin: 0; }
           .sidebar-nav .uk-nav-header:first-child { padding-top: 4px; }
           .sidebar-nav .uk-nav-divider { border-color: var(--sidebar-divider); margin: 8px 12px; }
-          .sidebar-nav > li > a { color: var(--text-sidebar); padding: 8px 12px; border-radius: 6px; font-size: 14px; font-weight: 450; transition: all 0.15s; display: block; text-decoration: none; }
+          .sidebar-nav > li > a { color: var(--text-sidebar); padding: 8px 12px; border-radius: 6px; font-size: 14px; font-weight: 400; transition: all 0.15s; display: block; text-decoration: none; }
           .sidebar-nav > li > a:hover { color: var(--text-sidebar-hover); background: var(--sidebar-hover-bg); }
-          .sidebar-nav > li.uk-active > a { color: var(--text-sidebar-active); background: var(--sidebar-active-bg); font-weight: 500; }
+          .sidebar-nav > li.uk-active > a { color: var(--text-sidebar-active); background: var(--sidebar-active-bg); font-weight: 600; }
 
           .admin-theme-toggle {
             width: 100%;
@@ -1217,7 +1217,7 @@ document.addEventListener('click', function(e) {
             border-bottom: 1px solid var(--border);
             background: var(--bg-card);
           }
-          #sms-thread-modal-header h3 { margin: 0; font-size: 15px; font-weight: 650; letter-spacing: -0.2px; line-height: 1.2; }
+          #sms-thread-modal-header h3 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -0.2px; line-height: 1.2; }
           #sms-thread-modal-actions { display: inline-flex; align-items: center; gap: 8px; }
           #sms-thread-modal-open-inbox { text-decoration: none; }
           #sms-thread-modal-content {
