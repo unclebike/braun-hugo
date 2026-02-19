@@ -5,6 +5,7 @@ import { sendJobSms, sendDirectSms, normalizePhoneE164, getTwilioConfig, isTwili
 import type { TemplateVars } from '../services/twilio';
 import { buildServiceBaseLine, normalizeLine, parseEditableText, parsePriceLines, subtotalFromLines, type PriceLineItem } from '../utils/line-items';
 import { type FormField, FormView, TableView } from '../views/components';
+import { type InboxItem, InboxPage } from '../views/inbox';
 import { BrandingPage } from '../views/branding';
 import { MessageDetailPage, SmsHistoryList, SmsThreadPanel } from '../views/message-detail';
 import type { SmsLogRow } from '../views/message-detail';
@@ -328,7 +329,8 @@ app.get('/territories', async (c) => {
     rawIds: (territories.results || []).map(t => t.id as string),
     createUrl: '/admin/territories/new',
     detailUrlPrefix: '/admin/territories',
-    deleteUrlPrefix: '/admin/territories'
+    deleteUrlPrefix: '/admin/territories',
+    inlineStatusColumns: ['Active'],
   }));
 });
 
@@ -794,7 +796,8 @@ app.get('/services', async (c) => {
     rawIds: (services.results || []).map(s => s.id as string),
     createUrl: '/admin/services/new',
     detailUrlPrefix: '/admin/services',
-    deleteUrlPrefix: '/admin/services'
+    deleteUrlPrefix: '/admin/services',
+    inlineStatusColumns: ['Active'],
   }));
 });
 
@@ -1408,7 +1411,8 @@ app.get('/team', async (c) => {
     rawIds: (team.results || []).map(t => t.id as string),
     createUrl: '/admin/team/new',
     detailUrlPrefix: '/admin/team',
-    deleteUrlPrefix: '/admin/team'
+    deleteUrlPrefix: '/admin/team',
+    inlineStatusColumns: ['Active'],
   }));
 });
 
@@ -1665,7 +1669,8 @@ app.get('/jobs', async (c) => {
     rawIds: (jobs.results || []).map(j => j.id as string),
     createUrl: '/admin/jobs/new',
     detailUrlPrefix: '/admin/jobs',
-    deleteUrlPrefix: '/admin/jobs'
+    deleteUrlPrefix: '/admin/jobs',
+    inlineStatusColumns: ['Status'],
   }));
 });
 
@@ -2573,7 +2578,8 @@ app.get('/invoices', async (c) => {
     rawIds: (invoices.results || []).map(i => i.id as string),
     createUrl: '/admin/invoices/new',
     detailUrlPrefix: '/admin/invoices',
-    deleteUrlPrefix: '/admin/invoices'
+    deleteUrlPrefix: '/admin/invoices',
+    inlineStatusColumns: ['Status'],
   }));
 });
 
@@ -2824,7 +2830,8 @@ app.get('/recurring', async (c) => {
     })),
     createUrl: '/admin/recurring/new',
     detailUrlPrefix: '/admin/recurring',
-    deleteUrlPrefix: '/admin/recurring'
+    deleteUrlPrefix: '/admin/recurring',
+    inlineStatusColumns: ['Active'],
   }));
 });
 
@@ -3409,7 +3416,8 @@ app.get('/coupons', async (c) => {
     })),
     createUrl: '/admin/coupons/new',
     detailUrlPrefix: '/admin/coupons',
-    deleteUrlPrefix: '/admin/coupons'
+    deleteUrlPrefix: '/admin/coupons',
+    inlineStatusColumns: ['Active'],
   }));
 });
 
@@ -3552,7 +3560,8 @@ app.get('/webhooks', async (c) => {
     })),
     createUrl: '/admin/webhooks/new',
     detailUrlPrefix: '/admin/webhooks',
-    deleteUrlPrefix: '/admin/webhooks'
+    deleteUrlPrefix: '/admin/webhooks',
+    inlineStatusColumns: ['Active'],
   }));
 });
 
@@ -3696,28 +3705,19 @@ app.get('/inbox', async (c) => {
 
   const unreadCount = await db.prepare('SELECT COUNT(*) as count FROM messages WHERE is_read = 0').first<{ count: number }>();
 
-  const rows = (messages.results || []).map((m: Record<string, unknown>) => {
-    const name = [m.first_name, m.last_name].filter(Boolean).join(' ') || (m.email as string) || '-';
-    const dateStr = formatTorontoDate(`${m.created_at as string}Z`, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) || (m.created_at as string);
-    return {
-      from: m.is_read ? name : `● ${name}`,
-      subject: (m.subject as string) || '-',
-      source: m.source as string,
-      date: dateStr,
-      status: m.status as string,
-    };
-  });
+  const items: InboxItem[] = (messages.results || []).map((m: Record<string, unknown>) => ({
+    id: m.id as string,
+    source: (m.source as string) || 'contact',
+    status: (m.status as string) || 'new',
+    sender: [m.first_name, m.last_name].filter(Boolean).join(' ') || (m.email as string) || '-',
+    subject: (m.subject as string) || '-',
+    is_read: Boolean(m.is_read),
+    date: formatTorontoDate(`${m.created_at as string}Z`, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) || (m.created_at as string),
+  }));
 
   const title = `Inbox${(unreadCount?.count || 0) > 0 ? ` (${unreadCount?.count})` : ''}`;
 
-  return c.html(TableView({
-    title,
-    columns: ['From', 'Subject', 'Source', 'Date', 'Status'],
-    rows,
-    rawIds: (messages.results || []).map(m => m.id as string),
-    detailUrlPrefix: '/admin/inbox',
-    deleteUrlPrefix: '/admin/inbox',
-  }));
+  return c.html(InboxPage({ items, title }));
 });
 
 async function getInboxSmsContext(db: D1Database, messageId: string) {

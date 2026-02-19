@@ -1055,8 +1055,8 @@ document.addEventListener('click', function(e) {
           .page-header--rich .page-header-info { grid-row: 1 / -1; }
           .page-header--rich .page-header-actions { grid-row: 1 / -1; align-self: center; }
 
-          .status-icon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
-          .status-icon svg { display: block; }
+          .status-icon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 16px; height: 16px; }
+          .status-icon svg { display: block; width: 14px; height: 14px; }
           .status-icon--neutral { color: var(--text-secondary); }
           .status-icon--primary { color: var(--badge-primary); }
           .status-icon--secondary { color: var(--badge-secondary); }
