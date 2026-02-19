@@ -28,6 +28,7 @@ interface TableViewProps {
   detailUrlPrefix?: string;
   deleteUrlPrefix?: string;
   rawIds?: string[];
+  inlineStatusColumns?: string[];
 }
 
 const BADGE_STATUSES = new Set([
@@ -136,7 +137,13 @@ interface FormViewProps {
   error?: string;
 }
 
-const TableView = ({ title, columns, rows, createUrl, extraActions, detailUrlPrefix, deleteUrlPrefix, rawIds }: TableViewProps) => (
+const TableView = ({ title, columns, rows, createUrl, extraActions, detailUrlPrefix, deleteUrlPrefix, rawIds, inlineStatusColumns }: TableViewProps) => {
+  const inlineSet = new Set(
+    (inlineStatusColumns || []).map((col) => columns.indexOf(col)).filter((i) => i >= 0)
+  );
+  const visibleColumns = columns.filter((_, i) => !inlineSet.has(i));
+
+  return (
   <Layout title={title}>
     <div class="page-header">
       <h2>{title}</h2>
@@ -203,7 +210,7 @@ const TableView = ({ title, columns, rows, createUrl, extraActions, detailUrlPre
                          </div>
                          {statusEntry && (
                            <span class="shrink-0" style="margin-top:1px;">
-                             <StatusBadge status={String(statusEntry.value).toLowerCase()} />
+                             <StatusIcon status={String(statusEntry.value).toLowerCase()} />
                            </span>
                          )}
                        </div>
@@ -221,7 +228,7 @@ const TableView = ({ title, columns, rows, createUrl, extraActions, detailUrlPre
 
                       {!statusEntry && isBadgeStatus(primary?.value) && (
                         <div class="mt-2">
-                          <StatusBadge status={String(primary.value).toLowerCase()} />
+                          <StatusIcon status={String(primary.value).toLowerCase()} />
                         </div>
                       )}
 
@@ -263,7 +270,7 @@ const TableView = ({ title, columns, rows, createUrl, extraActions, detailUrlPre
                 <table class="uk-table uk-table-divider uk-table-hover uk-table-sm w-full text-sm">
               <thead>
                 <tr class="border-b border-border">
-                  {columns.map((col: string) => <th class="text-left py-3 px-4 font-medium text-muted-foreground" key={col}>{col}</th>)}
+                  {visibleColumns.map((col: string) => <th class="text-left py-3 px-4 font-medium text-muted-foreground" key={col}>{col}</th>)}
                   <th class="text-left py-3 px-4 font-medium text-muted-foreground" style="width: 100px;">Actions</th>
                 </tr>
               </thead>
@@ -273,25 +280,46 @@ const TableView = ({ title, columns, rows, createUrl, extraActions, detailUrlPre
                   const actualId = rawIds ? rawIds[i] : displayId;
                   const values = Object.values(row);
                   const detailUrl = detailUrlPrefix ? `${detailUrlPrefix}/${actualId}` : null;
+                  const inlineIcons = [...inlineSet]
+                    .map((si) => values[si])
+                    .filter((v) => isBadgeStatus(v))
+                    .map((v) => <StatusIcon status={String(v).toLowerCase()} />);
                   return (
                     <tr class="border-b border-border hover:bg-muted/50 transition-colors" key={i} style={detailUrl ? 'cursor: pointer;' : ''}>
-                      {values.map((val, j: number) => (
-                        <td class="py-3 px-4" key={j}>
-                           {j === 0 && detailUrl ? (
-                             <a
-                               href={detailUrl}
-                               hx-get={detailUrl}
-                               hx-target="#page-content"
-                               hx-select="#page-content"
-                               hx-push-url="true"
-                               class="uk-link font-medium text-primary hover:underline"
-                               data-uk-tooltip={typeof val === 'string' && val.length === 8 ? `title: ${actualId}` : undefined}
-                             >
-                               {val}
-                             </a>
-                           ) : (isBadgeStatus(val) ? <StatusBadge status={val.toLowerCase()} /> : (val as string | number | boolean | null | undefined))}
-                         </td>
-                       ))}
+                      {values.map((val, j: number) => {
+                        if (inlineSet.has(j)) return null;
+                        if (j === 0) {
+                          return (
+                            <td class="py-3 px-4" key={j}>
+                              {detailUrl ? (
+                                <a
+                                  href={detailUrl}
+                                  hx-get={detailUrl}
+                                  hx-target="#page-content"
+                                  hx-select="#page-content"
+                                  hx-push-url="true"
+                                  class="uk-link font-medium text-primary hover:underline"
+                                  style="display:inline-flex;align-items:center;gap:6px;"
+                                  data-uk-tooltip={typeof val === 'string' && val.length === 8 ? `title: ${actualId}` : undefined}
+                                >
+                                  {inlineIcons}
+                                  {val}
+                                </a>
+                              ) : (
+                                <span style="display:inline-flex;align-items:center;gap:6px;">
+                                  {inlineIcons}
+                                  {val as string | number | boolean | null | undefined}
+                                </span>
+                              )}
+                            </td>
+                          );
+                        }
+                        return (
+                          <td class="py-3 px-4" key={j}>
+                            {isBadgeStatus(val) ? <StatusBadge status={val.toLowerCase()} /> : (val as string | number | boolean | null | undefined)}
+                          </td>
+                        );
+                      })}
                       <td class="py-3 px-4">
                         <div class="flex items-center gap-2">
                           {detailUrl && (
@@ -323,7 +351,8 @@ const TableView = ({ title, columns, rows, createUrl, extraActions, detailUrlPre
       </div>
     </div>
   </Layout>
-);
+  );
+};
 
 const renderField = (field: FormField) => {
   if (field.readonly) {
