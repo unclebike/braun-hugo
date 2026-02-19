@@ -180,15 +180,41 @@
 }
 
 .tag-item {
-    padding: 0 1rem;
-    border-radius: 4rem;
-    border: solid 1px var(--divider-color);
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .2rem .7rem;
+    border-radius: var(--radii-small);
+    background-color: var(--input-background-color);
     color: var(--secondary-text-color);
+    font-size: var(--text-xs);
+    font-weight: var(--font-weight-regular);
+    line-height: 1.6;
+    white-space: nowrap;
     width: fit-content;
 }
 
+.tag-item svg {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+
+@media (max-width: 767px) {
+    .tag-item .tag-badge-text {
+        display: none;
+    }
+    .tag-item {
+        padding: .3rem .4rem;
+    }
+}
+
 .card-overlay .tag-item {
-    border-color: var(--divider-color-verlay);
+    border: 1px solid var(--divider-color-verlay);
+    background-color: transparent;
     color: var(--secondary-text-color-overlay);
 }
 

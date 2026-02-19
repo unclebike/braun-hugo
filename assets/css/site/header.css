@@ -337,7 +337,7 @@ body:has(#announcement-bar-root .gh-announcement-bar) .head-member-actions {
 
 .blog-navbar-item {
     padding: 1.2rem 0;
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-regular);
     transition: color 150ms var(--animation-base);
     text-wrap: nowrap;
 }

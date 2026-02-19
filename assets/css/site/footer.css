@@ -101,6 +101,15 @@
     font-family: var(--font-serif);
 }
 
+.badge {
+    opacity: 0.6;
+    transition: opacity .15s ease;
+}
+
+.badge:hover {
+    opacity: 1;
+}
+
 @media (max-width: 767px) {
     .footer-inner-main {
         grid-template-columns: 1fr;

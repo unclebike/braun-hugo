@@ -2,6 +2,40 @@
     margin-bottom: calc(var(--spacepsection) - 6rem);
 }
 
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .2rem .7rem;
+    border-radius: var(--radii-small);
+    background-color: var(--input-background-color);
+    color: var(--secondary-text-color);
+    font-size: var(--text-xs);
+    font-weight: var(--font-weight-regular);
+    line-height: 1.6;
+    white-space: nowrap;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.tag-badge svg {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+
+@media (max-width: 767px) {
+    .tag-badge .tag-badge-text {
+        display: none;
+    }
+    .tag-badge {
+        padding: .3rem .4rem;
+    }
+}
+
+
 .taxonomy-media {
     overflow: hidden;
     margin: 0 0 3rem;
@@ -25,8 +59,8 @@
     display: flex;
     flex-wrap: wrap;
     align-items: stretch;
-    column-gap: .2rem;
-    row-gap: .2rem;
+    column-gap: .4rem;
+    row-gap: .4rem;
 }
 
 .tag-list-label {
@@ -35,16 +69,18 @@
 }
 
 .tag-list-item-wrapper {
-    padding: .8rem 2rem;
+    padding: .5rem 1.2rem;
     background-color: var(--input-background-color);
-    display: flex;
+    display: inline-flex;
     flex-direction: row;
     align-items: center;
-    height: 5.6rem;
+    gap: .6rem;
+    height: auto;
+    border-radius: var(--radii-small);
 }
 
 .tag-list-item-wrapper:hover {
-    background-color: var(--light-gray-color);
+    background-color: var(--color-light-gray);
 }
 
 .tag-list-item {
@@ -56,7 +92,8 @@
 }
 
 .tag-list-item-count {
-    display: contents;
+    color: var(--tertiary-text-color);
+    font-size: var(--text-xs);
 }
 
 .tag-list-item + .tag-list-item {
