@@ -1280,8 +1280,9 @@ document.addEventListener('click', function(e) {
           .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 0 20px; margin-bottom: 24px; }
           .sidebar-logo img { width: 36px; height: 36px; }
           .sidebar-logo span { font-size: var(--text-sm); color: var(--text-sidebar-active); letter-spacing: -0.01em; font-weight: var(--font-weight-medium); flex: 1; }
-          .sidebar-theme-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: none; background: transparent; color: var(--text-sidebar-active); cursor: pointer; border-radius: 6px; padding: 0; flex-shrink: 0; transition: background .15s, color .15s; opacity: 0.7; }
-          .sidebar-theme-btn:hover { background: var(--sidebar-hover-bg); opacity: 1; }
+           .sidebar-theme-btn { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: none; background: transparent; color: var(--text-sidebar-active); cursor: pointer; border-radius: 5px; padding: 0; flex-shrink: 0; transition: background .15s, color .15s; opacity: 0.7; }
+           .sidebar-theme-btn:hover { background: var(--sidebar-hover-bg); opacity: 1; }
+           .sidebar-theme-btn .theme-toggle-icon { transform: scale(0.833); transform-origin: center; }
 
           /* iOS PWA: give offcanvas enough top room under translucent status bar. */
           #offcanvas-nav .uk-offcanvas-bar {
