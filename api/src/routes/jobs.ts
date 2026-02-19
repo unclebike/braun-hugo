@@ -177,6 +177,17 @@ app.post('/', async (c) => {
       await db.prepare('INSERT INTO job_notes (id, job_id, content, created_at) VALUES (?, ?, ?, datetime(\'now\'))').bind(crypto.randomUUID(), id, note).run();
     }
 
+    if (body.service_id) {
+      const templates = await db.prepare(
+        'SELECT id, title, type, is_required, sort_order FROM service_task_templates WHERE service_id = ? ORDER BY sort_order, created_at'
+      ).bind(body.service_id).all();
+      for (const t of templates.results || []) {
+        await db.prepare(
+          'INSERT INTO job_service_tasks (id, job_id, service_id, template_id, title, type, is_required, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        ).bind(crypto.randomUUID(), id, body.service_id, t.id, t.title, t.type, t.is_required, t.sort_order).run();
+      }
+    }
+
     if (body.status === 'complete') {
       await maybeAutoCreateInvoice(db, id);
     }

@@ -3,6 +3,17 @@ import { jsx } from 'hono/jsx';
 import type {} from './components';
 import { Layout } from './layout';
 
+export interface ServiceTask {
+  id: string;
+  title: string;
+  type: string;
+  is_required: number;
+  sort_order: number;
+  completed: number;
+  answer: string | null;
+  completed_at: string | null;
+}
+
 interface JobDetailPageProps {
   job: {
     id: string;
@@ -22,6 +33,9 @@ interface JobDetailPageProps {
   territory?: { id: string; name: string };
   team: Array<{ id: string; first_name: string; last_name: string }>;
   assignedProviderId: string | null;
+  serviceTasks: ServiceTask[];
+  completeBlocked?: boolean;
+  completeBlockers?: string[];
   notes: Array<{
     text: string;
     timestamp: string;
@@ -205,7 +219,146 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage, customerName }: {
 
 const money = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
-export const JobDetailPage = ({ job, customer, service, territory, team, assignedProviderId, notes, smsThreadMessage, lineItems }: JobDetailPageProps) => {
+export const ServiceTasksList = ({ jobId, tasks, serviceName }: { jobId: string; tasks: ServiceTask[]; serviceName: string }) => {
+  const total = tasks.length;
+  const done = tasks.filter(t => t.completed || t.answer).length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const requiredPending = tasks.filter(t => t.is_required && !t.completed && !t.answer);
+
+  return (
+    <div id="service-tasks-list">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-black uppercase tracking-widest text-muted-foreground">{serviceName} Checklist</span>
+          {requiredPending.length > 0 && (
+            <span class="uk-label uk-label-destructive" style="font-size:0.65rem;padding:1px 6px;">
+              <span class="badge-label">{requiredPending.length} required</span>
+            </span>
+          )}
+        </div>
+        <span class="text-xs font-bold text-muted-foreground">{done}/{total}</span>
+      </div>
+
+      <div class="mb-3 h-1.5 rounded-full overflow-hidden" style="background:var(--border);">
+        <div class="h-full rounded-full transition-all" style={`width:${pct}%;background:${pct === 100 ? 'var(--brand)' : 'var(--badge-primary)'};`} />
+      </div>
+
+      <div class="grid gap-2">
+        {tasks.map((task) => {
+          const isDone = Boolean(task.completed || task.answer);
+          return (
+            <div key={task.id} class={`flex items-start gap-3 p-3 rounded-xl border transition-all ${isDone ? 'border-border/40 opacity-70' : task.is_required ? 'border-destructive/30 bg-destructive/3' : 'border-border'}`}>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <p class={`text-sm font-medium ${isDone ? 'line-through text-muted-foreground' : ''}`}>{task.title}</p>
+                  {task.is_required && !isDone && (
+                    <span style="font-size:0.6rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--destructive);border:1px solid currentColor;border-radius:4px;padding:1px 4px;">Required</span>
+                  )}
+                </div>
+
+                {task.type === 'check' && (
+                  <button
+                    type="button"
+                    class={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border transition-all ${isDone ? 'border-brand/30 text-brand bg-brand/5' : 'border-border hover:border-brand/40 text-muted-foreground hover:text-brand'}`}
+                    hx-post={`/admin/jobs/${jobId}/service-tasks/${task.id}/toggle`}
+                    hx-target="#service-tasks-list"
+                    hx-select="#service-tasks-list"
+                    hx-swap="outerHTML"
+                  >
+                    {isDone ? '✓ Done — click to undo' : 'Mark done'}
+                  </button>
+                )}
+
+                {task.type === 'yesno' && !isDone && (
+                  <div class="flex gap-2 mt-1">
+                    <button
+                      type="button"
+                      class="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border border-border hover:border-brand/40 hover:text-brand text-muted-foreground transition-all"
+                      hx-post={`/admin/jobs/${jobId}/service-tasks/${task.id}/answer`}
+                      hx-vals='{"answer":"yes"}'
+                      hx-target="#service-tasks-list"
+                      hx-select="#service-tasks-list"
+                      hx-swap="outerHTML"
+                    >
+                      Yes
+                    </button>
+                    <button
+                      type="button"
+                      class="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border border-border hover:border-destructive/40 hover:text-destructive text-muted-foreground transition-all"
+                      hx-post={`/admin/jobs/${jobId}/service-tasks/${task.id}/answer`}
+                      hx-vals='{"answer":"no"}'
+                      hx-target="#service-tasks-list"
+                      hx-select="#service-tasks-list"
+                      hx-swap="outerHTML"
+                    >
+                      No
+                    </button>
+                  </div>
+                )}
+
+                {task.type === 'yesno' && isDone && (
+                  <div class="flex items-center gap-2 mt-1">
+                    <span class={`text-xs font-black uppercase tracking-widest px-2 py-0.5 rounded-lg ${task.answer === 'yes' ? 'bg-brand/10 text-brand' : 'bg-destructive/10 text-destructive'}`}>
+                      {task.answer === 'yes' ? 'Yes' : 'No'}
+                    </span>
+                    <button
+                      type="button"
+                      class="text-[9px] text-muted-foreground/60 hover:text-muted-foreground uppercase tracking-widest font-bold"
+                      hx-post={`/admin/jobs/${jobId}/service-tasks/${task.id}/clear`}
+                      hx-target="#service-tasks-list"
+                      hx-select="#service-tasks-list"
+                      hx-swap="outerHTML"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                )}
+
+                {task.type === 'text' && !isDone && (
+                  <form
+                    class="mt-1 flex gap-2"
+                    hx-post={`/admin/jobs/${jobId}/service-tasks/${task.id}/answer`}
+                    hx-target="#service-tasks-list"
+                    hx-select="#service-tasks-list"
+                    hx-swap="outerHTML"
+                    hx-on="htmx:afterRequest: if(event.detail.xhr?.status < 300) this.reset();"
+                  >
+                    <input
+                      type="text"
+                      name="answer"
+                      class="uk-input text-xs h-8 rounded-lg border border-border/60 bg-card flex-1"
+                      placeholder="Type answer and press enter..."
+                      required
+                    />
+                    <button type="submit" class="uk-btn uk-btn-default uk-btn-sm rounded-lg text-[10px] font-black">Save</button>
+                  </form>
+                )}
+
+                {task.type === 'text' && isDone && (
+                  <div class="flex items-center gap-2 mt-1">
+                    <span class="text-xs italic text-muted-foreground">"{task.answer}"</span>
+                    <button
+                      type="button"
+                      class="text-[9px] text-muted-foreground/60 hover:text-muted-foreground uppercase tracking-widest font-bold"
+                      hx-post={`/admin/jobs/${jobId}/service-tasks/${task.id}/clear`}
+                      hx-target="#service-tasks-list"
+                      hx-select="#service-tasks-list"
+                      hx-swap="outerHTML"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export const JobDetailPage = ({ job, customer, service, territory, team, assignedProviderId, serviceTasks, completeBlocked, completeBlockers, notes, smsThreadMessage, lineItems }: JobDetailPageProps) => {
   const subtotal = lineItems.reduce((sum, line) => sum + line.total_cents, 0);
   const customerName = customer ? `${customer.first_name} ${customer.last_name}`.trim() : 'Unassigned customer';
   const serviceName = service?.name || job.custom_service_name || 'Custom Service';
@@ -309,8 +462,58 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
             </div>
           </div>
 
+          {completeBlocked && completeBlockers && completeBlockers.length > 0 && (
+            <div class="mb-6 rounded-2xl border-2 border-destructive/40 bg-destructive/5 p-6">
+              <div class="flex items-start gap-3 mb-4">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-destructive mt-0.5 shrink-0"><title>Blocked</title><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <div>
+                  <p class="text-sm font-black text-destructive mb-1">Cannot complete — required checklist items unfinished</p>
+                  <ul class="text-xs text-muted-foreground space-y-0.5">
+                    {completeBlockers.map((b, i) => <li key={i}>• {b}</li>)}
+                  </ul>
+                </div>
+              </div>
+              <details class="group">
+                <summary class="text-xs font-black uppercase tracking-widest text-destructive/80 cursor-pointer hover:text-destructive">Override & complete anyway →</summary>
+                <div class="mt-4">
+                  <p class="text-xs text-muted-foreground mb-3">Provide a reason. This will be flagged to management.</p>
+                  <form
+                    hx-post={`/admin/jobs/${job.id}/complete-override`}
+                    hx-target="#page-content"
+                    hx-select="#page-content"
+                    class="grid gap-3"
+                  >
+                    <textarea
+                      name="reason"
+                      class="uk-textarea text-sm rounded-xl border-2 border-destructive/40 bg-card"
+                      rows={3}
+                      placeholder="Reason for overriding required tasks..."
+                      required
+                    />
+                    <button type="submit" class="uk-btn uk-btn-sm font-black uppercase tracking-widest rounded-xl" style="background:var(--destructive);color:#fff;border-color:var(--destructive);">
+                      Override & Mark Complete
+                    </button>
+                  </form>
+                </div>
+              </details>
+            </div>
+          )}
+
           <div class="grid gap-8 lg:grid-cols-[1fr,380px]">
             <div class="grid gap-8 content-start">
+
+              {serviceTasks.length > 0 && (
+                <section id="service-tasks">
+                  <div class="flex items-center gap-3 mb-6">
+                    <div class="w-2 h-8 rounded-full" style="background:var(--badge-primary);" />
+                    <h3 class="text-xl font-black tracking-tight">{service?.name || 'Service'} Checklist</h3>
+                  </div>
+                  <div class="uk-card uk-card-body border border-border rounded-2xl shadow-sm bg-card/50">
+                    <ServiceTasksList jobId={job.id} tasks={serviceTasks} serviceName={service?.name || 'Service'} />
+                  </div>
+                </section>
+              )}
+
               <section id="tasks">
                 <div class="flex items-center justify-between mb-6">
                   <div class="flex items-center gap-3">

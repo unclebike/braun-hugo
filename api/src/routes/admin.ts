@@ -1893,6 +1893,17 @@ app.post('/jobs/quick-create', async (c) => {
     await db.prepare('INSERT INTO job_providers (job_id, team_member_id) VALUES (?, ?)').bind(jobId, providerId).run();
   }
 
+  if (serviceId) {
+    const svcTemplates = await db.prepare(
+      'SELECT id, title, type, is_required, sort_order FROM service_task_templates WHERE service_id = ? ORDER BY sort_order, created_at'
+    ).bind(serviceId).all();
+    for (const t of svcTemplates.results || []) {
+      await db.prepare(
+        'INSERT INTO job_service_tasks (id, job_id, service_id, template_id, title, type, is_required, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      ).bind(generateId(), jobId, serviceId, t.id, t.title, t.type, t.is_required, t.sort_order).run();
+    }
+  }
+
   return c.redirect(`/admin/jobs/${jobId}`);
 });
 
@@ -2124,7 +2135,18 @@ app.post('/jobs/create', async (c) => {
   if (state.provider_id) {
     await db.prepare('INSERT INTO job_providers (job_id, team_member_id) VALUES (?, ?)').bind(jobId, state.provider_id).run();
   }
-  
+
+  if (state.service_id) {
+    const wizTemplates = await db.prepare(
+      'SELECT id, title, type, is_required, sort_order FROM service_task_templates WHERE service_id = ? ORDER BY sort_order, created_at'
+    ).bind(state.service_id).all();
+    for (const t of wizTemplates.results || []) {
+      await db.prepare(
+        'INSERT INTO job_service_tasks (id, job_id, service_id, template_id, title, type, is_required, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      ).bind(generateId(), jobId, state.service_id, t.id, t.title, t.type, t.is_required, t.sort_order).run();
+    }
+  }
+
   return c.redirect(`/admin/jobs/${jobId}`);
 });
 
@@ -2140,12 +2162,13 @@ app.get('/jobs/:id', async (c) => {
   const notesJson = (job.notes_json as string) || '[]';
   const parsedLineItems = parsePriceLines((job.line_items_json as string) || '[]');
   
-  const [customer, service, territory, jobProviders, teamProviders] = await Promise.all([
+  const [customer, service, territory, jobProviders, teamProviders, serviceTasksResult] = await Promise.all([
     job.customer_id ? db.prepare('SELECT id, first_name, last_name, email, phone, phone_e164 FROM customers WHERE id = ?').bind(job.customer_id).first() : null,
     job.service_id ? db.prepare('SELECT id, name, description FROM services WHERE id = ?').bind(job.service_id).first() : null,
     job.territory_id ? db.prepare('SELECT id, name FROM territories WHERE id = ?').bind(job.territory_id).first() : null,
     db.prepare('SELECT tm.id, tm.first_name, tm.last_name FROM job_providers jp JOIN team_members tm ON jp.team_member_id = tm.id WHERE jp.job_id = ?').bind(id).all(),
-    db.prepare("SELECT id, first_name, last_name FROM team_members WHERE role = 'provider' ORDER BY last_name, first_name").all()
+    db.prepare("SELECT id, first_name, last_name FROM team_members WHERE role = 'provider' ORDER BY last_name, first_name").all(),
+    db.prepare('SELECT id, title, type, is_required, sort_order, completed, answer, completed_at FROM job_service_tasks WHERE job_id = ? ORDER BY sort_order, created_at').bind(id).all(),
   ]);
 
   const customerPhone = (customer as { phone_e164?: string | null; phone?: string | null } | null)?.phone_e164
@@ -2183,7 +2206,22 @@ app.get('/jobs/:id', async (c) => {
   const lineItems = parsedLineItems.length > 0
     ? parsedLineItems
     : [buildServiceBaseLine((service as { name?: string } | null)?.name || (job.custom_service_name as string) || 'Service', Number(job.total_price_cents || 0))];
-  
+
+  const serviceTasks = (serviceTasksResult.results || []).map(t => ({
+    id: t.id as string,
+    title: t.title as string,
+    type: t.type as string,
+    is_required: Number(t.is_required || 0),
+    sort_order: Number(t.sort_order || 0),
+    completed: Number(t.completed || 0),
+    answer: (t.answer as string | null) || null,
+    completed_at: (t.completed_at as string | null) || null,
+  }));
+
+  const completeBlocked = c.req.query('complete_blocked') === '1';
+  const blockersRaw = c.req.query('blockers');
+  const completeBlockers = blockersRaw ? (() => { try { return JSON.parse(decodeURIComponent(blockersRaw)) as string[]; } catch { return []; } })() : [];
+
   return c.html(JobDetailPage({
     job: jobModel,
     customer: customer ? (customer as unknown as { id: string; first_name: string; last_name: string; email?: string; phone?: string }) : undefined,
@@ -2195,6 +2233,9 @@ app.get('/jobs/:id', async (c) => {
       last_name: p.last_name as string,
     })),
     assignedProviderId: assignedProviderId || null,
+    serviceTasks,
+    completeBlocked,
+    completeBlockers,
     notes,
     lineItems,
     smsThreadMessage: smsThreadMessage
@@ -2327,7 +2368,7 @@ app.post('/jobs/:id/notes/toggle', async (c) => {
   return c.redirect(`/admin/jobs/${jobId}`);
 });
 
-app.post('/jobs/:id/notes/delete', async (c) => {
+ app.post('/jobs/:id/notes/delete', async (c) => {
   const db = c.env.DB;
   const jobId = c.req.param('id');
   const body = await c.req.parseBody();
@@ -2343,6 +2384,104 @@ app.post('/jobs/:id/notes/delete', async (c) => {
   return c.redirect(`/admin/jobs/${jobId}`);
 });
 
+app.post('/jobs/:id/service-tasks/:taskId/toggle', async (c) => {
+  const db = c.env.DB;
+  const jobId = c.req.param('id');
+  const taskId = c.req.param('taskId');
+  const task = await db.prepare('SELECT completed FROM job_service_tasks WHERE id = ? AND job_id = ?').bind(taskId, jobId).first<{ completed: number }>();
+  if (task) {
+    const newCompleted = task.completed ? 0 : 1;
+    const completedAt = newCompleted ? "datetime('now')" : 'NULL';
+    await db.prepare(`UPDATE job_service_tasks SET completed = ?, completed_at = ${completedAt}, answer = NULL WHERE id = ? AND job_id = ?`).bind(newCompleted, taskId, jobId).run();
+  }
+  return c.redirect(`/admin/jobs/${jobId}`);
+});
+
+app.post('/jobs/:id/service-tasks/:taskId/answer', async (c) => {
+  const db = c.env.DB;
+  const jobId = c.req.param('id');
+  const taskId = c.req.param('taskId');
+  const body = await c.req.parseBody();
+  const answer = (body.answer as string || '').trim();
+  if (answer) {
+    await db.prepare("UPDATE job_service_tasks SET answer = ?, completed = 1, completed_at = datetime('now') WHERE id = ? AND job_id = ?").bind(answer, taskId, jobId).run();
+  } else {
+    await db.prepare('UPDATE job_service_tasks SET answer = NULL, completed = 0, completed_at = NULL WHERE id = ? AND job_id = ?').bind(taskId, jobId).run();
+  }
+  return c.redirect(`/admin/jobs/${jobId}`);
+});
+
+app.post('/jobs/:id/service-tasks/:taskId/clear', async (c) => {
+  const db = c.env.DB;
+  const jobId = c.req.param('id');
+  const taskId = c.req.param('taskId');
+  await db.prepare('UPDATE job_service_tasks SET answer = NULL, completed = 0, completed_at = NULL WHERE id = ? AND job_id = ?').bind(taskId, jobId).run();
+  return c.redirect(`/admin/jobs/${jobId}`);
+});
+
+app.post('/jobs/:id/complete-override', async (c) => {
+  const db = c.env.DB;
+  const jobId = c.req.param('id');
+  const body = await c.req.parseBody();
+  const reason = (body.reason as string || '').trim();
+  if (!reason) return c.redirect(`/admin/jobs/${jobId}`);
+
+  const incompleteTasks = await db.prepare(
+    'SELECT id, title FROM job_service_tasks WHERE job_id = ? AND is_required = 1 AND completed = 0 AND answer IS NULL'
+  ).bind(jobId).all();
+
+  for (const t of incompleteTasks.results || []) {
+    await db.prepare('UPDATE job_service_tasks SET override_reason = ? WHERE id = ?').bind(reason, t.id).run();
+  }
+
+  const updates = ['status = ?', "updated_at = datetime('now')", "completed_at = datetime('now')"];
+  await db.prepare(`UPDATE jobs SET ${updates.join(', ')} WHERE id = ?`).bind('complete', jobId).run();
+
+  const jobData = await db.prepare(
+    `SELECT j.customer_id, j.total_price_cents, j.line_items_json,
+            COALESCE(s.name, j.custom_service_name, 'Service') as service_name,
+            c.first_name, c.last_name
+     FROM jobs j
+     JOIN customers c ON c.id = j.customer_id
+     LEFT JOIN services s ON s.id = j.service_id
+     WHERE j.id = ?`
+  ).bind(jobId).first<{ customer_id: string; total_price_cents: number; line_items_json: string | null; service_name: string; first_name: string; last_name: string }>();
+
+  if (jobData) {
+    const existingInvoice = await db.prepare('SELECT id FROM invoices WHERE job_id = ?').bind(jobId).first();
+    if (!existingInvoice) {
+      const invoiceId = generateId();
+      const invoiceNumber = await nextInvoiceNumber(db);
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 14);
+      const jobLines = parsePriceLines(jobData.line_items_json);
+      const effectiveLines = jobLines.length > 0 ? jobLines : [buildServiceBaseLine(jobData.service_name, jobData.total_price_cents)];
+      const subtotal = subtotalFromLines(effectiveLines);
+      await db.prepare(
+        `INSERT INTO invoices (id, invoice_number, job_id, customer_id, currency, amount_cents, subtotal_cents, tax_cents, discount_cents, total_cents, line_items_json, due_date, status)
+         VALUES (?, ?, ?, ?, 'CAD', ?, ?, 0, 0, ?, ?, ?, 'pending')`
+      ).bind(invoiceId, invoiceNumber, jobId, jobData.customer_id, subtotal, subtotal, subtotal, JSON.stringify(effectiveLines), dueDate.toISOString().split('T')[0]).run();
+    }
+
+    const taskTitles = (incompleteTasks.results || []).map(t => `• ${t.title as string}`).join('\n');
+    const systemSubject = `Override: ${jobData.service_name} on job #${jobId.slice(0, 8).toUpperCase()}`;
+    const systemBody = `Technician overrode required checklist items to mark job complete.\n\nReason: ${reason}\n\nSkipped tasks:\n${taskTitles}\n\nCustomer: ${jobData.first_name} ${jobData.last_name}`;
+    await db.prepare(
+      `INSERT INTO messages (id, source, status, first_name, last_name, subject, body, metadata, is_read, created_at, updated_at)
+       VALUES (?, 'system', 'new', ?, ?, ?, ?, ?, 0, datetime('now'), datetime('now'))`
+    ).bind(
+      generateId(),
+      jobData.first_name,
+      jobData.last_name,
+      systemSubject,
+      systemBody,
+      JSON.stringify({ job_id: jobId, override_reason: reason, skipped_task_count: (incompleteTasks.results || []).length }),
+    ).run();
+  }
+
+  return c.redirect(`/admin/jobs/${jobId}`);
+});
+
 app.post('/jobs/:id/status', async (c) => {
   const db = c.env.DB;
   const jobId = c.req.param('id');
@@ -2351,6 +2490,16 @@ app.post('/jobs/:id/status', async (c) => {
   
   const validStatuses = ['created', 'assigned', 'enroute', 'in_progress', 'complete', 'cancelled'];
   if (!validStatuses.includes(status)) return c.redirect(`/admin/jobs/${jobId}`);
+
+  if (status === 'complete') {
+    const blockers = await db.prepare(
+      'SELECT id, title FROM job_service_tasks WHERE job_id = ? AND is_required = 1 AND completed = 0 AND answer IS NULL'
+    ).bind(jobId).all();
+    if ((blockers.results || []).length > 0) {
+      const blockerTitles = (blockers.results || []).map(t => t.title as string);
+      return c.redirect(`/admin/jobs/${jobId}?complete_blocked=1&blockers=${encodeURIComponent(JSON.stringify(blockerTitles))}`);
+    }
+  }
   
   const updates: string[] = ['status = ?', "updated_at = datetime('now')"];
   const binds: unknown[] = [status];
