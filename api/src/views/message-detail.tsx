@@ -291,7 +291,7 @@ export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164
           class="uk-textarea"
           rows={3}
           placeholder="Write a reply..."
-          style="resize:vertical;min-height:84px;font-size:1.8rem;"
+          style="resize:vertical;min-height:84px;font-size:var(--text-xxs);"
           maxlength={1600}
           oninput="var c=this.value.length;var s=c<=160?1:Math.ceil(c/153);var n=this.form&&this.form.querySelector('[data-sms-counter]');if(n){n.textContent=c+' chars · '+s+' segment'+(s>1?'s':'');}"
         ></textarea>
