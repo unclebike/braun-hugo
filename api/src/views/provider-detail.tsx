@@ -63,38 +63,40 @@ export const ProviderDetailPage = ({ member, weeklyHours, dateOverrides, skills,
                   <span class="save-indicator"></span>
                 </div>
 
-                <div class="grid gap-4 sm:grid-cols-2">
-                  <div class="grid gap-2">
-                    <label class="uk-form-label" for="first_name">First Name</label>
-                    <input id="first_name" name="first_name" class="uk-input" value={member.first_name} />
+                <div class="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+                  <div class="grid gap-1.5">
+                    <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="first_name">First Name</label>
+                    <input id="first_name" name="first_name" class="uk-input rounded-xl border-2 font-bold h-11" value={member.first_name} />
                   </div>
-                  <div class="grid gap-2">
-                    <label class="uk-form-label" for="last_name">Last Name</label>
-                    <input id="last_name" name="last_name" class="uk-input" value={member.last_name} />
+                  <div class="grid gap-1.5">
+                    <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="last_name">Last Name</label>
+                    <input id="last_name" name="last_name" class="uk-input rounded-xl border-2 font-bold h-11" value={member.last_name} />
                   </div>
-                  <div class="grid gap-2 sm:col-span-2">
-                    <label class="uk-form-label" for="email">Email</label>
-                    <input id="email" name="email" type="email" class="uk-input" value={member.email} />
+                  <div class="grid gap-1.5">
+                    <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="email">Email Address</label>
+                    <input id="email" name="email" type="email" class="uk-input rounded-xl border-2 font-bold h-11" value={member.email} />
                   </div>
-                  <div class="grid gap-2 sm:col-span-2">
-                    <label class="uk-form-label" for="phone">Phone</label>
-                    <input id="phone" name="phone" type="tel" class="uk-input" value={member.phone || ''} />
+                  <div class="grid gap-1.5">
+                    <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="phone">Phone Number</label>
+                    <input id="phone" name="phone" type="tel" class="uk-input rounded-xl border-2 font-bold h-11" value={member.phone || ''} />
                   </div>
-                  <div class="grid gap-2 sm:col-span-2">
-                    <label class="uk-form-label" for="role">Role</label>
-                    <select id="role" name="role" class="uk-select">
+                  <div class="grid gap-1.5">
+                    <label class="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="role">User Role</label>
+                    <select id="role" name="role" class="uk-select rounded-xl border-2 font-bold h-11">
                       <option value="manager" selected={member.role === 'manager'}>Manager</option>
                       <option value="provider" selected={member.role === 'provider'}>Provider</option>
                     </select>
                   </div>
-                  <label class="uk-form-label flex items-center gap-2 cursor-pointer sm:col-span-2">
-                    <input type="checkbox" name="can_be_auto_assigned" checked={Boolean(member.can_be_auto_assigned)} class="uk-toggle-switch uk-toggle-switch-primary" />
-                    Can be auto-assigned
-                  </label>
-                  <label class="uk-form-label flex items-center gap-2 cursor-pointer sm:col-span-2">
-                    <input type="checkbox" name="is_active" checked={Boolean(member.is_active)} class="uk-toggle-switch uk-toggle-switch-primary" />
-                    Active
-                  </label>
+                  <div class="flex flex-col justify-end gap-3 pb-1">
+                    <label class="uk-form-label flex items-center gap-2 cursor-pointer text-xs font-bold uppercase tracking-tight">
+                      <input type="checkbox" name="can_be_auto_assigned" checked={Boolean(member.can_be_auto_assigned)} class="uk-toggle-switch uk-toggle-switch-primary" />
+                      Auto-assignable
+                    </label>
+                    <label class="uk-form-label flex items-center gap-2 cursor-pointer text-xs font-bold uppercase tracking-tight">
+                      <input type="checkbox" name="is_active" checked={Boolean(member.is_active)} class="uk-toggle-switch uk-toggle-switch-primary" />
+                      Active Account
+                    </label>
+                  </div>
                 </div>
               </form>
             </section>
