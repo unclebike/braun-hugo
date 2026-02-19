@@ -25,6 +25,9 @@ Thumbs.db
 # Wrangler local state
 api/.wrangler/
 
+# API compiled output (Wrangler bundles from src directly via esbuild)
+api/dist/
+
 # Deployment (local, contains secrets)
 .deployment/DEPLOYMENT.md
 

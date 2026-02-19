@@ -8,6 +8,7 @@
     "zod": "^3.25.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.67.0"
   }
 }
