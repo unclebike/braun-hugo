@@ -109,7 +109,7 @@ export const NotesList = ({
   <div
     id={listId}
     data-notes-list="1"
-    class="grid gap-3"
+    class="grid-masonry gap-2"
     hx-get={`/admin/jobs/${jobId}/notes-list`}
     hx-trigger="taskAdded from:body"
     hx-target={`#${listId}`}
