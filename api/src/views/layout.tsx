@@ -989,7 +989,8 @@ document.addEventListener('click', function(e) {
           .text-2xl { font-size: var(--text-lg) !important; }
 
           .grid-masonry { position: relative; }
-          .grid-masonry > * { position: absolute; width: 160px; margin: 0; }
+           .grid-masonry > * { position: absolute; width: 160px; margin: 0; }
+           .grid-masonry > [data-wide] { width: 330px; }
 
           select:not(.uk-select) { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
           a, button, input, select, textarea, label, [role="switch"], [hx-post], [hx-get], [hx-delete] { touch-action: manipulation; }
