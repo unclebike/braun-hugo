@@ -700,18 +700,6 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
 
 
 
-              <div class="mt-4 pt-8 border-t border-border">
-                <button
-                  type="button"
-                  class="delete-btn w-full py-3 font-semibold uppercase tracking-widest text-caption-2 rounded-xl shadow-sm"
-                  hx-post={`/admin/jobs/${job.id}/delete`}
-                  data-confirm="arm"
-                  hx-target="#page-content"
-                >
-                  Permanently Delete Job
-                </button>
-              </div>
-
             </aside>
 
             <div class="grid gap-8 content-start lg:col-start-1 lg:row-start-1">
@@ -870,6 +858,18 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                 </div>
               </section>
              </div>
+          </div>
+
+          <div class="mt-6 pt-6 border-t border-border">
+            <button
+              type="button"
+              class="delete-btn w-full py-3 font-semibold uppercase tracking-widest text-caption-2 rounded-xl shadow-sm"
+              hx-post={`/admin/jobs/${job.id}/delete`}
+              data-confirm="arm"
+              hx-target="#page-content"
+            >
+              Permanently Delete Job
+            </button>
           </div>
         </div>
       </div>
