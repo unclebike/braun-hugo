@@ -468,6 +468,19 @@ html, body {
 }
 .uk-btn-default { background: var(--input-bg) !important; color: var(--text) !important; border-color: var(--border) !important; }
 .uk-btn-primary { background: var(--brand) !important; border-color: var(--brand) !important; color: var(--on-brand) !important; }
+/* Accent button modifiers — two-class specificity beats single-class !important above */
+.uk-btn.btn-yellow { background: var(--badge-yellow-bg) !important; color: var(--badge-yellow) !important; border-color: var(--badge-yellow) !important; }
+.uk-btn.btn-teal   { background: var(--badge-teal-bg)   !important; color: var(--badge-teal)   !important; border-color: var(--badge-teal)   !important; }
+.uk-btn.btn-peach  { background: var(--badge-peach-bg)  !important; color: var(--badge-peach)  !important; border-color: var(--badge-peach)  !important; }
+.uk-btn.btn-mauve  { background: var(--badge-mauve-bg)  !important; color: var(--badge-mauve)  !important; border-color: var(--badge-mauve)  !important; }
+/* Card bg overrides — two-class specificity beats .uk-card !important above */
+.uk-card.bg-yellow { background: var(--badge-yellow-bg) !important; border-color: var(--badge-yellow-border) !important; }
+.uk-card.bg-teal   { background: var(--badge-teal-bg)   !important; border-color: var(--badge-teal-border)   !important; }
+.uk-card.bg-peach  { background: var(--badge-peach-bg)  !important; border-color: var(--badge-peach-border)  !important; }
+.uk-card.bg-mauve  { background: var(--badge-mauve-bg)  !important; border-color: var(--badge-mauve-border)  !important; }
+/* Surface/inset utilities with !important so they survive uk-card override */
+.bg-surface { background-color: var(--bg-surface) !important; }
+.bg-inset   { background-color: var(--bg-inset)   !important; }
 .uk-checkbox, .uk-toggle-switch { background: var(--input-bg) !important; border-color: var(--border) !important; border-width: 2px !important; }
 .uk-checkbox:checked { background-color: var(--brand) !important; border-color: var(--brand) !important; }
 .uk-toggle-switch:checked { background-color: var(--brand) !important; border-color: var(--brand) !important; }
@@ -1119,9 +1132,7 @@ document.addEventListener('click', function(e) {
              .task-action-open { color: var(--brand); }
              .task-action-delete { color: var(--destructive); }
 
-          .bg-surface { background-color: var(--bg-surface); }
-          .bg-inset { background-color: var(--bg-inset); }
-          .border-strong { border-color: var(--border-strong); }
+          .border-strong { border-color: var(--border-strong) !important; }
 
           select:not(.uk-select) { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
           a, button, input, select, textarea, label, [role="switch"], [hx-post], [hx-get], [hx-delete] { touch-action: manipulation; }
@@ -1657,9 +1668,12 @@ document.addEventListener('click', function(e) {
           .job-stat-chip-preview { display: block; font-size: 10px; font-weight: 500; color: var(--muted-foreground); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 100%; margin-top: 2px; }
           .job-stat-chip-msg--unread .job-stat-chip-preview { color: var(--foreground); font-weight: 600; }
           .job-stat-chip-msg--unread .job-stat-chip-label { color: var(--brand); }
+          .job-content-wrap { padding: calc(12px + var(--safe-top)) 12px calc(12px + var(--safe-bottom)) 12px; }
+          @media (min-width: 640px) { .job-content-wrap { padding: calc(16px + var(--safe-top)) 16px calc(16px + var(--safe-bottom)) 16px; } }
+          @media (min-width: 1024px) { .job-content-wrap { padding: calc(32px + var(--safe-top)) 32px calc(32px + var(--safe-bottom)) 32px; } }
           .job-cp-top { padding: 14px 16px; }
           @media (max-width: 768px) {
-            .job-cp-top { padding: calc(14px + var(--safe-top)) 16px 14px calc(56px + var(--safe-left)); }
+            .job-cp-top { padding: 14px 16px 14px calc(56px + var(--safe-left)); }
           }
         </style>`}
       </head>

@@ -301,10 +301,10 @@ export const WorkTimeline = ({
     <div class="space-y-3">
       <div class="flex gap-2">
         {isActive && (
-          <button type="button" class="uk-btn uk-btn-default flex-1 h-10 rounded-xl font-bold" style="border-color:var(--badge-yellow);color:var(--badge-yellow);background:var(--badge-yellow-bg);" hx-post={`/admin/jobs/${jobId}/pause`} hx-target="#page-content" hx-select="#page-content">Pause</button>
+          <button type="button" class="uk-btn uk-btn-default btn-yellow flex-1 h-10 rounded-xl font-bold" hx-post={`/admin/jobs/${jobId}/pause`} hx-target="#page-content" hx-select="#page-content">Pause</button>
         )}
         {isPaused && (
-          <button type="button" class="uk-btn uk-btn-default flex-1 h-10 rounded-xl font-bold" style="border-color:var(--badge-yellow);color:var(--badge-yellow);background:var(--badge-yellow-bg);" hx-post={`/admin/jobs/${jobId}/resume`} hx-target="#page-content" hx-select="#page-content">Resume</button>
+          <button type="button" class="uk-btn uk-btn-default btn-yellow flex-1 h-10 rounded-xl font-bold" hx-post={`/admin/jobs/${jobId}/resume`} hx-target="#page-content" hx-select="#page-content">Resume</button>
         )}
         {(isActive || isPaused) && (
           <button type="button" class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-bold shadow-md shadow-brand/20" hx-post={`/admin/jobs/${jobId}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content">END JOB</button>
@@ -492,7 +492,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
 
   return (
     <Layout title={`${customerName} - ${serviceName}`}>
-      <div class="p-3 sm:p-4 lg:p-8">
+      <div class="job-content-wrap">
         <div class="mx-auto max-w-[1400px]">
 
           {/* Customer Command & Status Panel */}
