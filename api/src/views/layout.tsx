@@ -1475,9 +1475,12 @@ document.addEventListener('click', function(e) {
             flex: 1;
             min-height: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
           }
           #sms-thread-modal-body #sms-thread-panel {
-            height: 100%;
+            flex: 1;
+            min-height: 0;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -1637,7 +1640,7 @@ document.addEventListener('click', function(e) {
         </style>`}
         {html`<style>
           .job-detail-header { padding-bottom: 0 !important; display: block !important; }
-          .job-stat-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+          .job-stat-chips { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
           .job-stat-chips::-webkit-scrollbar { display: none; }
           .job-stat-chip { flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; background: var(--bg); border: 2px solid var(--border); border-radius: 10px; padding: 7px 12px; cursor: pointer; text-align: left; }
           .job-stat-chip-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted-foreground); white-space: nowrap; }
@@ -1647,6 +1650,17 @@ document.addEventListener('click', function(e) {
           .job-stat-chip-status select { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
           .job-stat-chip-btn { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 34px; background: var(--bg); border: 2px solid var(--border); border-radius: 10px; padding: 0; cursor: pointer; align-self: stretch; transition: opacity 0.15s; }
           .job-stat-chip-btn:hover { opacity: 0.8; }
+          .job-stat-chip-msg { min-width: 140px; max-width: 220px; }
+          .job-stat-chip-msg--unread { border-color: var(--brand); background: var(--badge-primary-bg); }
+          .job-stat-chip-msg-header { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+          .job-stat-chip-time { font-size: 9px; font-weight: 600; color: var(--muted-foreground); opacity: 0.7; white-space: nowrap; }
+          .job-stat-chip-preview { display: block; font-size: 10px; font-weight: 500; color: var(--muted-foreground); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 100%; margin-top: 2px; }
+          .job-stat-chip-msg--unread .job-stat-chip-preview { color: var(--foreground); font-weight: 600; }
+          .job-stat-chip-msg--unread .job-stat-chip-label { color: var(--brand); }
+          .job-cp-top { padding: 14px 16px; }
+          @media (max-width: 768px) {
+            .job-cp-top { padding: calc(14px + var(--safe-top)) 16px 14px calc(56px + var(--safe-left)); }
+          }
         </style>`}
       </head>
       <body>

@@ -212,27 +212,22 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage, customerName }: {
   return (
     <div
       id="job-sms-thread-card"
-      class={`rounded-2xl border bg-card shadow-sm overflow-hidden ${hasUnread ? 'border-destructive shadow-destructive/5' : 'border-border'}`}
+      class="rounded-2xl border shadow-sm overflow-hidden"
+      style={`background:var(--badge-mauve-bg); border-color:${hasUnread ? 'var(--badge-mauve)' : 'var(--badge-mauve-border)'};`}
       hx-get={`/admin/jobs/${jobId}/sms-thread-card`}
       hx-trigger="every 15s"
       hx-swap="outerHTML"
     >
-      <div style="padding:10px 16px; background:var(--badge-mauve-bg); border-bottom:1px solid var(--badge-mauve-border);">
-        <div class="flex items-center justify-between">
-          <span class="text-caption-2 font-semibold uppercase tracking-wider" style="color:var(--badge-mauve);">SMS Thread</span>
-          {hasUnread && (
-            <span class="text-caption-2 font-semibold uppercase tracking-wider" style="color:var(--badge-mauve);">● Unread</span>
-          )}
-        </div>
-      </div>
-
       {smsThreadMessage ? (
-        <div class="grid gap-3 px-4 pb-4">
-          <div class="bg-surface p-3 rounded-xl border border-border">
-            <p class="text-sm leading-relaxed text-foreground italic">
-              {smsThreadMessage.body ? `"${smsThreadMessage.body}"` : 'Conversation linked.'}
-            </p>
-            <p class="text-caption-2 text-muted-foreground mt-2 font-medium uppercase tracking-widest">
+        <div class="grid gap-3 p-4">
+          <div class="p-3 rounded-xl border" style="background:var(--bg-card); border-color:var(--badge-mauve-border);">
+            <div class="flex items-start justify-between gap-2 mb-1">
+              <p class="text-sm leading-relaxed text-foreground italic flex-1">
+                {smsThreadMessage.body ? `"${smsThreadMessage.body}"` : 'Conversation linked.'}
+              </p>
+              {hasUnread && <span class="text-caption-2 font-semibold shrink-0" style="color:var(--badge-mauve);">● Unread</span>}
+            </div>
+            <p class="text-caption-2 text-muted-foreground font-medium uppercase tracking-widest">
               {updatedLabel ? `Last updated ${updatedLabel}` : ''}
             </p>
           </div>
@@ -250,7 +245,7 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage, customerName }: {
           </button>
         </div>
       ) : (
-        <div class="py-6 px-4 pb-4 text-center">
+        <div class="py-6 px-4 text-center">
           <p class="text-sm text-muted-foreground">No active conversation linked to this job.</p>
         </div>
       )}
@@ -306,25 +301,25 @@ export const WorkTimeline = ({
     <div class="space-y-3">
       <div class="flex gap-2">
         {isActive && (
-          <button type="button" class="uk-btn uk-btn-default flex-1 h-10 rounded-xl font-bold" style="border-color:var(--badge-primary);color:var(--badge-primary);" hx-post={`/admin/jobs/${jobId}/pause`} hx-target="#page-content" hx-select="#page-content">Pause</button>
+          <button type="button" class="uk-btn uk-btn-default flex-1 h-10 rounded-xl font-bold" style="border-color:var(--badge-yellow);color:var(--badge-yellow);background:var(--badge-yellow-bg);" hx-post={`/admin/jobs/${jobId}/pause`} hx-target="#page-content" hx-select="#page-content">Pause</button>
         )}
         {isPaused && (
-          <button type="button" class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-bold" hx-post={`/admin/jobs/${jobId}/resume`} hx-target="#page-content" hx-select="#page-content">Resume</button>
+          <button type="button" class="uk-btn uk-btn-default flex-1 h-10 rounded-xl font-bold" style="border-color:var(--badge-yellow);color:var(--badge-yellow);background:var(--badge-yellow-bg);" hx-post={`/admin/jobs/${jobId}/resume`} hx-target="#page-content" hx-select="#page-content">Resume</button>
         )}
         {(isActive || isPaused) && (
-          <button type="button" class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-bold bg-secondary border-secondary shadow-lg shadow-secondary/20" hx-post={`/admin/jobs/${jobId}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content">END JOB</button>
+          <button type="button" class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-bold shadow-md shadow-brand/20" hx-post={`/admin/jobs/${jobId}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content">END JOB</button>
         )}
         {isCompleted && (
-          <div class="flex-1 bg-surface border border-border h-10 rounded-xl flex items-center justify-center gap-2">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-brand" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m22 4-10 10.01-3-3"/></svg>
-            <span class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground">Work Completed</span>
+          <div class="flex-1 h-10 rounded-xl flex items-center justify-center gap-2 border" style="background:var(--badge-yellow-bg);border-color:var(--badge-yellow-border);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" style="color:var(--badge-yellow);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m22 4-10 10.01-3-3"/></svg>
+            <span class="text-caption-2 font-semibold uppercase tracking-widest" style="color:var(--badge-yellow);">Work Completed</span>
           </div>
         )}
       </div>
 
       {intervals.length > 0 && (
         <div class="space-y-1.5">
-          <div class="relative h-6 rounded-full overflow-hidden" style="background:var(--border);">
+          <div class="relative h-6 rounded-full overflow-hidden" style="background:var(--badge-yellow-border);">
             {segments.map((seg, i) => (
               <div
                 key={i}
@@ -450,6 +445,17 @@ export const ServiceTasksList = ({ jobId, tasks, serviceName }: { jobId: string;
   );
 };
 
+function timeAgo(ts: string): string {
+  const d = new Date(`${ts}Z`);
+  const diff = Date.now() - d.getTime();
+  const mins = Math.round(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+}
+
 export const JobDetailPage = ({ job, customer, service, territory, team, assignedProviderId, workIntervals, serviceTasks, completeBlocked, completeBlockers, notes, smsThreadMessage, lineItems }: JobDetailPageProps) => {
   const subtotal = lineItems.reduce((sum, line) => sum + line.total_cents, 0);
   const customerName = customer ? `${customer.first_name} ${customer.last_name}`.trim() : 'Unassigned customer';
@@ -486,90 +492,101 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
 
   return (
     <Layout title={`${customerName} - ${serviceName}`}>
-      <div class="page-header job-detail-header">
-        <div style="display:flex; align-items:center; gap:12px; min-height:40px; padding-bottom:10px;">
-          <a
-            href="/admin/jobs"
-            class="shrink-0 flex items-center justify-center w-9 h-9 rounded-xl border-2 border-border hover:bg-muted transition-colors"
-            hx-get="/admin/jobs"
-            hx-target="#page-content"
-            hx-select="#page-content"
-            hx-push-url="true"
-            aria-label="Back to Jobs"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Back to Jobs</title><path d="M19 12H5m7 7-7-7 7-7"/></svg>
-          </a>
-          <div class="flex-1 min-w-0">
-            <h2 style="font-size:var(--text-lg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0; font-weight:700; letter-spacing:-0.02em;">{customerName}</h2>
-            <p class="text-caption-2" style="margin:2px 0 0; letter-spacing:0.05em; text-transform:uppercase; opacity:0.55; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{serviceName}</p>
-          </div>
-        </div>
-        <div class="job-stat-chips">
-          {!job.started_at && (
-            <button type="button" aria-label="Start Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "in_progress"}' hx-target="#page-content" hx-select="#page-content" style="color:var(--brand);border-color:var(--brand);background:var(--badge-primary-bg);">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            </button>
-          )}
-          {isRunning && (
-            <button type="button" aria-label="Pause Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/pause`} hx-target="#page-content" hx-select="#page-content" style="color:var(--badge-primary);border-color:var(--badge-primary);background:var(--badge-primary-bg);">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-            </button>
-          )}
-          {isPaused && (
-            <button type="button" aria-label="Resume Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/resume`} hx-target="#page-content" hx-select="#page-content" style="color:var(--brand);border-color:var(--brand);background:var(--badge-primary-bg);">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            </button>
-          )}
-          {(isRunning || isPaused) && (
-            <button type="button" aria-label="End Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content" style="color:var(--destructive);border-color:var(--destructive);background:var(--destructive-soft);">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-            </button>
-          )}
-          <a href="#logistics" class="job-stat-chip" style="text-decoration:none; color:inherit;">
-            <span class="job-stat-chip-label">Time</span>
-            <span class="job-stat-chip-value">
-              {isRunning ? '● Live' : loggedMinutes !== null ? `${loggedMinutes}min` : '—'} / {job.duration_minutes}min
-            </span>
-          </a>
-          <button
-            type="button"
-            class="job-stat-chip"
-            {...(canOpenSms ? {
-              'data-sms-thread-modal-open': 'true',
-              'data-sms-thread-modal-title': smsTitle,
-              'hx-get': `/admin/inbox/${smsThreadMessage?.id}/sms-thread-panel`,
-              'hx-target': '#sms-thread-modal-body',
-              'hx-swap': 'innerHTML',
-              'hx-indicator': '#sms-thread-modal-loading',
-            } : {})}
-            disabled={!canOpenSms}
-          >
-            <span class="job-stat-chip-label">Messages</span>
-            <span class={`job-stat-chip-value${smsThreadMessage?.is_read === 0 ? ' job-stat-chip-unread' : ''}`}>
-              {smsThreadMessage?.is_read === 0 ? '● Unread' : canOpenSms ? 'No new' : 'None'}
-            </span>
-          </button>
-          <div class="job-stat-chip job-stat-chip-status">
-            <span class="job-stat-chip-label">Status</span>
-            <span class="job-stat-chip-value">{job.status.replace(/_/g, ' ')}</span>
-            <select
-              name="status"
-              data-current={job.status}
-              hx-post={`/admin/jobs/${job.id}/status`}
-              hx-target="#page-content"
-              hx-select="#page-content"
-              hx-trigger="change"
-            >
-              {STATUS_OPTIONS.map((status) => (
-                <option value={status} selected={job.status === status} key={status}>{status.replace(/_/g, ' ')}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
       <div class="p-3 sm:p-4 lg:p-8">
         <div class="mx-auto max-w-[1400px]">
+
+          {/* Customer Command & Status Panel */}
+          <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden mb-6">
+            <div class="job-cp-top flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center font-black text-sm" style="background:var(--badge-primary-bg);color:var(--badge-primary);" aria-hidden="true">
+                {(customerName?.charAt(0) ?? '?').toUpperCase()}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <a href="/admin/jobs" class="text-muted-foreground hover:text-foreground transition-colors shrink-0" hx-get="/admin/jobs" hx-target="#page-content" hx-select="#page-content" hx-push-url="true" aria-label="Back to Jobs">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Back to Jobs</title><path d="M19 12H5m7 7-7-7 7-7"/></svg>
+                  </a>
+                  <h2 class="text-base font-black tracking-tight leading-none truncate" style="margin:0;">{customerName}</h2>
+                </div>
+                <p class="text-caption-2 text-muted-foreground uppercase tracking-wider truncate">{serviceName}</p>
+              </div>
+              <div class="flex gap-1.5 shrink-0">
+                {customer?.phone && (
+                  <a href={`tel:${customer.phone}`} class="w-9 h-9 rounded-xl bg-muted flex items-center justify-center hover:bg-brand/10 hover:text-brand transition-colors" aria-label={`Call ${customerName}`}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Call customer</title><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07a19.5 19.74 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  </a>
+                )}
+                {customer?.email && (
+                  <a href={`mailto:${customer.email}`} class="w-9 h-9 rounded-xl bg-muted flex items-center justify-center hover:bg-brand/10 hover:text-brand transition-colors" aria-label={`Email ${customerName}`}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Email customer</title><path d="m22 2-7 20-4-9-9-4zM22 2 11 13"/></svg>
+                  </a>
+                )}
+                {customer?.id && (
+                  <a href={`/admin/customers/${customer.id}/edit`} class="w-9 h-9 rounded-xl bg-muted flex items-center justify-center hover:bg-brand/10 hover:text-brand transition-colors" hx-get={`/admin/customers/${customer.id}/edit`} hx-target="#page-content" hx-select="#page-content" hx-push-url="true" aria-label="View customer profile">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Customer profile</title><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </a>
+                )}
+              </div>
+            </div>
+            <div class="job-stat-chips border-t border-border px-3">
+              {!job.started_at && (
+                <button type="button" aria-label="Start Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "in_progress"}' hx-target="#page-content" hx-select="#page-content" style="color:var(--brand);border-color:var(--brand);background:var(--badge-primary-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </button>
+              )}
+              {isRunning && (
+                <button type="button" aria-label="Pause Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/pause`} hx-target="#page-content" hx-select="#page-content" style="color:var(--badge-primary);border-color:var(--badge-primary);background:var(--badge-primary-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                </button>
+              )}
+              {isPaused && (
+                <button type="button" aria-label="Resume Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/resume`} hx-target="#page-content" hx-select="#page-content" style="color:var(--brand);border-color:var(--brand);background:var(--badge-primary-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </button>
+              )}
+              {(isRunning || isPaused) && (
+                <button type="button" aria-label="End Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content" style="color:var(--destructive);border-color:var(--destructive);background:var(--destructive-soft);">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                </button>
+              )}
+              <a href="#logistics" class="job-stat-chip" style="text-decoration:none; color:inherit;">
+                <span class="job-stat-chip-label">Time</span>
+                <span class="job-stat-chip-value">{isRunning ? '● Live' : loggedMinutes !== null ? `${loggedMinutes}min` : '—'} / {job.duration_minutes}min</span>
+              </a>
+              <button
+                type="button"
+                class={`job-stat-chip job-stat-chip-msg${smsThreadMessage?.is_read === 0 ? ' job-stat-chip-msg--unread' : ''}`}
+                {...(canOpenSms ? {
+                  'data-sms-thread-modal-open': 'true',
+                  'data-sms-thread-modal-title': smsTitle,
+                  'hx-get': `/admin/inbox/${smsThreadMessage?.id}/sms-thread-panel`,
+                  'hx-target': '#sms-thread-modal-body',
+                  'hx-swap': 'innerHTML',
+                  'hx-indicator': '#sms-thread-modal-loading',
+                } : {})}
+                disabled={!canOpenSms}
+              >
+                <div class="job-stat-chip-msg-header">
+                  <span class="job-stat-chip-label">{smsThreadMessage?.is_read === 0 ? '● Messages' : 'Messages'}</span>
+                  {smsThreadMessage && <span class="job-stat-chip-time">{timeAgo(smsThreadMessage.updated_at)}</span>}
+                </div>
+                <span class="job-stat-chip-preview">
+                  {smsThreadMessage?.body
+                    ? smsThreadMessage.body.length > 48 ? `${smsThreadMessage.body.slice(0, 48)}…` : smsThreadMessage.body
+                    : canOpenSms ? 'Tap to open thread' : 'No thread'}
+                </span>
+              </button>
+              <div class="job-stat-chip job-stat-chip-status">
+                <span class="job-stat-chip-label">Status</span>
+                <span class="job-stat-chip-value">{job.status.replace(/_/g, ' ')}</span>
+                <select name="status" data-current={job.status} hx-post={`/admin/jobs/${job.id}/status`} hx-target="#page-content" hx-select="#page-content" hx-trigger="change">
+                  {STATUS_OPTIONS.map((status) => (
+                    <option value={status} selected={job.status === status} key={status}>{status.replace(/_/g, ' ')}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
 
           {completeBlocked && completeBlockers && completeBlockers.length > 0 && (
             <div class="mb-6 rounded-2xl border-2 border-destructive/40 bg-destructive/5 p-6">
@@ -623,15 +640,10 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
               <section id="tasks">
                 <div class="flex items-center justify-between mb-4 px-1">
                   <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Notes</h3>
+                  {notes.length > 0 && <span class="text-caption-2 font-semibold tabular-nums" style="color:var(--badge-peach);">{notes.length}</span>}
                 </div>
 
-                <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-                  <div style="padding:10px 16px; background:var(--badge-peach-bg); border-bottom:1px solid var(--badge-peach-border);">
-                    <div class="flex items-center justify-between">
-                      <span class="text-caption-2 font-semibold uppercase tracking-wider" style="color:var(--badge-peach);">Tasks & Notes</span>
-                      <span class="text-caption-2 font-semibold tabular-nums" style="color:var(--badge-peach);">{notes.length}</span>
-                    </div>
-                  </div>
+                <div class="rounded-2xl border shadow-sm overflow-hidden" style="background:var(--badge-peach-bg); border-color:var(--badge-peach-border);">
                   <div class="p-3">
                     <NotesList jobId={job.id} notes={notes} listId="notes-main-list" />
                   </div>
@@ -667,15 +679,10 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
               <section id="billing">
                 <div class="flex items-center justify-between mb-4 px-1">
                   <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Billing</h3>
+                  <span class="text-sm font-bold tabular-nums" style="color:var(--badge-teal);">{money(subtotal)}</span>
                 </div>
 
-                <div class="uk-card rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-                  <div style="padding:10px 16px; background:var(--badge-teal-bg); border-bottom:1px solid var(--badge-teal-border);">
-                    <div class="flex items-center justify-between">
-                      <span class="text-caption-2 font-semibold uppercase tracking-wider" style="color:var(--badge-teal);">Job Total</span>
-                      <span class="text-sm font-black tabular-nums" style="color:var(--badge-teal);">{money(subtotal)}</span>
-                    </div>
-                  </div>
+                <div class="rounded-2xl border shadow-sm overflow-hidden" style="background:var(--badge-teal-bg); border-color:var(--badge-teal-border);">
                   <div class="divide-y divide-border/50">
                     {lineItems.map((line) => (
                       <details class="group" key={line.id}>
@@ -778,27 +785,22 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
 
             <aside class="grid gap-8 content-start">
               <section id="logistics">
-                <div class="flex items-center gap-3 mb-4 px-1">
+                <div class="flex items-center justify-between mb-4 px-1">
                   <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Logistics & Timing</h3>
+                  <span class="text-caption-2 font-semibold" style="color:var(--badge-yellow);">{dateLabel}{timeLabel ? ` · ${timeLabel}` : ''}</span>
                 </div>
-                <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-                  <div style="padding:10px 16px; background:var(--badge-yellow-bg); border-bottom:1px solid var(--badge-yellow-border);">
-                    <div class="flex items-center justify-between">
-                      <span class="text-caption-2 font-semibold uppercase tracking-wider" style="color:var(--badge-yellow);">{dateLabel}</span>
-                      <span class="text-caption-2 font-semibold uppercase tracking-wider" style="color:var(--badge-yellow);">{timeLabel || 'TBD'} · {job.duration_minutes}min</span>
-                    </div>
-                  </div>
+                <div class="rounded-2xl border shadow-sm overflow-hidden" style="background:var(--badge-yellow-bg); border-color:var(--badge-yellow-border);">
                   <div class="p-4 space-y-4">
-                    <div class="space-y-3 rounded-xl p-3" style="background:var(--bg-mantle);">
-                      <p class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground">Work Execution</p>
+                    <div class="space-y-3 rounded-xl p-3" style="background:var(--bg-card); border:1px solid var(--badge-yellow-border);">
+                      <p class="text-caption-2 font-semibold uppercase tracking-widest" style="color:var(--badge-yellow);">Work Execution</p>
                       {!job.started_at ? (
                         <button type="button" class="uk-btn uk-btn-primary w-full h-12 rounded-xl font-bold shadow-lg shadow-brand/20 transition-all hover:scale-[1.02] text-base" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "in_progress"}' hx-target="#page-content" hx-select="#page-content">START JOB</button>
                       ) : (
                         <WorkTimeline jobId={job.id} intervals={workIntervals} isActive={isRunning} isPaused={isPaused} estimatedMinutes={job.duration_minutes} isCompleted={Boolean(job.completed_at)} />
                       )}
                     </div>
-                    <div class="bg-surface rounded-xl p-3 border border-strong">
-                      <p class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground mb-2">Execution Metrics</p>
+                    <div class="rounded-xl p-3 border" style="background:var(--bg-card); border-color:var(--badge-yellow-border);">
+                      <p class="text-caption-2 font-semibold uppercase tracking-widest mb-2" style="color:var(--badge-yellow);">Execution Metrics</p>
                       <div class="grid grid-cols-2 gap-3">
                         <div>
                           <p class="text-caption-2 font-semibold text-muted-foreground/70 uppercase">Start Time</p>
@@ -808,7 +810,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                           <p class="text-caption-2 font-semibold text-muted-foreground/70 uppercase">End Time</p>
                           <p class="text-xs font-bold">{job.completed_at ? new Date(`${job.completed_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
                         </div>
-                        <div class="col-span-2 pt-2 mt-1 border-t border-strong">
+                        <div class="col-span-2 pt-2 mt-1 border-t" style="border-color:var(--badge-yellow-border);">
                           <p class="text-caption-2 font-semibold text-muted-foreground/70 uppercase">Actual Duration</p>
                           <p class="text-sm font-bold text-brand">{actualDuration !== null ? `${actualDuration} min` : completedIntervalMinutes > 0 ? `${completedIntervalMinutes} min logged` : 'Calculating...'}</p>
                         </div>
@@ -873,39 +875,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                 </div>
               </section>
 
-              <section id="contact">
-                <div class="uk-card p-6 rounded-2xl border-2 border-border bg-card shadow-sm hover:border-strong transition-colors">
-                  <h3 class="text-base font-bold tracking-tight leading-none mb-4">Contact Profile</h3>
-                  {customer ? (
-                    <div class="grid gap-4">
-                      <a href={`tel:${customer.phone}`} class="flex items-center gap-3 group text-foreground no-underline">
-                        <div class="w-10 h-10 rounded-xl bg-muted group-hover:bg-brand/10 group-hover:text-brand flex items-center justify-center transition-colors">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Call Customer</title><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.74 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                        </div>
-                        <span class="text-sm font-bold group-hover:text-brand transition-colors">{customer.phone || 'No Phone'}</span>
-                      </a>
-                      <a href={`mailto:${customer.email}`} class="flex items-center gap-3 group text-foreground no-underline">
-                        <div class="w-10 h-10 rounded-xl bg-muted group-hover:bg-brand/10 group-hover:text-brand flex items-center justify-center transition-colors">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Email Customer</title><path d="m22 2-7 20-4-9-9-4zM22 2 11 13"/></svg>
-                        </div>
-                        <span class="text-sm font-bold group-hover:text-brand transition-colors truncate">{customer.email || 'No Email'}</span>
-                      </a>
-                      <a 
-                        href={`/admin/customers/${customer.id}/edit`} 
-                        class="uk-btn uk-btn-default w-full py-2.5 font-semibold rounded-xl mt-2 text-xs border-2"
-                        hx-get={`/admin/customers/${customer.id}/edit`} 
-                        hx-target="#page-content" 
-                        hx-select="#page-content" 
-                        hx-push-url="true"
-                      >
-                        View Full Customer Profile
-                      </a>
-                    </div>
-                  ) : (
-                    <p class="text-xs text-muted-foreground italic">No customer profile linked.</p>
-                  )}
-                </div>
-              </section>
+
 
               <div class="mt-4 pt-8 border-t border-border">
                 <button
