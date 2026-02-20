@@ -233,7 +233,7 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage, customerName }: {
           </div>
           <button
             type="button"
-            class="uk-btn uk-btn-primary w-full py-2.5 font-semibold rounded-xl shadow-md shadow-brand/10"
+            class="uk-btn uk-btn-primary btn-solid-mauve w-full py-2.5 font-semibold rounded-xl shadow-md"
             data-sms-thread-modal-open="true"
             data-sms-thread-modal-title={customerName || ''}
             hx-get={`/admin/inbox/${smsThreadMessage.id}/sms-thread-panel`}
@@ -307,7 +307,7 @@ export const WorkTimeline = ({
           <button type="button" class="uk-btn uk-btn-default btn-yellow flex-1 h-10 rounded-xl font-bold" hx-post={`/admin/jobs/${jobId}/resume`} hx-target="#page-content" hx-select="#page-content">Resume</button>
         )}
         {(isActive || isPaused) && (
-          <button type="button" class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-bold shadow-md shadow-brand/20" hx-post={`/admin/jobs/${jobId}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content">END JOB</button>
+          <button type="button" class="uk-btn uk-btn-primary btn-solid-yellow flex-1 h-10 rounded-xl font-bold shadow-md" hx-post={`/admin/jobs/${jobId}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content">END JOB</button>
         )}
         {isCompleted && (
           <div class="flex-1 h-10 rounded-xl flex items-center justify-center gap-2 border" style="background:var(--badge-yellow-bg);border-color:var(--badge-yellow-border);">
@@ -529,26 +529,6 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
               </div>
             </div>
             <div class="job-stat-chips border-t border-border px-3">
-              {!job.started_at && (
-                <button type="button" aria-label="Start Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "in_progress"}' hx-target="#page-content" hx-select="#page-content" style="color:var(--brand);border-color:var(--brand);background:var(--badge-primary-bg);">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                </button>
-              )}
-              {isRunning && (
-                <button type="button" aria-label="Pause Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/pause`} hx-target="#page-content" hx-select="#page-content" style="color:var(--badge-primary);border-color:var(--badge-primary);background:var(--badge-primary-bg);">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                </button>
-              )}
-              {isPaused && (
-                <button type="button" aria-label="Resume Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/resume`} hx-target="#page-content" hx-select="#page-content" style="color:var(--brand);border-color:var(--brand);background:var(--badge-primary-bg);">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                </button>
-              )}
-              {(isRunning || isPaused) && (
-                <button type="button" aria-label="End Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content" style="color:var(--destructive);border-color:var(--destructive);background:var(--destructive-soft);">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-                </button>
-              )}
               <a href="#logistics" class="job-stat-chip" style="text-decoration:none; color:inherit;">
                 <span class="job-stat-chip-label">Time</span>
                 <span class="job-stat-chip-value">{isRunning ? '● Live' : loggedMinutes !== null ? `${loggedMinutes}min` : '—'} / {job.duration_minutes}min</span>
@@ -625,165 +605,8 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
             </div>
           )}
 
-          <div class="grid gap-8 lg:grid-cols-[1fr,380px]">
-            <div class="grid gap-8 content-start">
-
-              {serviceTasks.length > 0 && (
-                <section id="service-tasks">
-                  <div class="flex items-center justify-between mb-4 px-1">
-                    <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Service Checklist</h3>
-                  </div>
-                  <ServiceTasksList jobId={job.id} tasks={serviceTasks} serviceName={service?.name || 'Service'} />
-                </section>
-              )}
-
-              <section id="tasks">
-                <div class="flex items-center justify-between mb-4 px-1">
-                  <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Notes</h3>
-                  {notes.length > 0 && <span class="text-caption-2 font-semibold tabular-nums" style="color:var(--badge-peach);">{notes.length}</span>}
-                </div>
-
-                <div class="rounded-2xl border shadow-sm overflow-hidden" style="background:var(--badge-peach-bg); border-color:var(--badge-peach-border);">
-                  <div class="p-3">
-                    <NotesList jobId={job.id} notes={notes} listId="notes-main-list" />
-                  </div>
-                  <div class="border-t border-border p-2">
-                    <form
-                      hx-post={`/admin/jobs/${job.id}/notes/add`}
-                      hx-target="#notes-main-list"
-                      hx-select="#notes-main-list > *"
-                      hx-swap="innerHTML"
-                      hx-on="htmx:afterRequest: const xhr=event.detail.xhr; if(!xhr||xhr.status<200||xhr.status>=300) return; this.querySelector('input').value='';"
-                      class="flex gap-2"
-                    >
-                      <input
-                        type="text"
-                        name="text"
-                        class="uk-input border-0 focus:ring-0 bg-transparent text-sm font-medium placeholder:text-muted-foreground/50 h-10 px-3 flex-1 rounded-xl"
-                        placeholder="New task..."
-                        required
-                      />
-                      <button type="submit" class="uk-btn uk-btn-primary px-5 rounded-xl font-bold shadow-md text-sm">Add</button>
-                    </form>
-                  </div>
-                </div>
-               </section>
-
-              <section id="conversation">
-                <div class="flex items-center justify-between mb-4 px-1">
-                  <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Messages</h3>
-                </div>
-                <SmsThreadCard jobId={job.id} smsThreadMessage={smsThreadMessage} customerName={customerName} />
-              </section>
-
-              <section id="billing">
-                <div class="flex items-center justify-between mb-4 px-1">
-                  <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Billing</h3>
-                  <span class="text-sm font-bold tabular-nums" style="color:var(--badge-teal);">{money(subtotal)}</span>
-                </div>
-
-                <div class="rounded-2xl border shadow-sm overflow-hidden" style="background:var(--badge-teal-bg); border-color:var(--badge-teal-border);">
-                  <div class="divide-y divide-border/50">
-                    {lineItems.map((line) => (
-                      <details class="group" key={line.id}>
-                        <summary class={`p-4 ${line.parent_id ? 'pl-8' : ''} cursor-pointer list-none select-none`}>
-                          <div class="flex items-start justify-between gap-2">
-                            <div class="min-w-0">
-                              <p class="text-sm font-semibold text-foreground leading-tight">{line.description}</p>
-                              <p class="text-caption-2 text-muted-foreground mt-1 uppercase font-semibold tracking-tighter">
-                                {line.quantity} × {money(line.unit_price_cents)} • <span class="text-brand/80">{line.kind}</span>
-                              </p>
-                            </div>
-                            <div class="text-right shrink-0 flex flex-col items-end gap-1">
-                              <p class="text-sm font-bold text-foreground">{money(line.total_cents)}</p>
-                              <span class="text-caption-2 text-muted-foreground/50 uppercase font-semibold tracking-widest group-open:hidden">Edit</span>
-                            </div>
-                          </div>
-                        </summary>
-                        <div class={`px-4 pb-4 bg-surface ${line.parent_id ? 'pl-8' : ''}`}>
-                          <form
-                            hx-post={`/admin/jobs/${job.id}/line-items/edit`}
-                            hx-target="#page-content"
-                            hx-select="#page-content"
-                            hx-swap="innerHTML"
-                            class="grid gap-3 pt-3"
-                          >
-                            <input type="hidden" name="lineId" value={line.id} />
-                            <div class="grid gap-1.5">
-                              <label for={`edit-desc-${line.id}`} class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Description</label>
-                              <input id={`edit-desc-${line.id}`} type="text" name="description" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-semibold" value={line.description} required />
-                            </div>
-                            <div class="grid grid-cols-2 gap-3">
-                              <div class="grid gap-1.5">
-                                <label for={`edit-price-${line.id}`} class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Unit Price</label>
-                                <div class="relative">
-                                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">$</span>
-                                  <input id={`edit-price-${line.id}`} type="number" name="unit_price" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card pl-6 font-semibold" min={0} step={0.01} value={(line.unit_price_cents / 100).toFixed(2)} required />
-                                </div>
-                              </div>
-                              <div class="grid gap-1.5">
-                                <label for={`edit-qty-${line.id}`} class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Quantity</label>
-                                <input id={`edit-qty-${line.id}`} type="number" name="quantity" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-semibold" min={1} step={1} value={line.quantity} required />
-                              </div>
-                            </div>
-                            <div class="flex gap-2">
-                              <button type="submit" class="uk-btn uk-btn-primary flex-1 py-2 text-caption-2 font-semibold uppercase tracking-widest h-10 rounded-xl shadow-sm">Save</button>
-                              {line.is_custom === 1 && (
-                                <button
-                                  type="button"
-                                  class="uk-btn uk-btn-destructive py-2 text-caption-2 font-semibold uppercase tracking-widest h-10 rounded-xl px-4"
-                                  hx-post={`/admin/jobs/${job.id}/line-items/delete`}
-                                  hx-vals={JSON.stringify({ lineId: line.id })}
-                                  hx-target="#page-content"
-                                  hx-select="#page-content"
-                                  data-confirm="arm"
-                                >
-                                  Remove
-                                </button>
-                              )}
-                            </div>
-                          </form>
-                        </div>
-                      </details>
-                    ))}
-                    {lineItems.length === 0 && (
-                      <div class="p-8 text-center text-xs text-muted-foreground italic">No billing items recorded.</div>
-                    )}
-                  </div>
-
-                  <details class="border-t border-border">
-                    <summary class="px-4 py-3 flex items-center justify-center gap-2 cursor-pointer hover:bg-surface transition-colors list-none select-none">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="text-brand"><path d="M12 5v14M5 12h14"/></svg>
-                      <span class="text-caption-2 font-semibold uppercase tracking-widest text-brand">Add Item</span>
-                    </summary>
-                    <div class="p-4 bg-surface">
-                      <form hx-post={`/admin/jobs/${job.id}/line-items/add`} hx-target="#page-content" hx-select="#page-content" hx-swap="innerHTML" class="grid gap-3">
-                        <div class="grid gap-1.5">
-                          <label for="new-line-desc" class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">New Line Description</label>
-                          <input id="new-line-desc" type="text" name="description" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-semibold" placeholder="e.g. Extra deep cleaning" required />
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                          <div class="grid gap-1.5">
-                            <label for="new-line-price" class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Unit Price</label>
-                            <div class="relative">
-                              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">$</span>
-                              <input id="new-line-price" type="number" name="unit_price" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card pl-6 font-semibold" min={0} step={0.01} placeholder="0.00" required />
-                            </div>
-                          </div>
-                          <div class="grid gap-1.5">
-                            <label for="new-line-qty" class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Quantity</label>
-                            <input id="new-line-qty" type="number" name="quantity" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-semibold" min={1} step={1} value="1" required />
-                          </div>
-                        </div>
-                        <button type="submit" class="uk-btn uk-btn-default w-full py-2 text-caption-2 font-semibold uppercase tracking-widest h-10 mt-1 rounded-xl shadow-sm">Add Billing Item</button>
-                      </form>
-                    </div>
-                  </details>
-                </div>
-              </section>
-            </div>
-
-            <aside class="grid gap-8 content-start">
+          <div class="grid gap-8 lg:grid-cols-[1fr,380px] lg:items-start">
+            <aside class="grid gap-8 content-start lg:col-start-2 lg:row-start-1">
               <section id="logistics">
                 <div class="flex items-center justify-between mb-4 px-1">
                   <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Logistics & Timing</h3>
@@ -794,7 +617,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                     <div class="space-y-3 rounded-xl p-3" style="background:var(--bg-card); border:1px solid var(--badge-yellow-border);">
                       <p class="text-caption-2 font-semibold uppercase tracking-widest" style="color:var(--badge-yellow);">Work Execution</p>
                       {!job.started_at ? (
-                        <button type="button" class="uk-btn uk-btn-primary w-full h-12 rounded-xl font-bold shadow-lg shadow-brand/20 transition-all hover:scale-[1.02] text-base" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "in_progress"}' hx-target="#page-content" hx-select="#page-content">START JOB</button>
+                        <button type="button" class="uk-btn uk-btn-primary btn-solid-yellow w-full h-12 rounded-xl font-bold shadow-lg transition-all hover:scale-[1.02] text-base" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "in_progress"}' hx-target="#page-content" hx-select="#page-content">START JOB</button>
                       ) : (
                         <WorkTimeline jobId={job.id} intervals={workIntervals} isActive={isRunning} isPaused={isPaused} estimatedMinutes={job.duration_minutes} isCompleted={Boolean(job.completed_at)} />
                       )}
@@ -890,6 +713,163 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
               </div>
 
             </aside>
+
+            <div class="grid gap-8 content-start lg:col-start-1 lg:row-start-1">
+
+              {serviceTasks.length > 0 && (
+                <section id="service-tasks">
+                  <div class="flex items-center justify-between mb-4 px-1">
+                    <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Service Checklist</h3>
+                  </div>
+                  <ServiceTasksList jobId={job.id} tasks={serviceTasks} serviceName={service?.name || 'Service'} />
+                </section>
+              )}
+
+              <section id="tasks">
+                <div class="flex items-center justify-between mb-4 px-1">
+                  <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Notes</h3>
+                  {notes.length > 0 && <span class="text-caption-2 font-semibold tabular-nums" style="color:var(--badge-peach);">{notes.length}</span>}
+                </div>
+
+                <div class="rounded-2xl border shadow-sm overflow-hidden" style="background:var(--badge-peach-bg); border-color:var(--badge-peach-border);">
+                  <div class="p-3">
+                    <NotesList jobId={job.id} notes={notes} listId="notes-main-list" />
+                  </div>
+                  <div class="border-t border-border p-2">
+                    <form
+                      hx-post={`/admin/jobs/${job.id}/notes/add`}
+                      hx-target="#notes-main-list"
+                      hx-select="#notes-main-list > *"
+                      hx-swap="innerHTML"
+                      hx-on="htmx:afterRequest: const xhr=event.detail.xhr; if(!xhr||xhr.status<200||xhr.status>=300) return; this.querySelector('input').value='';"
+                      class="flex gap-2"
+                    >
+                      <input
+                        type="text"
+                        name="text"
+                        class="uk-input border-0 focus:ring-0 bg-transparent text-sm font-medium placeholder:text-muted-foreground/50 h-10 px-3 flex-1 rounded-xl"
+                        placeholder="New task..."
+                        required
+                      />
+                      <button type="submit" class="uk-btn uk-btn-primary btn-solid-peach px-5 rounded-xl font-bold shadow-md text-sm">Add</button>
+                    </form>
+                  </div>
+                </div>
+               </section>
+
+              <section id="conversation">
+                <div class="flex items-center justify-between mb-4 px-1">
+                  <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Messages</h3>
+                </div>
+                <SmsThreadCard jobId={job.id} smsThreadMessage={smsThreadMessage} customerName={customerName} />
+              </section>
+
+              <section id="billing">
+                <div class="flex items-center justify-between mb-4 px-1">
+                  <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Billing</h3>
+                  <span class="text-sm font-bold tabular-nums" style="color:var(--badge-teal);">{money(subtotal)}</span>
+                </div>
+
+                <div class="rounded-2xl border shadow-sm overflow-hidden" style="background:var(--badge-teal-bg); border-color:var(--badge-teal-border);">
+                  <div class="divide-y divide-border/50">
+                    {lineItems.map((line) => (
+                      <details class="group" key={line.id}>
+                        <summary class={`p-4 ${line.parent_id ? 'pl-8' : ''} cursor-pointer list-none select-none`}>
+                          <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                              <p class="text-sm font-semibold text-foreground leading-tight">{line.description}</p>
+                              <p class="text-caption-2 text-muted-foreground mt-1 uppercase font-semibold tracking-tighter">
+                                {line.quantity} × {money(line.unit_price_cents)} • <span class="text-brand/80">{line.kind}</span>
+                              </p>
+                            </div>
+                            <div class="text-right shrink-0 flex flex-col items-end gap-1">
+                              <p class="text-sm font-bold text-foreground">{money(line.total_cents)}</p>
+                              <span class="text-caption-2 text-muted-foreground/50 uppercase font-semibold tracking-widest group-open:hidden">Edit</span>
+                            </div>
+                          </div>
+                        </summary>
+                        <div class={`px-4 pb-4 bg-surface ${line.parent_id ? 'pl-8' : ''}`}>
+                          <form
+                            hx-post={`/admin/jobs/${job.id}/line-items/edit`}
+                            hx-target="#page-content"
+                            hx-select="#page-content"
+                            hx-swap="innerHTML"
+                            class="grid gap-3 pt-3"
+                          >
+                            <input type="hidden" name="lineId" value={line.id} />
+                            <div class="grid gap-1.5">
+                              <label for={`edit-desc-${line.id}`} class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Description</label>
+                              <input id={`edit-desc-${line.id}`} type="text" name="description" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-semibold" value={line.description} required />
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                              <div class="grid gap-1.5">
+                                <label for={`edit-price-${line.id}`} class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Unit Price</label>
+                                <div class="relative">
+                                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">$</span>
+                                  <input id={`edit-price-${line.id}`} type="number" name="unit_price" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card pl-6 font-semibold" min={0} step={0.01} value={(line.unit_price_cents / 100).toFixed(2)} required />
+                                </div>
+                              </div>
+                              <div class="grid gap-1.5">
+                                <label for={`edit-qty-${line.id}`} class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Quantity</label>
+                                <input id={`edit-qty-${line.id}`} type="number" name="quantity" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-semibold" min={1} step={1} value={line.quantity} required />
+                              </div>
+                            </div>
+                            <div class="flex gap-2">
+                              <button type="submit" class="uk-btn uk-btn-primary btn-solid-teal flex-1 py-2 text-caption-2 font-semibold uppercase tracking-widest h-10 rounded-xl shadow-sm">Save</button>
+                              {line.is_custom === 1 && (
+                                <button
+                                  type="button"
+                                  class="uk-btn uk-btn-destructive py-2 text-caption-2 font-semibold uppercase tracking-widest h-10 rounded-xl px-4"
+                                  hx-post={`/admin/jobs/${job.id}/line-items/delete`}
+                                  hx-vals={JSON.stringify({ lineId: line.id })}
+                                  hx-target="#page-content"
+                                  hx-select="#page-content"
+                                  data-confirm="arm"
+                                >
+                                  Remove
+                                </button>
+                              )}
+                            </div>
+                          </form>
+                        </div>
+                      </details>
+                    ))}
+                    {lineItems.length === 0 && (
+                      <div class="p-8 text-center text-xs text-muted-foreground italic">No billing items recorded.</div>
+                    )}
+                  </div>
+
+                  <details class="border-t border-border">
+                    <summary class="px-4 py-3 flex items-center justify-center gap-2 cursor-pointer hover:bg-surface transition-colors list-none select-none">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="text-brand"><path d="M12 5v14M5 12h14"/></svg>
+                      <span class="text-caption-2 font-semibold uppercase tracking-widest text-brand">Add Item</span>
+                    </summary>
+                    <div class="p-4 bg-surface">
+                      <form hx-post={`/admin/jobs/${job.id}/line-items/add`} hx-target="#page-content" hx-select="#page-content" hx-swap="innerHTML" class="grid gap-3">
+                        <div class="grid gap-1.5">
+                          <label for="new-line-desc" class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">New Line Description</label>
+                          <input id="new-line-desc" type="text" name="description" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-semibold" placeholder="e.g. Extra deep cleaning" required />
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                          <div class="grid gap-1.5">
+                            <label for="new-line-price" class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Unit Price</label>
+                            <div class="relative">
+                              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">$</span>
+                              <input id="new-line-price" type="number" name="unit_price" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card pl-6 font-semibold" min={0} step={0.01} placeholder="0.00" required />
+                            </div>
+                          </div>
+                          <div class="grid gap-1.5">
+                            <label for="new-line-qty" class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Quantity</label>
+                            <input id="new-line-qty" type="number" name="quantity" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-semibold" min={1} step={1} value="1" required />
+                          </div>
+                        </div>
+                        <button type="submit" class="uk-btn uk-btn-primary btn-solid-teal w-full py-2 text-caption-2 font-semibold uppercase tracking-widest h-10 mt-1 rounded-xl shadow-sm">Add Billing Item</button>
+                      </form>
+                    </div>
+                  </details>
+                </div>
+              </section>
+             </div>
           </div>
         </div>
       </div>
