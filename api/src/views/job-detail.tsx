@@ -97,6 +97,28 @@ const TaskSourceContext = ({ source }: { source?: JobDetailPageProps['notes'][nu
   );
 };
 
+function computeNoteSpans(notes: Array<{ text: string }>): string[] {
+  const types = notes.map(n => n.text.length < 12 ? 1 : n.text.length > 38 ? 3 : 2);
+  const result = [...types];
+  let i = 0;
+  while (i < result.length) {
+    if (result[i] === 1) {
+      const start = i;
+      while (i < result.length && result[i] === 1) i++;
+      const len = i - start;
+      const rem = len % 3;
+      if (rem === 1 && len >= 4) {
+        for (let j = i - 4; j < i; j++) result[j] = 2;
+      } else if (rem === 2) {
+        for (let j = i - 2; j < i; j++) result[j] = 2;
+      }
+    } else {
+      i++;
+    }
+  }
+  return result.map(String);
+}
+
 export const NotesList = ({
   jobId,
   notes,
@@ -105,7 +127,9 @@ export const NotesList = ({
   jobId: string;
   notes: JobDetailPageProps['notes'];
   listId?: string;
-}) => (
+}) => {
+  const spans = computeNoteSpans(notes);
+  return (
   <div
     id={listId}
     data-notes-list="1"
@@ -121,7 +145,7 @@ export const NotesList = ({
       </div>
     ) : (
        notes.map((note, idx) => (
-           <div key={idx} class={`group relative flex items-start gap-4 p-4 rounded-xl border border-border bg-card transition-all ${note.completed ? 'opacity-60 grayscale-[0.5]' : 'hover:border-brand/50'}`} {...(/\S{50,}/.test(note.text) ? { 'data-wide': '1' } : {})}>
+           <div key={idx} class={`group relative flex items-start gap-4 p-4 rounded-xl border border-border bg-card transition-all ${note.completed ? 'opacity-60 grayscale-[0.5]' : 'hover:border-brand/50'}`} data-cols={spans[idx]}>
              <div class="pt-0.5">
                <input
                  type="checkbox"
@@ -158,10 +182,11 @@ export const NotesList = ({
                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><title>Delete task</title><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
              </button>
             </div>
-          ))
+                     ))
      )}
   </div>
-);
+  );
+};
 
 export const SmsThreadCard = ({ jobId, smsThreadMessage, customerName }: {
   jobId: string;
