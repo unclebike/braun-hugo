@@ -120,10 +120,8 @@ export const NotesList = ({
         <p class="text-sm text-muted-foreground">No tasks or notes assigned to this job.</p>
       </div>
     ) : (
-       notes.map((note, idx) => {
-         const isLongNote = note.text.length > 100;
-         return (
-           <div key={idx} class={`group relative flex items-start gap-4 p-4 rounded-xl border border-border bg-card transition-all ${note.completed ? 'opacity-60 grayscale-[0.5]' : 'hover:border-brand/50'} ${isLongNote ? 'grid-masonry-full' : ''}`}>
+       notes.map((note, idx) => (
+           <div key={idx} class={`group relative flex items-start gap-4 p-4 rounded-xl border border-border bg-card transition-all ${note.completed ? 'opacity-60 grayscale-[0.5]' : 'hover:border-brand/50'}`}>
              <div class="pt-0.5">
                <input
                  type="checkbox"
@@ -159,10 +157,9 @@ export const NotesList = ({
              >
                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><title>Delete task</title><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
              </button>
-           </div>
-         );
-       })
-    )}
+            </div>
+          ))
+     )}
   </div>
 );
 
@@ -336,9 +333,8 @@ export const ServiceTasksList = ({ jobId, tasks, serviceName }: { jobId: string;
        <div class="grid-masonry gap-2">
           {tasks.map((task) => {
            const isDone = Boolean(task.completed || task.answer);
-           const isLongTask = task.title.length > 80;
            return (
-             <div key={task.id} class={`flex items-start gap-3 p-3 rounded-xl border transition-all ${isDone ? 'border-border/40 opacity-70' : task.is_required ? 'border-destructive/30 bg-destructive/3' : 'border-border'} ${isLongTask ? 'grid-masonry-full' : ''}`}>
+             <div key={task.id} class={`flex items-start gap-3 p-3 rounded-xl border transition-all ${isDone ? 'border-border/40 opacity-70' : task.is_required ? 'border-destructive/30 bg-destructive/3' : 'border-border'}`}>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
                   <p class={`text-sm font-medium ${isDone ? 'line-through text-muted-foreground' : ''}`}>{task.title}</p>
