@@ -312,10 +312,10 @@ export const WorkTimeline = ({
     <div class="space-y-3">
       <div class="flex gap-2">
         {isActive && (
-          <button type="button" class="uk-btn uk-btn-default h-10 rounded-xl font-black" style="border-color:var(--badge-primary);color:var(--badge-primary);" hx-post={`/admin/jobs/${jobId}/pause`} hx-target="#page-content" hx-select="#page-content">Pause</button>
+          <button type="button" class="uk-btn uk-btn-default flex-1 h-10 rounded-xl font-black" style="border-color:var(--badge-primary);color:var(--badge-primary);" hx-post={`/admin/jobs/${jobId}/pause`} hx-target="#page-content" hx-select="#page-content">Pause</button>
         )}
         {isPaused && (
-          <button type="button" class="uk-btn uk-btn-primary h-10 rounded-xl font-black" hx-post={`/admin/jobs/${jobId}/resume`} hx-target="#page-content" hx-select="#page-content">Resume</button>
+          <button type="button" class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-black" hx-post={`/admin/jobs/${jobId}/resume`} hx-target="#page-content" hx-select="#page-content">Resume</button>
         )}
         {(isActive || isPaused) && (
           <button type="button" class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-black bg-secondary border-secondary shadow-lg shadow-secondary/20" hx-post={`/admin/jobs/${jobId}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content">END JOB</button>
@@ -330,7 +330,7 @@ export const WorkTimeline = ({
 
       {intervals.length > 0 && (
         <div class="space-y-1.5">
-          <div class="relative h-3 rounded-full overflow-hidden" style="background:var(--border);">
+          <div class="relative h-6 rounded-full overflow-hidden" style="background:var(--border);">
             {segments.map((seg, i) => (
               <div
                 key={i}
