@@ -330,8 +330,8 @@ export const ServiceTasksList = ({ jobId, tasks, serviceName }: { jobId: string;
         <div class="h-full rounded-full transition-all" style={`width:${pct}%;background:${pct === 100 ? 'var(--brand)' : 'var(--badge-primary)'};`} />
       </div>
 
-      <div class="grid gap-2">
-        {tasks.map((task) => {
+       <div class="grid-masonry gap-2">
+         {tasks.map((task) => {
           const isDone = Boolean(task.completed || task.answer);
           return (
             <div key={task.id} class={`flex items-start gap-3 p-3 rounded-xl border transition-all ${isDone ? 'border-border/40 opacity-70' : task.is_required ? 'border-destructive/30 bg-destructive/3' : 'border-border'}`}>
