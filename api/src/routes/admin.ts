@@ -1894,9 +1894,9 @@ app.post('/jobs/quick-create', async (c) => {
   }
 
   const service = await db
-    .prepare('SELECT base_price_cents, base_duration_minutes FROM services WHERE id = ?')
+    .prepare('SELECT name, base_price_cents, base_duration_minutes FROM services WHERE id = ?')
     .bind(serviceId)
-    .first<{ base_price_cents: number; base_duration_minutes: number }>();
+    .first<{ name: string; base_price_cents: number; base_duration_minutes: number }>();
 
   const jobId = generateId();
   const priceCents = service?.base_price_cents || 0;
@@ -1930,7 +1930,7 @@ app.post('/jobs/quick-create', async (c) => {
       duration,
       priceCents,
       priceCents,
-      JSON.stringify([buildServiceBaseLine('Service', priceCents)]),
+      JSON.stringify([buildServiceBaseLine(service?.name || 'Service', priceCents)]),
       providerId ? 'assigned' : 'created'
     )
     .run();
@@ -2227,7 +2227,7 @@ app.post('/jobs/create', async (c) => {
   `).bind(
     jobId, state.customer_id, state.service_id || null, state.territory_id,
     state.date, state.time, duration, priceCents, priceCents,
-    JSON.stringify([buildServiceBaseLine('Service', priceCents)]),
+    JSON.stringify([buildServiceBaseLine(state.service_name || 'Service', priceCents)]),
     state.provider_id ? 'assigned' : 'created'
   ).run();
   
@@ -2370,6 +2370,41 @@ app.post('/jobs/:id/line-items/add', async (c) => {
 
   const lines = parsePriceLines(job.line_items_json);
   lines.push(normalizeLine(description, quantity, unitPriceCents, 'custom', null, 1));
+  await db.prepare("UPDATE jobs SET line_items_json = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(JSON.stringify(lines), jobId)
+    .run();
+  await recomputeJobTotals(db, jobId);
+  await syncInvoiceFromJob(db, jobId);
+
+  return c.redirect(`/admin/jobs/${jobId}`);
+});
+
+app.post('/jobs/:id/line-items/edit', async (c) => {
+  const db = c.env.DB;
+  const jobId = c.req.param('id');
+  const body = await c.req.parseBody();
+  const lineId = typeof body.lineId === 'string' ? body.lineId : '';
+  if (!lineId) return c.redirect(`/admin/jobs/${jobId}`);
+
+  const description = typeof body.description === 'string' ? body.description.trim() : '';
+  const quantity = Math.max(1, Number.parseFloat(String(body.quantity || '1')) || 1);
+  const unitPriceCents = parseMoneyToCents(body.unit_price);
+  if (!description) return c.redirect(`/admin/jobs/${jobId}`);
+
+  const job = await db.prepare('SELECT line_items_json FROM jobs WHERE id = ?').bind(jobId).first<{ line_items_json: string | null }>();
+  if (!job) return c.redirect('/admin/jobs');
+
+  const lines = parsePriceLines(job.line_items_json).map((line) => {
+    if (line.id !== lineId) return line;
+    return {
+      ...line,
+      description,
+      quantity,
+      unit_price_cents: unitPriceCents,
+      total_cents: Math.round(quantity * unitPriceCents),
+    };
+  });
+
   await db.prepare("UPDATE jobs SET line_items_json = ?, updated_at = datetime('now') WHERE id = ?")
     .bind(JSON.stringify(lines), jobId)
     .run();
@@ -2524,6 +2559,25 @@ app.post('/jobs/:id/notes/toggle', async (c) => {
   
   await db.prepare('UPDATE jobs SET notes_json = ?, updated_at = datetime("now") WHERE id = ?').bind(JSON.stringify(notes), jobId).run();
   
+  return c.redirect(`/admin/jobs/${jobId}`);
+});
+
+app.post('/jobs/:id/notes/edit', async (c) => {
+  const db = c.env.DB;
+  const jobId = c.req.param('id');
+  const body = await c.req.parseBody();
+  const noteIndex = parseInt(body.noteIndex as string, 10);
+  const text = (body.text as string || '').trim();
+
+  const job = await db.prepare('SELECT notes_json FROM jobs WHERE id = ?').bind(jobId).first<{ notes_json: string }>();
+  const notes = job?.notes_json ? JSON.parse(job.notes_json) : [];
+
+  if (notes[noteIndex] && text) {
+    notes[noteIndex].text = text;
+  }
+
+  await db.prepare('UPDATE jobs SET notes_json = ?, updated_at = datetime("now") WHERE id = ?').bind(JSON.stringify(notes), jobId).run();
+
   return c.redirect(`/admin/jobs/${jobId}`);
 });
 
