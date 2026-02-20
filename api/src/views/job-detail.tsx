@@ -121,7 +121,7 @@ export const NotesList = ({
       </div>
     ) : (
        notes.map((note, idx) => (
-           <div key={idx} class={`group relative flex items-start gap-4 p-4 rounded-xl border border-border bg-card transition-all ${note.completed ? 'opacity-60 grayscale-[0.5]' : 'hover:border-brand/50'}`}>
+           <div key={idx} class={`group relative flex items-start gap-4 p-4 rounded-xl border border-border bg-card transition-all ${note.completed ? 'opacity-60 grayscale-[0.5]' : 'hover:border-brand/50'}`} {...(/\S{50,}/.test(note.text) ? { 'data-wide': '1' } : {})}>
              <div class="pt-0.5">
                <input
                  type="checkbox"
