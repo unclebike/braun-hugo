@@ -987,8 +987,8 @@ document.addEventListener('click', function(e) {
           .text-xl { font-size: var(--text-md) !important; }
           .text-2xl { font-size: var(--text-lg) !important; }
 
-          /* Masonry grid: auto-fit columns, short items multi-column, long items full-width */
-          .grid-masonry { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important; gap: 0.5rem !important; }
+          /* Masonry grid: auto-fit columns, short items multi-column, long items full-width - v2 */
+          .grid-masonry { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important; gap: 0.5rem !important; }
 
           select:not(.uk-select) { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
           a, button, input, select, textarea, label, [role="switch"], [hx-post], [hx-get], [hx-delete] { touch-action: manipulation; }
