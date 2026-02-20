@@ -217,20 +217,11 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage, customerName }: {
       hx-trigger="every 15s"
       hx-swap="outerHTML"
     >
-      <div class="flex items-center justify-between px-4 pt-4 pb-3">
-        <div class="flex items-center gap-3">
-          <div class={`w-8 h-8 rounded-xl flex items-center justify-center ${hasUnread ? 'bg-destructive text-white animate-pulse' : 'bg-muted text-muted-foreground'}`}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><title>SMS Message</title><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <div>
-            <h3 class="text-sm font-bold leading-none">Conversation</h3>
-            <p class="text-caption-2 text-muted-foreground mt-0.5 uppercase font-semibold tracking-wider">SMS Thread</p>
-          </div>
-        </div>
-        {hasUnread && (
+      {hasUnread && (
+        <div class="px-4 pt-3 pb-0">
           <span class="uk-label uk-label-destructive"><span class="badge-label">New Message</span></span>
-        )}
-      </div>
+        </div>
+      )}
 
       {smsThreadMessage ? (
         <div class="grid gap-3 px-4 pb-4">
@@ -509,30 +500,28 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
             <h2 style="font-size:var(--text-lg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0; font-weight:900; letter-spacing:-0.02em;">{customerName}</h2>
             <p class="text-caption-2" style="margin:2px 0 0; letter-spacing:0.05em; text-transform:uppercase; opacity:0.55; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{serviceName}</p>
           </div>
-          <div class="shrink-0 flex items-center gap-1">
-            {!job.started_at && (
-              <button type="button" aria-label="Start Job" class="flex items-center justify-center w-10 h-10 rounded-xl border-2 border-brand bg-brand/10 hover:bg-brand/20 transition-colors text-brand" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "in_progress"}' hx-target="#page-content" hx-select="#page-content">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              </button>
-            )}
-            {isRunning && (
-              <button type="button" aria-label="Pause Job" class="flex items-center justify-center w-10 h-10 rounded-xl border-2 transition-colors" style="border-color:var(--badge-primary);color:var(--badge-primary);background:var(--badge-primary-bg);" hx-post={`/admin/jobs/${job.id}/pause`} hx-target="#page-content" hx-select="#page-content">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-              </button>
-            )}
-            {isPaused && (
-              <button type="button" aria-label="Resume Job" class="flex items-center justify-center w-10 h-10 rounded-xl border-2 border-brand bg-brand/10 hover:bg-brand/20 transition-colors text-brand" hx-post={`/admin/jobs/${job.id}/resume`} hx-target="#page-content" hx-select="#page-content">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              </button>
-            )}
-            {(isRunning || isPaused) && (
-              <button type="button" aria-label="End Job" class="flex items-center justify-center w-10 h-10 rounded-xl border-2 transition-colors" style="border-color:var(--destructive);color:var(--destructive);background:var(--destructive-soft);" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-              </button>
-            )}
-          </div>
         </div>
         <div class="job-stat-chips">
+          {!job.started_at && (
+            <button type="button" aria-label="Start Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "in_progress"}' hx-target="#page-content" hx-select="#page-content" style="color:var(--brand);border-color:var(--brand);background:var(--badge-primary-bg);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+          )}
+          {isRunning && (
+            <button type="button" aria-label="Pause Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/pause`} hx-target="#page-content" hx-select="#page-content" style="color:var(--badge-primary);border-color:var(--badge-primary);background:var(--badge-primary-bg);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+          )}
+          {isPaused && (
+            <button type="button" aria-label="Resume Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/resume`} hx-target="#page-content" hx-select="#page-content" style="color:var(--brand);border-color:var(--brand);background:var(--badge-primary-bg);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+          )}
+          {(isRunning || isPaused) && (
+            <button type="button" aria-label="End Job" class="job-stat-chip-btn" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content" style="color:var(--destructive);border-color:var(--destructive);background:var(--destructive-soft);">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            </button>
+          )}
           <a href="#logistics" class="job-stat-chip" style="text-decoration:none; color:inherit;">
             <span class="job-stat-chip-label">Time</span>
             <span class="job-stat-chip-value">
@@ -621,17 +610,17 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
 
               {serviceTasks.length > 0 && (
                 <section id="service-tasks">
+                  <div class="flex items-center justify-between mb-4 px-1">
+                    <h3 class="text-sm sm:text-lg font-black tracking-tight leading-none">Service Checklist</h3>
+                  </div>
                   <ServiceTasksList jobId={job.id} tasks={serviceTasks} serviceName={service?.name || 'Service'} />
                 </section>
               )}
 
               <section id="tasks">
-                <div class="flex items-center justify-between mb-6">
-                  <div class="flex items-center gap-3">
-                    <div class="w-2 h-5 bg-brand rounded-full" />
-                    <h3 class="text-base sm:text-xl font-black tracking-tight">Active Tasks & Notes</h3>
-                  </div>
-                   <span class="text-footnote" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:var(--radius-full);background:var(--badge-neutral-bg);border:1px solid var(--badge-neutral-border);color:var(--text);">{notes.length}</span>
+                <div class="flex items-center justify-between mb-4 px-1">
+                  <h3 class="text-sm sm:text-lg font-black tracking-tight leading-none">Active Tasks & Notes</h3>
+                  <span class="text-footnote" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:var(--radius-full);background:var(--badge-neutral-bg);border:1px solid var(--badge-neutral-border);color:var(--text);">{notes.length}</span>
                 </div>
                 
                 <div class="mb-6">
@@ -659,7 +648,12 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                 </div>
                </section>
 
-              <SmsThreadCard jobId={job.id} smsThreadMessage={smsThreadMessage} customerName={customerName} />
+              <section id="conversation">
+                <div class="flex items-center justify-between mb-4 px-1">
+                  <h3 class="text-sm sm:text-lg font-black tracking-tight leading-none">Conversation</h3>
+                </div>
+                <SmsThreadCard jobId={job.id} smsThreadMessage={smsThreadMessage} customerName={customerName} />
+              </section>
 
               <section id="billing">
                 <div class="flex items-center justify-between mb-4 px-1">
