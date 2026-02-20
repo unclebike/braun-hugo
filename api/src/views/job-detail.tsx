@@ -489,6 +489,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
   const isRunning = job.status === 'in_progress' && !job.is_paused && Boolean(job.started_at) && !job.completed_at;
   const isPaused = job.status === 'in_progress' && Boolean(job.is_paused) && !job.completed_at;
   const loggedMinutes = actualDuration !== null ? actualDuration : completedIntervalMinutes > 0 ? completedIntervalMinutes : null;
+  const statusDotColor = ({ created: 'var(--text-secondary)', assigned: 'var(--badge-primary)', enroute: 'var(--badge-yellow)', in_progress: 'var(--badge-secondary)', complete: 'var(--brand)', cancelled: 'var(--destructive)' } as Record<string, string>)[job.status] ?? 'var(--text-secondary)';
 
   return (
     <Layout title={`${customerName} - ${serviceName}`}>
@@ -528,14 +529,10 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                 )}
               </div>
             </div>
-            <div class="job-stat-chips border-t border-border px-3">
-              <a href="#logistics" class="job-stat-chip" style="text-decoration:none; color:inherit;">
-                <span class="job-stat-chip-label">Time</span>
-                <span class="job-stat-chip-value">{isRunning ? '● Live' : loggedMinutes !== null ? `${loggedMinutes}min` : '—'} / {job.duration_minutes}min</span>
-              </a>
+            <div class="grid grid-cols-2 divide-x divide-border border-t border-border">
               <button
                 type="button"
-                class={`job-stat-chip job-stat-chip-msg${smsThreadMessage?.is_read === 0 ? ' job-stat-chip-msg--unread' : ''}`}
+                class={`flex items-center justify-center gap-2 py-3 px-4 hover:bg-surface transition-colors${!canOpenSms ? ' opacity-40 cursor-default' : ''}`}
                 {...(canOpenSms ? {
                   'data-sms-thread-modal-open': 'true',
                   'data-sms-thread-modal-title': smsTitle,
@@ -546,20 +543,18 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                 } : {})}
                 disabled={!canOpenSms}
               >
-                <div class="job-stat-chip-msg-header">
-                  <span class="job-stat-chip-label">{smsThreadMessage?.is_read === 0 ? '● Messages' : 'Messages'}</span>
-                  {smsThreadMessage && <span class="job-stat-chip-time">{timeAgo(smsThreadMessage.updated_at)}</span>}
+                <div class="relative shrink-0">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  {smsThreadMessage?.is_read === 0 && (
+                    <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-card" style="background:var(--destructive);" />
+                  )}
                 </div>
-                <span class="job-stat-chip-preview">
-                  {smsThreadMessage?.body
-                    ? smsThreadMessage.body.length > 48 ? `${smsThreadMessage.body.slice(0, 48)}…` : smsThreadMessage.body
-                    : canOpenSms ? 'Tap to open thread' : 'No thread'}
-                </span>
+                <span class="text-xs font-semibold">Messages</span>
               </button>
-              <div class="job-stat-chip job-stat-chip-status">
-                <span class="job-stat-chip-label">Status</span>
-                <span class="job-stat-chip-value">{job.status.replace(/_/g, ' ')}</span>
-                <select name="status" data-current={job.status} hx-post={`/admin/jobs/${job.id}/status`} hx-target="#page-content" hx-select="#page-content" hx-trigger="change">
+              <div class="flex items-center justify-center gap-2 py-3 px-4 relative cursor-pointer hover:bg-surface transition-colors select-none">
+                <span class="w-2 h-2 rounded-full shrink-0" style={`background:${statusDotColor};`} aria-hidden="true" />
+                <span class="text-xs font-semibold capitalize">{job.status.replace(/_/g, ' ')}</span>
+                <select class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" name="status" data-current={job.status} hx-post={`/admin/jobs/${job.id}/status`} hx-target="#page-content" hx-select="#page-content" hx-trigger="change">
                   {STATUS_OPTIONS.map((status) => (
                     <option value={status} selected={job.status === status} key={status}>{status.replace(/_/g, ' ')}</option>
                   ))}
