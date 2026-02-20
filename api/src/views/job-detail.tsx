@@ -135,16 +135,19 @@ export const NotesList = ({
     hx-swap="outerHTML"
   >
     {notes.length === 0 ? (
-      <div class="py-8 text-center border-2 border-dashed border-border rounded-xl">
-        <p class="text-sm text-muted-foreground">No tasks or notes assigned to this job.</p>
+      <div class="py-6 text-center border border-dashed border-border rounded-xl" data-cols-mobile="3" data-cols="3">
+        <p class="text-xs text-muted-foreground">No tasks yet.</p>
       </div>
     ) : (
        notes.map((note, idx) => (
-            <div key={idx} class={`group relative p-3 rounded-xl border border-border bg-card transition-all cursor-pointer ${note.completed ? 'opacity-60 grayscale-[0.5]' : 'hover:border-brand/50'}`} data-cols={spans[idx]} data-cols-mobile={mobileSpans[idx]} data-task-card="1" {...(note.text.length < 8 ? { 'data-short': '1' } : {})} data-task-text={note.text} data-task-idx={String(idx)} data-task-job-id={jobId} data-task-list-id={listId} data-task-date={new Date(note.timestamp).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} {...(note.source?.excerpt ? { 'data-task-context': note.source.excerpt } : {})} {...(note.source?.message_id ? { 'data-task-thread-id': note.source.message_id } : {})}>
+            <div key={idx} class={`group relative p-2 rounded-xl border border-border bg-card transition-all cursor-pointer ${note.completed ? 'opacity-60 grayscale-[0.5]' : 'hover:border-brand/50'}`} data-cols={spans[idx]} data-cols-mobile={mobileSpans[idx]} data-task-card="1" {...(note.text.length < 8 ? { 'data-short': '1' } : {})} data-task-text={note.text} data-task-idx={String(idx)} data-task-job-id={jobId} data-task-list-id={listId} data-task-date={new Date(note.timestamp).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} {...(note.source?.excerpt ? { 'data-task-context': note.source.excerpt } : {})} {...(note.source?.message_id ? { 'data-task-thread-id': note.source.message_id } : {})}>
+              <div class="task-meta">
+                <span class="task-date">{new Date(note.timestamp).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })}</span>
+              </div>
               <div class="task-chk">
                 <input
                   type="checkbox"
-                  class="uk-checkbox w-5 h-5 rounded-md border-2"
+                  class="uk-checkbox w-6 h-6 rounded-md border-2"
                   checked={note.completed ? true : undefined}
                   hx-post={`/admin/jobs/${jobId}/notes/toggle`}
                   hx-vals={JSON.stringify({ noteIndex: idx })}
@@ -154,15 +157,9 @@ export const NotesList = ({
                 />
               </div>
               <div class="task-content">
-                <div class="flex items-center justify-center gap-1.5 min-w-0">
-                  <p class={`task-txt text-sm leading-relaxed font-medium ${note.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{note.text}</p>
+                <div class="flex items-center gap-1.5 min-w-0">
+                  <p class={`task-txt text-xs leading-snug font-medium ${note.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{note.text}</p>
                   {note.source?.type === 'sms' && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0 opacity-50"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>}
-                </div>
-              </div>
-              <div class="task-meta">
-                <div class="task-datetime">
-                  <span class="task-date">{new Date(note.timestamp).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })}</span>
-                  <span class="task-time">{new Date(note.timestamp).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
               </div>
               <div class="task-actions">
@@ -237,7 +234,7 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage, customerName }: {
 
       {smsThreadMessage ? (
         <div class="grid gap-3 px-4 pb-4">
-          <div class="bg-muted/30 p-3 rounded-xl border border-border/50">
+          <div class="bg-surface p-3 rounded-xl border border-border">
             <p class="text-sm leading-relaxed text-foreground italic">
               {smsThreadMessage.body ? `"${smsThreadMessage.body}"` : 'Conversation linked.'}
             </p>
@@ -278,69 +275,81 @@ const intervalMinutes = (started: string, ended: string | null): number => {
   return Math.max(0, Math.round((e - s) / 60000));
 };
 
-export const WorkIntervals = ({
-  jobId,
-  intervals,
-  isActive,
+export const WorkTimeline = ({
+  jobId, intervals, isActive, isPaused, estimatedMinutes, isCompleted,
 }: {
   jobId: string;
   intervals: Array<{ started: string; ended: string | null }>;
   isActive: boolean;
+  isPaused: boolean;
+  estimatedMinutes: number;
+  isCompleted: boolean;
 }) => {
-  const completedMinutes = intervals
-    .filter(i => i.ended)
-    .reduce((sum, i) => sum + intervalMinutes(i.started, i.ended), 0);
-  const openInterval = intervals.find(i => !i.ended);
-  const totalLabel = openInterval
-    ? `${completedMinutes} min logged + current session`
-    : `${completedMinutes} min total`;
+  const jobStartMs = intervals.length > 0 ? new Date(`${intervals[0].started}Z`).getTime() : null;
+  const jobEndMs = isCompleted
+    ? Math.max(...intervals.map(i => i.ended ? new Date(`${i.ended}Z`).getTime() : Date.now()))
+    : Date.now();
+  const totalElapsedMins = jobStartMs ? (jobEndMs - jobStartMs) / 60000 : 0;
+  const totalSpan = Math.max(estimatedMinutes, Math.ceil(totalElapsedMins));
+  const estimatePct = Math.min(99, (estimatedMinutes / totalSpan) * 100);
+  const totalWorkedMins = intervals.reduce((sum, i) => sum + intervalMinutes(i.started, i.ended), 0);
+
+  const segments = jobStartMs ? intervals.map(interval => {
+    const leftMins = (new Date(`${interval.started}Z`).getTime() - jobStartMs) / 60000;
+    const rightMins = interval.ended
+      ? (new Date(`${interval.ended}Z`).getTime() - jobStartMs) / 60000
+      : totalElapsedMins;
+    return {
+      left: Math.min(100, (leftMins / totalSpan) * 100),
+      width: Math.min(100 - (leftMins / totalSpan) * 100, ((rightMins - leftMins) / totalSpan) * 100),
+      active: !interval.ended,
+    };
+  }) : [];
+
+  const isOver = totalWorkedMins > estimatedMinutes;
 
   return (
-    <div id="work-intervals">
+    <div class="space-y-3">
+      <div class="flex gap-2">
+        {isActive && (
+          <button type="button" class="uk-btn uk-btn-default h-10 rounded-xl font-black" style="border-color:var(--badge-primary);color:var(--badge-primary);" hx-post={`/admin/jobs/${jobId}/pause`} hx-target="#page-content" hx-select="#page-content">Pause</button>
+        )}
+        {isPaused && (
+          <button type="button" class="uk-btn uk-btn-primary h-10 rounded-xl font-black" hx-post={`/admin/jobs/${jobId}/resume`} hx-target="#page-content" hx-select="#page-content">Resume</button>
+        )}
+        {(isActive || isPaused) && (
+          <button type="button" class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-black bg-secondary border-secondary shadow-lg shadow-secondary/20" hx-post={`/admin/jobs/${jobId}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content">END JOB</button>
+        )}
+        {isCompleted && (
+          <div class="flex-1 bg-surface border border-border h-10 rounded-xl flex items-center justify-center gap-2">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-brand" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m22 4-10 10.01-3-3"/></svg>
+            <span class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground">Work Completed</span>
+          </div>
+        )}
+      </div>
+
       {intervals.length > 0 && (
-        <div class="grid gap-1.5 mb-3">
-          {intervals.map((interval, i) => {
-            const mins = intervalMinutes(interval.started, interval.ended);
-            return (
-              <div key={i} class="flex items-center justify-between text-xs">
-                <span class="text-muted-foreground">
-                  {fmtTime(interval.started)} — {interval.ended ? fmtTime(interval.ended) : <span class="text-brand font-bold">running</span>}
-                </span>
-                <span class="font-bold tabular-nums">{mins} min</span>
-              </div>
-            );
-          })}
-          <div class="flex items-center justify-between text-xs pt-1.5 mt-0.5 border-t border-border/50">
-            <span class="font-semibold uppercase tracking-widest text-caption-2">Total worked</span>
-            <span class="font-black text-brand">{totalLabel}</span>
+        <div class="space-y-1.5">
+          <div class="relative h-3 rounded-full overflow-hidden" style="background:var(--border);">
+            {segments.map((seg, i) => (
+              <div
+                key={i}
+                class={`absolute top-0 h-full rounded-sm${seg.active ? ' animate-pulse' : ''}`}
+                style={`left:${seg.left.toFixed(2)}%;width:${Math.max(0.5, seg.width).toFixed(2)}%;background:${isOver && !seg.active ? 'var(--destructive)' : 'var(--brand)'};opacity:${seg.active ? '1' : '0.8'};`}
+              />
+            ))}
+            {estimatePct > 1 && estimatePct < 99 && (
+              <div class="absolute top-0 h-full w-px z-10" style={`left:${estimatePct.toFixed(2)}%;background:var(--muted-foreground);opacity:0.5;`} />
+            )}
+          </div>
+          <div class="flex justify-between items-baseline">
+            <span class={`text-caption-2 font-semibold tabular-nums${isOver ? ' text-destructive' : ' text-brand'}`}>
+              {Math.round(totalWorkedMins)}min{isActive ? ' ●' : ''}
+            </span>
+            <span class="text-caption-2 text-muted-foreground">{estimatedMinutes}min est.</span>
           </div>
         </div>
       )}
-      <div class="flex flex-wrap gap-2">
-        {isActive && (
-          <button
-            type="button"
-            class="uk-btn uk-btn-default uk-btn-sm font-black"
-            style="border-color:var(--badge-primary);color:var(--badge-primary);"
-            hx-post={`/admin/jobs/${jobId}/pause`}
-            hx-target="#page-content"
-            hx-select="#page-content"
-          >
-            Pause
-          </button>
-        )}
-        {!isActive && intervals.length > 0 && (
-          <button
-            type="button"
-            class="uk-btn uk-btn-primary uk-btn-sm font-black"
-            hx-post={`/admin/jobs/${jobId}/resume`}
-            hx-target="#page-content"
-            hx-select="#page-content"
-          >
-            Resume
-          </button>
-        )}
-      </div>
     </div>
   );
 };
@@ -360,11 +369,17 @@ export const ServiceTasksList = ({ jobId, tasks, serviceName }: { jobId: string;
   });
 
   return (
-    <div id="service-tasks-list" class="uk-card uk-card-body" style="padding:0;overflow:hidden;">
-      <div style="padding:16px 16px 12px;">
+     <div id="service-tasks-list" class="rounded-2xl border border-border shadow-sm overflow-hidden" style="background:var(--bg-mantle);">
+      <div style="padding:12px 16px 10px; background:var(--bg-inset)">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{serviceName} Checklist</span>
-          <span class={`text-xs font-black tabular-nums ${allDone ? 'text-brand' : 'text-muted-foreground'}`}>{done}/{total}</span>
+          <span class={`text-caption-2 font-semibold tabular-nums uppercase tracking-wider ${allDone ? 'text-brand' : 'text-muted-foreground'}`}>
+            {done}/{total} complete
+          </span>
+          {allDone ? (
+            <span class="text-caption-2 font-semibold text-brand uppercase tracking-wider">✓ Done</span>
+          ) : requiredPending.length > 0 ? (
+            <span class="text-caption-2 font-semibold text-destructive uppercase tracking-wider">{requiredPending.length} required</span>
+          ) : null}
         </div>
         <div class="h-1 rounded-full overflow-hidden" style="background:var(--border);">
           <div
@@ -372,11 +387,6 @@ export const ServiceTasksList = ({ jobId, tasks, serviceName }: { jobId: string;
             style={`width:${pct}%;background:${allDone ? 'var(--brand)' : 'var(--badge-primary)'};transition:width .3s ease;`}
           />
         </div>
-        {requiredPending.length > 0 && (
-          <p class="text-[10px] text-destructive mt-1.5 font-semibold">
-            {requiredPending.length} required task{requiredPending.length > 1 ? 's' : ''} remaining
-          </p>
-        )}
       </div>
 
       <div style="border-top:1px solid var(--border);">
@@ -384,70 +394,62 @@ export const ServiceTasksList = ({ jobId, tasks, serviceName }: { jobId: string;
           const isDone = Boolean(task.completed || task.answer);
           const isRequired = Boolean(task.is_required);
           const isLast = idx === tasks.length - 1;
-          return (
-            <div
-              key={task.id}
-              style={`display:flex;align-items:flex-start;gap:12px;padding:12px 16px;${!isLast ? 'border-bottom:1px solid var(--border);' : ''}${isDone ? 'opacity:0.6;' : ''}`}
-            >
-              <div style="flex:1;min-width:0;">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                  <p style={`font-size:0.875rem;font-weight:500;${isDone ? 'text-decoration:line-through;color:var(--text-secondary);' : ''}`}>
-                    {task.title}
-                  </p>
-                  {isRequired && !isDone && (
-                    <span style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--destructive);border:1px solid currentColor;border-radius:3px;padding:1px 4px;white-space:nowrap;">
-                      Required
-                    </span>
-                  )}
-                  {isDone && (
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="color:var(--brand);flex-shrink:0;" aria-hidden="true">
-                      <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                  )}
-                </div>
+           return (
+             <div
+               key={task.id}
+               class={`flex items-start gap-3 px-4 py-3${!isLast ? ' border-b border-border' : ''}${isDone ? ' opacity-60' : ''}`} style="background:var(--bg-card);"
+             >
+               <div class="flex-1 min-w-0">
+                 <div class="flex items-center gap-2 mb-2">
+                   <p class={`text-sm font-medium leading-snug${isDone ? ' line-through text-muted-foreground' : ''}`}>
+                     {task.title}
+                   </p>
+                   {isRequired && !isDone && (
+                     <span class="text-caption-2 font-semibold uppercase tracking-wider text-destructive border border-current rounded px-1 shrink-0">Required</span>
+                   )}
+                   {isDone && (
+                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="text-brand shrink-0" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                   )}
+                 </div>
 
-                {task.type === 'check' && (
-                  <button
-                    type="button"
-                    style={`font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:3px 10px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;transition:all .15s;${isDone ? 'border-color:var(--brand);color:var(--brand);' : 'border-color:var(--border);color:var(--text-secondary);'}`}
-                    {...hxAttrs(task.id, 'toggle')}
-                  >
-                    {isDone ? 'Undo' : 'Mark done'}
-                  </button>
-                )}
+                 {task.type === 'check' && (
+                   <button type="button" class={`text-caption-2 font-semibold uppercase tracking-wider px-3 py-1 rounded-lg border transition-all${isDone ? ' border-brand text-brand' : ' border-border text-muted-foreground hover:border-brand/50 hover:text-brand'}`} {...hxAttrs(task.id, 'toggle')}>
+                     {isDone ? 'Undo' : 'Mark done'}
+                   </button>
+                 )}
 
-                {task.type === 'yesno' && !isDone && (
-                  <div style="display:flex;gap:8px;">
-                    <button type="button" style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:3px 12px;border-radius:6px;border:1px solid var(--border);color:var(--text-secondary);background:transparent;cursor:pointer;" {...hxAttrs(task.id, 'answer')} hx-vals='{"answer":"yes"}'>Yes</button>
-                    <button type="button" style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:3px 12px;border-radius:6px;border:1px solid var(--border);color:var(--text-secondary);background:transparent;cursor:pointer;" {...hxAttrs(task.id, 'answer')} hx-vals='{"answer":"no"}'>No</button>
-                  </div>
-                )}
+                 {task.type === 'yesno' && !isDone && (
+                   <div class="flex gap-2">
+                     <button type="button" class="text-caption-2 font-semibold uppercase tracking-wider px-3 py-1 rounded-lg border border-border text-muted-foreground hover:border-brand/50 hover:text-brand transition-all" {...hxAttrs(task.id, 'answer')} hx-vals='{"answer":"yes"}'>Yes</button>
+                     <button type="button" class="text-caption-2 font-semibold uppercase tracking-wider px-3 py-1 rounded-lg border border-border text-muted-foreground hover:border-destructive/50 hover:text-destructive transition-all" {...hxAttrs(task.id, 'answer')} hx-vals='{"answer":"no"}'>No</button>
+                   </div>
+                 )}
 
-                {task.type === 'yesno' && isDone && (
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <span style={`font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:6px;${task.answer === 'yes' ? 'background:var(--badge-primary-bg);color:var(--badge-primary);' : 'background:var(--badge-destructive-bg,rgba(220,38,38,.1));color:var(--destructive);'}`}>
-                      {task.answer === 'yes' ? 'Yes' : 'No'}
-                    </span>
-                    <button type="button" style="font-size:0.7rem;color:var(--text-secondary);opacity:0.6;background:transparent;border:none;cursor:pointer;text-transform:uppercase;letter-spacing:0.04em;font-weight:700;" {...hxAttrs(task.id, 'clear')}>Clear</button>
-                  </div>
-                )}
+                 {task.type === 'yesno' && isDone && (
+                   <div class="flex items-center gap-2">
+                     <span class={`text-caption-2 font-semibold uppercase tracking-wider px-2 py-0.5 rounded-lg${task.answer === 'yes' ? ' bg-brand/10 text-brand' : ' bg-destructive/10 text-destructive'}`}>
+                       {task.answer === 'yes' ? 'Yes' : 'No'}
+                     </span>
+                     <button type="button" class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground/60 hover:text-muted-foreground transition-colors" {...hxAttrs(task.id, 'clear')}>Clear</button>
+                   </div>
+                 )}
 
-                {task.type === 'text' && !isDone && (
-                  <form style="display:flex;gap:8px;margin-top:4px;" hx-post={`/admin/jobs/${jobId}/service-tasks/${task.id}/answer`} hx-target="#service-tasks-list" hx-select="#service-tasks-list" hx-swap="outerHTML">
-                    <input type="text" name="answer" class="uk-input" style="font-size:0.8125rem;height:32px;flex:1;" placeholder="Type answer…" required />
-                    <button type="submit" class="uk-btn uk-btn-default uk-btn-sm" style="font-size:0.72rem;font-weight:700;">Save</button>
-                  </form>
-                )}
+                 {task.type === 'text' && !isDone && (
+                   <form class="flex gap-2 mt-1" hx-post={`/admin/jobs/${jobId}/service-tasks/${task.id}/answer`} hx-target="#service-tasks-list" hx-select="#service-tasks-list" hx-swap="outerHTML">
+                     <input type="text" name="answer" class="uk-input text-xs h-8 flex-1 rounded-lg" placeholder="Type answer…" required />
+                     <button type="submit" class="uk-btn uk-btn-default uk-btn-sm text-caption-2 font-semibold rounded-lg">Save</button>
+                   </form>
+                 )}
 
-                {task.type === 'text' && isDone && (
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <span style="font-size:0.8rem;font-style:italic;color:var(--text-secondary);">"{task.answer}"</span>
-                    <button type="button" style="font-size:0.7rem;color:var(--text-secondary);opacity:0.6;background:transparent;border:none;cursor:pointer;text-transform:uppercase;letter-spacing:0.04em;font-weight:700;" {...hxAttrs(task.id, 'clear')}>Edit</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
+                 {task.type === 'text' && isDone && (
+                   <div class="flex items-center gap-2">
+                     <span class="text-xs italic text-muted-foreground">"{task.answer}"</span>
+                     <button type="button" class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground/60 hover:text-muted-foreground transition-colors" {...hxAttrs(task.id, 'clear')}>Edit</button>
+                   </div>
+                 )}
+               </div>
+             </div>
+           );
         })}
       </div>
     </div>
@@ -506,6 +508,28 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
           <div class="flex-1 min-w-0">
             <h2 style="font-size:var(--text-lg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0; font-weight:900; letter-spacing:-0.02em;">{customerName}</h2>
             <p class="text-caption-2" style="margin:2px 0 0; letter-spacing:0.05em; text-transform:uppercase; opacity:0.55; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{serviceName}</p>
+          </div>
+          <div class="shrink-0 flex items-center gap-1">
+            {!job.started_at && (
+              <button type="button" aria-label="Start Job" class="flex items-center justify-center w-10 h-10 rounded-xl border-2 border-brand bg-brand/10 hover:bg-brand/20 transition-colors text-brand" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "in_progress"}' hx-target="#page-content" hx-select="#page-content">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </button>
+            )}
+            {isRunning && (
+              <button type="button" aria-label="Pause Job" class="flex items-center justify-center w-10 h-10 rounded-xl border-2 transition-colors" style="border-color:var(--badge-primary);color:var(--badge-primary);background:var(--badge-primary-bg);" hx-post={`/admin/jobs/${job.id}/pause`} hx-target="#page-content" hx-select="#page-content">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              </button>
+            )}
+            {isPaused && (
+              <button type="button" aria-label="Resume Job" class="flex items-center justify-center w-10 h-10 rounded-xl border-2 border-brand bg-brand/10 hover:bg-brand/20 transition-colors text-brand" hx-post={`/admin/jobs/${job.id}/resume`} hx-target="#page-content" hx-select="#page-content">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </button>
+            )}
+            {(isRunning || isPaused) && (
+              <button type="button" aria-label="End Job" class="flex items-center justify-center w-10 h-10 rounded-xl border-2 transition-colors" style="border-color:var(--destructive);color:var(--destructive);background:var(--destructive-soft);" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              </button>
+            )}
           </div>
         </div>
         <div class="job-stat-chips">
@@ -607,7 +631,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                     <div class="w-2 h-5 bg-brand rounded-full" />
                     <h3 class="text-base sm:text-xl font-black tracking-tight">Active Tasks & Notes</h3>
                   </div>
-                   <span class="text-footnote" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--badge-neutral-bg);border:1px solid var(--badge-neutral-border);color:var(--text);">{notes.length}</span>
+                   <span class="text-footnote" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:var(--radius-full);background:var(--badge-neutral-bg);border:1px solid var(--badge-neutral-border);color:var(--text);">{notes.length}</span>
                 </div>
                 
                 <div class="mb-6">
@@ -626,11 +650,11 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                     <input
                       type="text"
                       name="text"
-                      class="uk-input border-0 focus:ring-0 bg-transparent text-base font-medium placeholder:text-muted-foreground/50 h-12 px-4 flex-1"
-                      placeholder="Type a new task and press enter..."
+                      class="uk-input border-0 focus:ring-0 bg-transparent text-sm font-medium placeholder:text-muted-foreground/50 h-10 px-3 flex-1 rounded-xl"
+                       placeholder="New task..."
                       required
                     />
-                    <button type="submit" class="uk-btn uk-btn-primary px-8 rounded-xl font-black shadow-md">Add Task</button>
+                    <button type="submit" class="uk-btn uk-btn-primary px-5 rounded-xl font-black shadow-md text-sm">Add</button>
                   </form>
                 </div>
                </section>
@@ -646,32 +670,66 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                 <div class="uk-card rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
                   <div class="divide-y divide-border/50">
                     {lineItems.map((line) => (
-                      <div class={`p-4 ${line.parent_id ? 'bg-muted/20 pl-8' : ''}`} key={line.id}>
-                        <div class="flex items-start justify-between gap-2">
-                          <div class="min-w-0">
-                            <p class="text-sm font-bold text-foreground leading-tight">{line.description}</p>
-                            <p class="text-caption-2 text-muted-foreground mt-1 uppercase font-semibold tracking-tighter">
-                              {line.quantity} × {money(line.unit_price_cents)} • <span class="text-brand/80">{line.kind}</span>
-                            </p>
+                      <details class="group" key={line.id}>
+                        <summary class={`p-4 ${line.parent_id ? 'pl-8' : ''} cursor-pointer list-none select-none`}>
+                          <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                              <p class="text-sm font-bold text-foreground leading-tight">{line.description}</p>
+                              <p class="text-caption-2 text-muted-foreground mt-1 uppercase font-semibold tracking-tighter">
+                                {line.quantity} × {money(line.unit_price_cents)} • <span class="text-brand/80">{line.kind}</span>
+                              </p>
+                            </div>
+                            <div class="text-right shrink-0 flex flex-col items-end gap-1">
+                              <p class="text-sm font-black text-foreground">{money(line.total_cents)}</p>
+                              <span class="text-caption-2 text-muted-foreground/50 uppercase font-semibold tracking-widest group-open:hidden">Edit</span>
+                            </div>
                           </div>
-                          <div class="text-right shrink-0">
-                            <p class="text-sm font-black text-foreground">{money(line.total_cents)}</p>
-                            {line.is_custom === 1 && (
-                              <button
-                                type="button"
-                                class="text-caption-2 text-destructive uppercase font-semibold tracking-widest mt-1 hover:underline"
-                                hx-post={`/admin/jobs/${job.id}/line-items/delete`}
-                                hx-vals={JSON.stringify({ lineId: line.id })}
-                                hx-target="#page-content"
-                                hx-select="#page-content"
-                                data-confirm="arm"
-                              >
-                                Remove
-                              </button>
-                            )}
-                          </div>
+                        </summary>
+                        <div class={`px-4 pb-4 bg-surface ${line.parent_id ? 'pl-8' : ''}`}>
+                          <form
+                            hx-post={`/admin/jobs/${job.id}/line-items/edit`}
+                            hx-target="#page-content"
+                            hx-select="#page-content"
+                            hx-swap="innerHTML"
+                            class="grid gap-3 pt-3"
+                          >
+                            <input type="hidden" name="lineId" value={line.id} />
+                            <div class="grid gap-1.5">
+                              <label for={`edit-desc-${line.id}`} class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Description</label>
+                              <input id={`edit-desc-${line.id}`} type="text" name="description" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-bold" value={line.description} required />
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                              <div class="grid gap-1.5">
+                                <label for={`edit-price-${line.id}`} class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Unit Price</label>
+                                <div class="relative">
+                                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
+                                  <input id={`edit-price-${line.id}`} type="number" name="unit_price" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card pl-6 font-bold" min={0} step={0.01} value={(line.unit_price_cents / 100).toFixed(2)} required />
+                                </div>
+                              </div>
+                              <div class="grid gap-1.5">
+                                <label for={`edit-qty-${line.id}`} class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Quantity</label>
+                                <input id={`edit-qty-${line.id}`} type="number" name="quantity" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-bold" min={1} step={1} value={line.quantity} required />
+                              </div>
+                            </div>
+                            <div class="flex gap-2">
+                              <button type="submit" class="uk-btn uk-btn-primary flex-1 py-2 text-caption-2 font-semibold uppercase tracking-widest h-10 rounded-xl shadow-sm">Save</button>
+                              {line.is_custom === 1 && (
+                                <button
+                                  type="button"
+                                  class="uk-btn uk-btn-destructive py-2 text-caption-2 font-semibold uppercase tracking-widest h-10 rounded-xl px-4"
+                                  hx-post={`/admin/jobs/${job.id}/line-items/delete`}
+                                  hx-vals={JSON.stringify({ lineId: line.id })}
+                                  hx-target="#page-content"
+                                  hx-select="#page-content"
+                                  data-confirm="arm"
+                                >
+                                  Remove
+                                </button>
+                              )}
+                            </div>
+                          </form>
                         </div>
-                      </div>
+                      </details>
                     ))}
                     {lineItems.length === 0 && (
                       <div class="p-8 text-center text-xs text-muted-foreground italic">No billing items recorded.</div>
@@ -679,27 +737,27 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                   </div>
 
                   <details class="border-t border-border">
-                    <summary class="px-4 py-3 flex items-center justify-center gap-2 cursor-pointer hover:bg-muted/20 transition-colors list-none select-none">
+                    <summary class="px-4 py-3 flex items-center justify-center gap-2 cursor-pointer hover:bg-surface transition-colors list-none select-none">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="text-brand"><path d="M12 5v14M5 12h14"/></svg>
                       <span class="text-caption-2 font-semibold uppercase tracking-widest text-brand">Add Item</span>
                     </summary>
-                    <div class="p-4 bg-muted/30">
+                    <div class="p-4 bg-surface">
                       <form hx-post={`/admin/jobs/${job.id}/line-items/add`} hx-target="#page-content" hx-select="#page-content" hx-swap="innerHTML" class="grid gap-3">
                         <div class="grid gap-1.5">
                           <label for="new-line-desc" class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">New Line Description</label>
-                          <input id="new-line-desc" type="text" name="description" class="uk-input text-xs h-10 rounded-xl border-2 border-border/60 bg-card font-bold" placeholder="e.g. Extra deep cleaning" required />
+                          <input id="new-line-desc" type="text" name="description" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-bold" placeholder="e.g. Extra deep cleaning" required />
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                           <div class="grid gap-1.5">
                             <label for="new-line-price" class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Unit Price</label>
                             <div class="relative">
                               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
-                              <input id="new-line-price" type="number" name="unit_price" class="uk-input text-xs h-10 rounded-xl border-2 border-border/60 bg-card pl-6 font-bold" min={0} step={0.01} placeholder="0.00" required />
+                              <input id="new-line-price" type="number" name="unit_price" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card pl-6 font-bold" min={0} step={0.01} placeholder="0.00" required />
                             </div>
                           </div>
                           <div class="grid gap-1.5">
                             <label for="new-line-qty" class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Quantity</label>
-                            <input id="new-line-qty" type="number" name="quantity" class="uk-input text-xs h-10 rounded-xl border-2 border-border/60 bg-card font-bold" min={1} step={1} value="1" required />
+                            <input id="new-line-qty" type="number" name="quantity" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-bold" min={1} step={1} value="1" required />
                           </div>
                         </div>
                         <button type="submit" class="uk-btn uk-btn-default w-full py-2 text-caption-2 font-semibold uppercase tracking-widest h-10 mt-1 rounded-xl shadow-sm">Add Billing Item</button>
@@ -717,27 +775,15 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                 </div>
                 <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
                   <div class="p-4 space-y-4">
-                    <div class="space-y-3">
+                    <div class="space-y-3 rounded-xl p-3" style="background:var(--bg-mantle);">
                       <p class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground">Work Execution</p>
-                      <div class="flex flex-wrap gap-2">
-                        {!job.started_at ? (
-                          <button type="button" class="uk-btn uk-btn-primary flex-1 h-12 rounded-xl font-black shadow-lg shadow-brand/20 transition-all hover:scale-[1.02] text-base" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "in_progress"}' hx-target="#page-content" hx-select="#page-content">START JOB</button>
-                        ) : job.completed_at ? (
-                          <div class="flex-1 bg-muted/50 border border-border/50 h-10 rounded-xl flex items-center justify-center gap-2">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-brand"><title>Completed</title><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m22 4-10 10.01-3-3"/></svg>
-                            <span class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground">Work Completed</span>
-                          </div>
-                        ) : (
-                          <>
-                            {isRunning && <button type="button" class="uk-btn uk-btn-default h-10 rounded-xl font-black" style="border-color:var(--badge-primary);color:var(--badge-primary);" hx-post={`/admin/jobs/${job.id}/pause`} hx-target="#page-content" hx-select="#page-content">Pause</button>}
-                            {isPaused && <button type="button" class="uk-btn uk-btn-primary h-10 rounded-xl font-black" hx-post={`/admin/jobs/${job.id}/resume`} hx-target="#page-content" hx-select="#page-content">Resume</button>}
-                            <button type="button" class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-black bg-secondary border-secondary shadow-lg shadow-secondary/20 transition-all hover:scale-[1.02]" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content">END JOB</button>
-                          </>
-                        )}
-                      </div>
-                      {workIntervals.length > 0 && <WorkIntervals jobId={job.id} intervals={workIntervals} isActive={isRunning} />}
+                      {!job.started_at ? (
+                        <button type="button" class="uk-btn uk-btn-primary w-full h-12 rounded-xl font-black shadow-lg shadow-brand/20 transition-all hover:scale-[1.02] text-base" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "in_progress"}' hx-target="#page-content" hx-select="#page-content">START JOB</button>
+                      ) : (
+                        <WorkTimeline jobId={job.id} intervals={workIntervals} isActive={isRunning} isPaused={isPaused} estimatedMinutes={job.duration_minutes} isCompleted={Boolean(job.completed_at)} />
+                      )}
                     </div>
-                    <div class="bg-muted/30 rounded-xl p-3 border border-border/40">
+                    <div class="bg-surface rounded-xl p-3 border border-strong">
                       <p class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground mb-2">Execution Metrics</p>
                       <div class="grid grid-cols-2 gap-3">
                         <div>
@@ -748,15 +794,15 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                           <p class="text-caption-2 font-semibold text-muted-foreground/70 uppercase">End Time</p>
                           <p class="text-xs font-black">{job.completed_at ? new Date(`${job.completed_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
                         </div>
-                        <div class="col-span-2 pt-2 mt-1 border-t border-border/30">
+                        <div class="col-span-2 pt-2 mt-1 border-t border-strong">
                           <p class="text-caption-2 font-semibold text-muted-foreground/70 uppercase">Actual Duration</p>
                           <p class="text-sm font-black text-brand">{actualDuration !== null ? `${actualDuration} min` : completedIntervalMinutes > 0 ? `${completedIntervalMinutes} min logged` : 'Calculating...'}</p>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <details class="border-t border-border/50">
-                    <summary class="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-muted/20 transition-colors list-none select-none">
+                  <details class="border-t border-border">
+                    <summary class="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-surface transition-colors list-none select-none">
                       <span class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground shrink-0">Schedule</span>
                       <span class="text-xs font-medium text-muted-foreground/70 flex-1 truncate">{dateLabel} · {timeLabel || 'TBD'} · {providerName} · {job.duration_minutes}min</span>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0 text-muted-foreground"><path d="M6 9l6 6 6-6"/></svg>
@@ -814,7 +860,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
               </section>
 
               <section id="contact">
-                <div class="uk-card p-6 rounded-2xl border-2 border-border/40 bg-card shadow-sm hover:border-border transition-colors">
+                <div class="uk-card p-6 rounded-2xl border-2 border-border bg-card shadow-sm hover:border-strong transition-colors">
                   <h3 class="text-base font-black tracking-tight leading-none mb-4">Contact Profile</h3>
                   {customer ? (
                     <div class="grid gap-4">
@@ -847,7 +893,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                 </div>
               </section>
 
-              <div class="mt-4 pt-8 border-t border-border/50">
+              <div class="mt-4 pt-8 border-t border-border">
                 <button
                   type="button"
                   class="delete-btn w-full py-3 font-semibold uppercase tracking-widest text-caption-2 rounded-xl shadow-sm"
