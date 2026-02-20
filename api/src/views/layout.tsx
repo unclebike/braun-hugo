@@ -288,7 +288,7 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
   --font-weight-light: 300;
   --font-weight-regular: 400;
   --font-weight-medium: 600;
-  --font-weight-bold: 700;
+  --font-weight-bold: 600;
 
   --radius-xs:   4px;
   --radius-sm:   6px;
@@ -340,6 +340,18 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
   --badge-destructive: #d20f39;
   --badge-destructive-bg: rgba(210, 15, 57, 0.14);
   --badge-destructive-border: rgba(210, 15, 57, 0.28);
+  --badge-peach: #fe640b;
+  --badge-peach-bg: rgba(254, 100, 11, 0.12);
+  --badge-peach-border: rgba(254, 100, 11, 0.25);
+  --badge-mauve: #8839ef;
+  --badge-mauve-bg: rgba(136, 57, 239, 0.12);
+  --badge-mauve-border: rgba(136, 57, 239, 0.25);
+  --badge-teal: #179299;
+  --badge-teal-bg: rgba(23, 146, 153, 0.12);
+  --badge-teal-border: rgba(23, 146, 153, 0.25);
+  --badge-yellow: #df8e1d;
+  --badge-yellow-bg: rgba(223, 142, 29, 0.12);
+  --badge-yellow-border: rgba(223, 142, 29, 0.25);
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
@@ -389,6 +401,18 @@ export const Layout = ({ title, children }: { title: string; children: unknown }
   --badge-destructive: #f38ba8;
   --badge-destructive-bg: rgba(243, 139, 168, 0.18);
   --badge-destructive-border: rgba(243, 139, 168, 0.32);
+  --badge-peach: #fab387;
+  --badge-peach-bg: rgba(250, 179, 135, 0.16);
+  --badge-peach-border: rgba(250, 179, 135, 0.30);
+  --badge-mauve: #cba6f7;
+  --badge-mauve-bg: rgba(203, 166, 247, 0.16);
+  --badge-mauve-border: rgba(203, 166, 247, 0.30);
+  --badge-teal: #94e2d5;
+  --badge-teal-bg: rgba(148, 226, 213, 0.16);
+  --badge-teal-border: rgba(148, 226, 213, 0.30);
+  --badge-yellow: #f9e2af;
+  --badge-yellow-bg: rgba(249, 226, 175, 0.16);
+  --badge-yellow-border: rgba(249, 226, 175, 0.30);
 }
 
 body { opacity: 0; }
@@ -1089,7 +1113,7 @@ document.addEventListener('click', function(e) {
              [data-task-card][data-active] { border-color: var(--brand) !important; }
              .task-action { display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; cursor: pointer; padding: 6px 10px; border-radius: var(--radius-md); transition: background 0.15s, color 0.15s; color: var(--muted-foreground); }
              .task-action > * { pointer-events: none; }
-             .task-action span { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+             .task-action span { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
              .task-action:hover, .task-action:active { background: var(--bg); }
              .task-action-open { color: var(--brand); }
              .task-action-delete { color: var(--destructive); }
@@ -1584,7 +1608,7 @@ document.addEventListener('click', function(e) {
           }
           #task-modal-thread-link {
             font-size: 10px;
-            font-weight: 700;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             background: none;
@@ -1594,7 +1618,8 @@ document.addEventListener('click', function(e) {
             color: var(--brand);
           }
 
-          #sms-thread-modal-overlay {
+          @media (min-width: 768px) {
+            #sms-thread-modal-overlay {
               padding: 24px;
               align-items: center;
               justify-content: center;
@@ -1614,11 +1639,13 @@ document.addEventListener('click', function(e) {
           .job-stat-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
           .job-stat-chips::-webkit-scrollbar { display: none; }
           .job-stat-chip { flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 7px 12px; cursor: pointer; text-align: left; }
-          .job-stat-chip-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted-foreground); white-space: nowrap; }
-          .job-stat-chip-value { font-size: 11px; font-weight: 700; color: var(--foreground); white-space: nowrap; }
+          .job-stat-chip-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted-foreground); white-space: nowrap; }
+          .job-stat-chip-value { font-size: 11px; font-weight: 600; color: var(--foreground); white-space: nowrap; }
           .job-stat-chip-unread { color: var(--brand); }
           .job-stat-chip-status { position: relative; overflow: hidden; }
           .job-stat-chip-status select { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+          .job-stat-chip-btn { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 34px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 0; cursor: pointer; align-self: stretch; transition: opacity 0.15s; }
+          .job-stat-chip-btn:hover { opacity: 0.8; }
         </style>`}
       </head>
       <body>
@@ -1765,7 +1792,7 @@ document.addEventListener('click', function(e) {
                 <input type="hidden" name="noteIndex" id="task-edit-idx" />
                 <input type="text" name="text" id="task-edit-text" class="uk-input border-0 bg-transparent h-12 px-4 flex-1 font-medium text-base focus:ring-0" placeholder="Edit task..." />
                 <button type="button" id="task-edit-cancel" class="uk-btn uk-btn-default px-4 rounded-xl shrink-0">Cancel</button>
-                <button type="submit" class="uk-btn uk-btn-primary px-6 rounded-xl font-black shrink-0">Save</button>
+                <button type="submit" class="uk-btn uk-btn-primary px-6 rounded-xl font-bold shrink-0">Save</button>
               </form>
             </div>
           </div>
