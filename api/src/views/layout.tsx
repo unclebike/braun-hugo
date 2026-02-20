@@ -978,6 +978,15 @@ document.addEventListener('click', function(e) {
           .text-footnote { font-size: var(--text-footnote); font-weight: var(--fw-footnote); line-height: var(--lh-footnote); }
           .text-caption-1 { font-size: var(--text-caption-1); font-weight: var(--fw-caption-1); line-height: var(--lh-caption-1); }
           .text-caption-2 { font-size: var(--text-caption-2); font-weight: var(--fw-caption-2); line-height: var(--lh-caption-2); }
+
+          /* Override Tailwind text utilities to use our semantic variables */
+          .text-xs { font-size: var(--text-xs) !important; }
+          .text-sm { font-size: var(--text-sm) !important; }
+          .text-base { font-size: var(--text-base) !important; }
+          .text-lg { font-size: var(--text-lg) !important; }
+          .text-xl { font-size: var(--text-md) !important; }
+          .text-2xl { font-size: var(--text-lg) !important; }
+
           select:not(.uk-select) { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
           a, button, input, select, textarea, label, [role="switch"], [hx-post], [hx-get], [hx-delete] { touch-action: manipulation; }
           .main-content { -webkit-overflow-scrolling: touch; }
