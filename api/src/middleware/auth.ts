@@ -203,6 +203,13 @@ export const authMiddleware = createMiddleware(async (c: Context, next: Next) =>
     return next();
   }
   
+  // Dev/local bypass: skip auth on localhost
+  const host = c.req.header('host') || '';
+  if (host.startsWith('localhost') || host.startsWith('127.0.0.1')) {
+    c.set('auth', { type: 'cf_access', email: 'dev@localhost', userId: 'dev-user' });
+    return next();
+  }
+  
   const teamDomain = c.env?.CF_ACCESS_TEAM_DOMAIN || '';
   const accessAud = c.env?.CF_ACCESS_AUD || '';
   
