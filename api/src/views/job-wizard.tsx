@@ -109,8 +109,8 @@ const quickCreateBody = (props: NewJobProps) => {
     <div class="grid gap-6" style="max-width: 980px;">
       <div id="wizard-error-panel">
         {props.error && (
-          <div class="uk-card uk-card-body" style="border: 1px solid #fecaca; background: #fff1f2;">
-            <p class="text-sm" style="color: #b91c1c;">{props.error}</p>
+          <div class="uk-card uk-card-body rounded-xl" style="border: 2px solid var(--badge-destructive-border); background: var(--badge-destructive-bg);">
+            <p class="text-sm font-medium" style="color: var(--badge-destructive);">{props.error}</p>
           </div>
         )}
       </div>
@@ -347,8 +347,8 @@ const wizardFlowBody = (props: WizardFlowProps) => {
   return (
     <div class="grid gap-6" style="max-width: 800px;">
       {props.error && (
-        <div class="uk-card uk-card-body" style="border: 1px solid #fecaca; background: #fff1f2;">
-          <p class="text-sm" style="color: #b91c1c;">{props.error}</p>
+        <div class="uk-card uk-card-body rounded-xl" style="border: 2px solid var(--badge-destructive-border); background: var(--badge-destructive-bg);">
+          <p class="text-sm font-medium" style="color: var(--badge-destructive);">{props.error}</p>
         </div>
       )}
 

@@ -430,7 +430,8 @@ html, body {
 .bg-white { background: var(--bg-card) !important; }
 .border-b, .border-border { border-color: var(--border) !important; }
 .text-muted-foreground { color: var(--text-secondary) !important; }
-.uk-input, .uk-select, .uk-textarea { background: var(--input-bg) !important; color: var(--text) !important; border-color: var(--border) !important; }
+.uk-input, .uk-select, .uk-textarea { background: var(--input-bg) !important; color: var(--text) !important; border-color: var(--border) !important; border-width: 2px !important; }
+.uk-input.border-0, .uk-select.border-0, .uk-textarea.border-0 { border-width: 0 !important; }
 .uk-table th { color: var(--text-secondary) !important; border-color: var(--border) !important; }
 .uk-table td { color: var(--text) !important; }
 .uk-table-divider > :not(:first-child) > tr, .uk-table-divider > tr:not(:first-child) { border-color: var(--border) !important; }
@@ -467,7 +468,7 @@ html, body {
 }
 .uk-btn-default { background: var(--input-bg) !important; color: var(--text) !important; border-color: var(--border) !important; }
 .uk-btn-primary { background: var(--brand) !important; border-color: var(--brand) !important; color: var(--on-brand) !important; }
-.uk-checkbox, .uk-toggle-switch { background: var(--input-bg) !important; border-color: var(--border) !important; }
+.uk-checkbox, .uk-toggle-switch { background: var(--input-bg) !important; border-color: var(--border) !important; border-width: 2px !important; }
 .uk-checkbox:checked { background-color: var(--brand) !important; border-color: var(--brand) !important; }
 .uk-toggle-switch:checked { background-color: var(--brand) !important; border-color: var(--brand) !important; }
 .uk-offcanvas-bar { background: var(--bg-sidebar) !important; }
@@ -1638,13 +1639,13 @@ document.addEventListener('click', function(e) {
           .job-detail-header { padding-bottom: 0 !important; display: block !important; }
           .job-stat-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
           .job-stat-chips::-webkit-scrollbar { display: none; }
-          .job-stat-chip { flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 7px 12px; cursor: pointer; text-align: left; }
+          .job-stat-chip { flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; background: var(--bg); border: 2px solid var(--border); border-radius: 10px; padding: 7px 12px; cursor: pointer; text-align: left; }
           .job-stat-chip-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted-foreground); white-space: nowrap; }
           .job-stat-chip-value { font-size: 11px; font-weight: 600; color: var(--foreground); white-space: nowrap; }
           .job-stat-chip-unread { color: var(--brand); }
           .job-stat-chip-status { position: relative; overflow: hidden; }
           .job-stat-chip-status select { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
-          .job-stat-chip-btn { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 34px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 0; cursor: pointer; align-self: stretch; transition: opacity 0.15s; }
+          .job-stat-chip-btn { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 34px; background: var(--bg); border: 2px solid var(--border); border-radius: 10px; padding: 0; cursor: pointer; align-self: stretch; transition: opacity 0.15s; }
           .job-stat-chip-btn:hover { opacity: 0.8; }
         </style>`}
       </head>
