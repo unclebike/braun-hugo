@@ -4,7 +4,7 @@ import { html } from 'hono/html';
 // biome-ignore lint/correctness/noUnusedImports: jsx is used by JSX pragma transform
 import { Fragment, jsx } from 'hono/jsx';
 
-const ADMIN_JS_VERSION = 'd6c39fc';
+const ADMIN_JS_VERSION = 'debug-masonry-v1';
 
 export const Layout = ({ title, children }: { title: string; children: unknown }) => {
   return (
@@ -1548,15 +1548,26 @@ window.updateThemeLabels = updateThemeLabels;
 requestAnimationFrame(function(){requestAnimationFrame(function(){document.body.classList.add('ready')})});
 
 function initMasonry() {
-  document.querySelectorAll('.grid-masonry').forEach(function(grid) {
-    if (window.Masonry) {
-      new Masonry(grid, { 
-        itemSelector: '[class*="flex items-start"]',
-        columnWidth: 165,
-        transitionDuration: '0.3s'
-      });
-    }
-  });
+   document.querySelectorAll('.grid-masonry').forEach(function(grid) {
+     if (window.Masonry) {
+       // Find direct children that are grid items (flex items-start elements)
+       const items = grid.querySelectorAll(':scope > [class*="flex items-start"]');
+       console.log(`[Masonry] Initializing grid with ${items.length} items`, grid);
+       
+       if (items.length > 0) {
+         const msnry = new Masonry(grid, { 
+           itemSelector: ':scope > [class*="flex items-start"]',
+           columnWidth: 165,
+           transitionDuration: '0.3s'
+         });
+         console.log(`[Masonry] Initialized successfully`, msnry);
+       } else {
+         console.warn(`[Masonry] No items found in grid`, grid);
+       }
+     } else {
+       console.error('[Masonry] Masonry library not loaded');
+     }
+   });
 }
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initMasonry);
