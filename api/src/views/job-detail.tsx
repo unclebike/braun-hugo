@@ -217,11 +217,14 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage, customerName }: {
       hx-trigger="every 15s"
       hx-swap="outerHTML"
     >
-      {hasUnread && (
-        <div class="px-4 pt-3 pb-0">
-          <span class="uk-label uk-label-destructive"><span class="badge-label">New Message</span></span>
+      <div style="padding:10px 16px; background:var(--badge-mauve-bg); border-bottom:1px solid var(--badge-mauve-border);">
+        <div class="flex items-center justify-between">
+          <span class="text-caption-2 font-semibold uppercase tracking-wider" style="color:var(--badge-mauve);">SMS Thread</span>
+          {hasUnread && (
+            <span class="text-caption-2 font-semibold uppercase tracking-wider" style="color:var(--badge-mauve);">● Unread</span>
+          )}
         </div>
-      )}
+      </div>
 
       {smsThreadMessage ? (
         <div class="grid gap-3 px-4 pb-4">
@@ -235,7 +238,7 @@ export const SmsThreadCard = ({ jobId, smsThreadMessage, customerName }: {
           </div>
           <button
             type="button"
-            class="uk-btn uk-btn-primary w-full py-2.5 font-bold rounded-xl shadow-md shadow-brand/10"
+            class="uk-btn uk-btn-primary w-full py-2.5 font-semibold rounded-xl shadow-md shadow-brand/10"
             data-sms-thread-modal-open="true"
             data-sms-thread-modal-title={customerName || ''}
             hx-get={`/admin/inbox/${smsThreadMessage.id}/sms-thread-panel`}
@@ -303,13 +306,13 @@ export const WorkTimeline = ({
     <div class="space-y-3">
       <div class="flex gap-2">
         {isActive && (
-          <button type="button" class="uk-btn uk-btn-default flex-1 h-10 rounded-xl font-black" style="border-color:var(--badge-primary);color:var(--badge-primary);" hx-post={`/admin/jobs/${jobId}/pause`} hx-target="#page-content" hx-select="#page-content">Pause</button>
+          <button type="button" class="uk-btn uk-btn-default flex-1 h-10 rounded-xl font-bold" style="border-color:var(--badge-primary);color:var(--badge-primary);" hx-post={`/admin/jobs/${jobId}/pause`} hx-target="#page-content" hx-select="#page-content">Pause</button>
         )}
         {isPaused && (
-          <button type="button" class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-black" hx-post={`/admin/jobs/${jobId}/resume`} hx-target="#page-content" hx-select="#page-content">Resume</button>
+          <button type="button" class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-bold" hx-post={`/admin/jobs/${jobId}/resume`} hx-target="#page-content" hx-select="#page-content">Resume</button>
         )}
         {(isActive || isPaused) && (
-          <button type="button" class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-black bg-secondary border-secondary shadow-lg shadow-secondary/20" hx-post={`/admin/jobs/${jobId}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content">END JOB</button>
+          <button type="button" class="uk-btn uk-btn-primary flex-1 h-10 rounded-xl font-bold bg-secondary border-secondary shadow-lg shadow-secondary/20" hx-post={`/admin/jobs/${jobId}/status`} hx-vals='{"status": "complete"}' hx-target="#page-content" hx-select="#page-content">END JOB</button>
         )}
         {isCompleted && (
           <div class="flex-1 bg-surface border border-border h-10 rounded-xl flex items-center justify-center gap-2">
@@ -497,7 +500,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Back to Jobs</title><path d="M19 12H5m7 7-7-7 7-7"/></svg>
           </a>
           <div class="flex-1 min-w-0">
-            <h2 style="font-size:var(--text-lg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0; font-weight:900; letter-spacing:-0.02em;">{customerName}</h2>
+            <h2 style="font-size:var(--text-lg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0; font-weight:700; letter-spacing:-0.02em;">{customerName}</h2>
             <p class="text-caption-2" style="margin:2px 0 0; letter-spacing:0.05em; text-transform:uppercase; opacity:0.55; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{serviceName}</p>
           </div>
         </div>
@@ -573,7 +576,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
               <div class="flex items-start gap-3 mb-4">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-destructive mt-0.5 shrink-0"><title>Blocked</title><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 <div>
-                  <p class="text-sm font-black text-destructive mb-1">Cannot complete — required checklist items unfinished</p>
+                  <p class="text-sm font-bold text-destructive mb-1">Cannot complete — required checklist items unfinished</p>
                   <ul class="text-xs text-muted-foreground space-y-0.5">
                     {completeBlockers.map((b, i) => <li key={i}>• {b}</li>)}
                   </ul>
@@ -596,7 +599,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                       placeholder="Reason for overriding required tasks..."
                       required
                     />
-                    <button type="submit" class="uk-btn uk-btn-sm font-black uppercase tracking-widest rounded-xl" style="background:var(--destructive);color:#fff;border-color:var(--destructive);">
+                    <button type="submit" class="uk-btn uk-btn-sm font-bold uppercase tracking-widest rounded-xl" style="background:var(--destructive);color:#fff;border-color:var(--destructive);">
                       Override & Mark Complete
                     </button>
                   </form>
@@ -611,7 +614,7 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
               {serviceTasks.length > 0 && (
                 <section id="service-tasks">
                   <div class="flex items-center justify-between mb-4 px-1">
-                    <h3 class="text-sm sm:text-lg font-black tracking-tight leading-none">Service Checklist</h3>
+                    <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Service Checklist</h3>
                   </div>
                   <ServiceTasksList jobId={job.id} tasks={serviceTasks} serviceName={service?.name || 'Service'} />
                 </section>
@@ -619,62 +622,73 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
 
               <section id="tasks">
                 <div class="flex items-center justify-between mb-4 px-1">
-                  <h3 class="text-sm sm:text-lg font-black tracking-tight leading-none">Active Tasks & Notes</h3>
-                  <span class="text-footnote" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:var(--radius-full);background:var(--badge-neutral-bg);border:1px solid var(--badge-neutral-border);color:var(--text);">{notes.length}</span>
-                </div>
-                
-                <div class="mb-6">
-                  <NotesList jobId={job.id} notes={notes} listId="notes-main-list" />
+                  <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Notes</h3>
                 </div>
 
-                <div class="bg-card border-2 border-border p-2 rounded-2xl shadow-sm focus-within:border-brand transition-colors">
-                  <form
-                    hx-post={`/admin/jobs/${job.id}/notes/add`}
-                    hx-target="#notes-main-list"
-                    hx-select="#notes-main-list > *"
-                    hx-swap="innerHTML"
-                    hx-on="htmx:afterRequest: const xhr=event.detail.xhr; if(!xhr||xhr.status<200||xhr.status>=300) return; this.querySelector('input').value='';"
-                    class="flex gap-2"
-                  >
-                    <input
-                      type="text"
-                      name="text"
-                      class="uk-input border-0 focus:ring-0 bg-transparent text-sm font-medium placeholder:text-muted-foreground/50 h-10 px-3 flex-1 rounded-xl"
-                       placeholder="New task..."
-                      required
-                    />
-                    <button type="submit" class="uk-btn uk-btn-primary px-5 rounded-xl font-black shadow-md text-sm">Add</button>
-                  </form>
+                <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+                  <div style="padding:10px 16px; background:var(--badge-peach-bg); border-bottom:1px solid var(--badge-peach-border);">
+                    <div class="flex items-center justify-between">
+                      <span class="text-caption-2 font-semibold uppercase tracking-wider" style="color:var(--badge-peach);">Tasks & Notes</span>
+                      <span class="text-caption-2 font-semibold tabular-nums" style="color:var(--badge-peach);">{notes.length}</span>
+                    </div>
+                  </div>
+                  <div class="p-3">
+                    <NotesList jobId={job.id} notes={notes} listId="notes-main-list" />
+                  </div>
+                  <div class="border-t border-border p-2">
+                    <form
+                      hx-post={`/admin/jobs/${job.id}/notes/add`}
+                      hx-target="#notes-main-list"
+                      hx-select="#notes-main-list > *"
+                      hx-swap="innerHTML"
+                      hx-on="htmx:afterRequest: const xhr=event.detail.xhr; if(!xhr||xhr.status<200||xhr.status>=300) return; this.querySelector('input').value='';"
+                      class="flex gap-2"
+                    >
+                      <input
+                        type="text"
+                        name="text"
+                        class="uk-input border-0 focus:ring-0 bg-transparent text-sm font-medium placeholder:text-muted-foreground/50 h-10 px-3 flex-1 rounded-xl"
+                        placeholder="New task..."
+                        required
+                      />
+                      <button type="submit" class="uk-btn uk-btn-primary px-5 rounded-xl font-bold shadow-md text-sm">Add</button>
+                    </form>
+                  </div>
                 </div>
                </section>
 
               <section id="conversation">
                 <div class="flex items-center justify-between mb-4 px-1">
-                  <h3 class="text-sm sm:text-lg font-black tracking-tight leading-none">Conversation</h3>
+                  <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Messages</h3>
                 </div>
                 <SmsThreadCard jobId={job.id} smsThreadMessage={smsThreadMessage} customerName={customerName} />
               </section>
 
               <section id="billing">
                 <div class="flex items-center justify-between mb-4 px-1">
-                  <h3 class="text-sm sm:text-lg font-black tracking-tight leading-none">Job Billing</h3>
-                  <span class="text-sm font-bold text-brand">{money(subtotal)}</span>
+                  <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Billing</h3>
                 </div>
-                
+
                 <div class="uk-card rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+                  <div style="padding:10px 16px; background:var(--badge-teal-bg); border-bottom:1px solid var(--badge-teal-border);">
+                    <div class="flex items-center justify-between">
+                      <span class="text-caption-2 font-semibold uppercase tracking-wider" style="color:var(--badge-teal);">Job Total</span>
+                      <span class="text-sm font-black tabular-nums" style="color:var(--badge-teal);">{money(subtotal)}</span>
+                    </div>
+                  </div>
                   <div class="divide-y divide-border/50">
                     {lineItems.map((line) => (
                       <details class="group" key={line.id}>
                         <summary class={`p-4 ${line.parent_id ? 'pl-8' : ''} cursor-pointer list-none select-none`}>
                           <div class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
-                              <p class="text-sm font-bold text-foreground leading-tight">{line.description}</p>
+                              <p class="text-sm font-semibold text-foreground leading-tight">{line.description}</p>
                               <p class="text-caption-2 text-muted-foreground mt-1 uppercase font-semibold tracking-tighter">
                                 {line.quantity} × {money(line.unit_price_cents)} • <span class="text-brand/80">{line.kind}</span>
                               </p>
                             </div>
                             <div class="text-right shrink-0 flex flex-col items-end gap-1">
-                              <p class="text-sm font-black text-foreground">{money(line.total_cents)}</p>
+                              <p class="text-sm font-bold text-foreground">{money(line.total_cents)}</p>
                               <span class="text-caption-2 text-muted-foreground/50 uppercase font-semibold tracking-widest group-open:hidden">Edit</span>
                             </div>
                           </div>
@@ -690,19 +704,19 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                             <input type="hidden" name="lineId" value={line.id} />
                             <div class="grid gap-1.5">
                               <label for={`edit-desc-${line.id}`} class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Description</label>
-                              <input id={`edit-desc-${line.id}`} type="text" name="description" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-bold" value={line.description} required />
+                              <input id={`edit-desc-${line.id}`} type="text" name="description" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-semibold" value={line.description} required />
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                               <div class="grid gap-1.5">
                                 <label for={`edit-price-${line.id}`} class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Unit Price</label>
                                 <div class="relative">
-                                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
-                                  <input id={`edit-price-${line.id}`} type="number" name="unit_price" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card pl-6 font-bold" min={0} step={0.01} value={(line.unit_price_cents / 100).toFixed(2)} required />
+                                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">$</span>
+                                  <input id={`edit-price-${line.id}`} type="number" name="unit_price" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card pl-6 font-semibold" min={0} step={0.01} value={(line.unit_price_cents / 100).toFixed(2)} required />
                                 </div>
                               </div>
                               <div class="grid gap-1.5">
                                 <label for={`edit-qty-${line.id}`} class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Quantity</label>
-                                <input id={`edit-qty-${line.id}`} type="number" name="quantity" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-bold" min={1} step={1} value={line.quantity} required />
+                                <input id={`edit-qty-${line.id}`} type="number" name="quantity" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-semibold" min={1} step={1} value={line.quantity} required />
                               </div>
                             </div>
                             <div class="flex gap-2">
@@ -739,19 +753,19 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                       <form hx-post={`/admin/jobs/${job.id}/line-items/add`} hx-target="#page-content" hx-select="#page-content" hx-swap="innerHTML" class="grid gap-3">
                         <div class="grid gap-1.5">
                           <label for="new-line-desc" class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">New Line Description</label>
-                          <input id="new-line-desc" type="text" name="description" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-bold" placeholder="e.g. Extra deep cleaning" required />
+                          <input id="new-line-desc" type="text" name="description" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-semibold" placeholder="e.g. Extra deep cleaning" required />
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                           <div class="grid gap-1.5">
                             <label for="new-line-price" class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Unit Price</label>
                             <div class="relative">
-                              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
-                              <input id="new-line-price" type="number" name="unit_price" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card pl-6 font-bold" min={0} step={0.01} placeholder="0.00" required />
+                              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">$</span>
+                              <input id="new-line-price" type="number" name="unit_price" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card pl-6 font-semibold" min={0} step={0.01} placeholder="0.00" required />
                             </div>
                           </div>
                           <div class="grid gap-1.5">
                             <label for="new-line-qty" class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground ml-1">Quantity</label>
-                            <input id="new-line-qty" type="number" name="quantity" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-bold" min={1} step={1} value="1" required />
+                            <input id="new-line-qty" type="number" name="quantity" class="uk-input text-xs h-10 rounded-xl border-2 border-border bg-card font-semibold" min={1} step={1} value="1" required />
                           </div>
                         </div>
                         <button type="submit" class="uk-btn uk-btn-default w-full py-2 text-caption-2 font-semibold uppercase tracking-widest h-10 mt-1 rounded-xl shadow-sm">Add Billing Item</button>
@@ -765,14 +779,20 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
             <aside class="grid gap-8 content-start">
               <section id="logistics">
                 <div class="flex items-center gap-3 mb-4 px-1">
-                  <h3 class="text-sm sm:text-lg font-black tracking-tight leading-none">Logistics & Timing</h3>
+                  <h3 class="text-sm sm:text-lg font-bold tracking-tight leading-none">Logistics & Timing</h3>
                 </div>
                 <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+                  <div style="padding:10px 16px; background:var(--badge-yellow-bg); border-bottom:1px solid var(--badge-yellow-border);">
+                    <div class="flex items-center justify-between">
+                      <span class="text-caption-2 font-semibold uppercase tracking-wider" style="color:var(--badge-yellow);">{dateLabel}</span>
+                      <span class="text-caption-2 font-semibold uppercase tracking-wider" style="color:var(--badge-yellow);">{timeLabel || 'TBD'} · {job.duration_minutes}min</span>
+                    </div>
+                  </div>
                   <div class="p-4 space-y-4">
                     <div class="space-y-3 rounded-xl p-3" style="background:var(--bg-mantle);">
                       <p class="text-caption-2 font-semibold uppercase tracking-widest text-muted-foreground">Work Execution</p>
                       {!job.started_at ? (
-                        <button type="button" class="uk-btn uk-btn-primary w-full h-12 rounded-xl font-black shadow-lg shadow-brand/20 transition-all hover:scale-[1.02] text-base" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "in_progress"}' hx-target="#page-content" hx-select="#page-content">START JOB</button>
+                        <button type="button" class="uk-btn uk-btn-primary w-full h-12 rounded-xl font-bold shadow-lg shadow-brand/20 transition-all hover:scale-[1.02] text-base" hx-post={`/admin/jobs/${job.id}/status`} hx-vals='{"status": "in_progress"}' hx-target="#page-content" hx-select="#page-content">START JOB</button>
                       ) : (
                         <WorkTimeline jobId={job.id} intervals={workIntervals} isActive={isRunning} isPaused={isPaused} estimatedMinutes={job.duration_minutes} isCompleted={Boolean(job.completed_at)} />
                       )}
@@ -782,15 +802,15 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                       <div class="grid grid-cols-2 gap-3">
                         <div>
                           <p class="text-caption-2 font-semibold text-muted-foreground/70 uppercase">Start Time</p>
-                          <p class="text-xs font-black">{job.started_at ? new Date(`${job.started_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
+                          <p class="text-xs font-bold">{job.started_at ? new Date(`${job.started_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
                         </div>
                         <div>
                           <p class="text-caption-2 font-semibold text-muted-foreground/70 uppercase">End Time</p>
-                          <p class="text-xs font-black">{job.completed_at ? new Date(`${job.completed_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
+                          <p class="text-xs font-bold">{job.completed_at ? new Date(`${job.completed_at}Z`).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
                         </div>
                         <div class="col-span-2 pt-2 mt-1 border-t border-strong">
                           <p class="text-caption-2 font-semibold text-muted-foreground/70 uppercase">Actual Duration</p>
-                          <p class="text-sm font-black text-brand">{actualDuration !== null ? `${actualDuration} min` : completedIntervalMinutes > 0 ? `${completedIntervalMinutes} min logged` : 'Calculating...'}</p>
+                          <p class="text-sm font-bold text-brand">{actualDuration !== null ? `${actualDuration} min` : completedIntervalMinutes > 0 ? `${completedIntervalMinutes} min logged` : 'Calculating...'}</p>
                         </div>
                       </div>
                     </div>
@@ -806,22 +826,22 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                         <input type="hidden" name="_section" value="details" />
                         <div class="space-y-1">
                           <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="scheduled-date">Service Date</label>
-                          <input id="scheduled-date" name="scheduled_date" type="date" class="uk-input rounded-xl border-2 font-bold h-10 px-2 text-xs" value={job.scheduled_date} />
+                          <input id="scheduled-date" name="scheduled_date" type="date" class="uk-input rounded-xl border-2 font-semibold h-10 px-2 text-xs" value={job.scheduled_date} />
                         </div>
                         <div class="space-y-1">
                           <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="scheduled-time">Arrival Time</label>
-                          <input id="scheduled-time" name="scheduled_start_time" type="time" class="uk-input rounded-xl border-2 font-bold h-10 px-2 text-xs" value={job.scheduled_start_time} />
+                          <input id="scheduled-time" name="scheduled_start_time" type="time" class="uk-input rounded-xl border-2 font-semibold h-10 px-2 text-xs" value={job.scheduled_start_time} />
                         </div>
                         <div class="space-y-1">
                           <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="duration">Duration</label>
                           <div class="relative">
-                            <input id="duration" name="duration_minutes" type="number" min={1} class="uk-input rounded-xl border-2 font-bold h-10 pr-8 pl-2 text-xs" value={job.duration_minutes} />
+                            <input id="duration" name="duration_minutes" type="number" min={1} class="uk-input rounded-xl border-2 font-semibold h-10 pr-8 pl-2 text-xs" value={job.duration_minutes} />
                             <span class="absolute right-3 top-1/2 -translate-y-1/2 text-caption-2 font-semibold text-muted-foreground uppercase">Min</span>
                           </div>
                         </div>
                         <div class="space-y-1">
                           <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="provider-id">Provider</label>
-                          <select id="provider-id" name="provider_id" class="uk-select rounded-xl border-2 font-bold h-10 px-2 text-xs">
+                          <select id="provider-id" name="provider_id" class="uk-select rounded-xl border-2 font-semibold h-10 px-2 text-xs">
                             <option value="">Unassigned</option>
                             {team.map((p) => <option key={p.id} value={p.id} selected={assignedProviderId === p.id}>{p.first_name} {p.last_name}</option>)}
                           </select>
@@ -829,15 +849,15 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
                         <div class="space-y-1">
                           <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="base-price">Base Price</label>
                           <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
-                            <input id="base-price" name="base_price" type="number" step="0.01" class="uk-input rounded-xl border-2 font-bold h-10 pl-6 pr-2 text-xs" value={(job.base_price_cents / 100).toFixed(2)} />
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">$</span>
+                            <input id="base-price" name="base_price" type="number" step="0.01" class="uk-input rounded-xl border-2 font-semibold h-10 pl-6 pr-2 text-xs" value={(job.base_price_cents / 100).toFixed(2)} />
                           </div>
                         </div>
                         <div class="space-y-1">
                           <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="total-price">Total Price</label>
                           <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
-                            <input id="total-price" name="total_price" type="number" step="0.01" class="uk-input rounded-xl border-2 font-bold h-10 pl-6 pr-2 text-xs" value={(job.total_price_cents / 100).toFixed(2)} />
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">$</span>
+                            <input id="total-price" name="total_price" type="number" step="0.01" class="uk-input rounded-xl border-2 font-semibold h-10 pl-6 pr-2 text-xs" value={(job.total_price_cents / 100).toFixed(2)} />
                           </div>
                         </div>
                         <div class="col-span-2 flex items-center justify-between mt-1">
@@ -855,24 +875,24 @@ export const JobDetailPage = ({ job, customer, service, territory, team, assigne
 
               <section id="contact">
                 <div class="uk-card p-6 rounded-2xl border-2 border-border bg-card shadow-sm hover:border-strong transition-colors">
-                  <h3 class="text-base font-black tracking-tight leading-none mb-4">Contact Profile</h3>
+                  <h3 class="text-base font-bold tracking-tight leading-none mb-4">Contact Profile</h3>
                   {customer ? (
                     <div class="grid gap-4">
                       <a href={`tel:${customer.phone}`} class="flex items-center gap-3 group text-foreground no-underline">
                         <div class="w-10 h-10 rounded-xl bg-muted group-hover:bg-brand/10 group-hover:text-brand flex items-center justify-center transition-colors">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Call Customer</title><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.74 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                         </div>
-                        <span class="text-sm font-black group-hover:text-brand transition-colors">{customer.phone || 'No Phone'}</span>
+                        <span class="text-sm font-bold group-hover:text-brand transition-colors">{customer.phone || 'No Phone'}</span>
                       </a>
                       <a href={`mailto:${customer.email}`} class="flex items-center gap-3 group text-foreground no-underline">
                         <div class="w-10 h-10 rounded-xl bg-muted group-hover:bg-brand/10 group-hover:text-brand flex items-center justify-center transition-colors">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><title>Email Customer</title><path d="m22 2-7 20-4-9-9-4zM22 2 11 13"/></svg>
                         </div>
-                        <span class="text-sm font-black group-hover:text-brand transition-colors truncate">{customer.email || 'No Email'}</span>
+                        <span class="text-sm font-bold group-hover:text-brand transition-colors truncate">{customer.email || 'No Email'}</span>
                       </a>
                       <a 
                         href={`/admin/customers/${customer.id}/edit`} 
-                        class="uk-btn uk-btn-default w-full py-2.5 font-bold rounded-xl mt-2 text-xs border-2"
+                        class="uk-btn uk-btn-default w-full py-2.5 font-semibold rounded-xl mt-2 text-xs border-2"
                         hx-get={`/admin/customers/${customer.id}/edit`} 
                         hx-target="#page-content" 
                         hx-select="#page-content" 
