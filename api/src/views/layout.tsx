@@ -1553,6 +1553,13 @@ function initMasonry() {
      if (window.Masonry) {
        const items = grid.querySelectorAll(':scope > [class*="flex items-start"]');
        if (items.length > 0) {
+         items.forEach(function(item) {
+           if (item.getAttribute('data-wide')) {
+             item.style.width = '330px';
+           } else {
+             item.style.width = '160px';
+           }
+         });
          new Masonry(grid, { 
            itemSelector: ':scope > [class*="flex items-start"]',
            columnWidth: 165,
