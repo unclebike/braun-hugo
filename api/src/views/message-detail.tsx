@@ -144,12 +144,12 @@ export const SmsHistoryList = ({
             const taskCompleted = completedSet.has(sms.id);
             return (
               <div key={sms.id} style={`display:flex;${sms.direction === 'outbound' ? 'justify-content:flex-end;' : 'justify-content:flex-start;'}`}>
-                <div style={`max-width:80%;padding:8px 12px;border-radius:12px;display:flex;flex-direction:column;gap:6px;${sms.direction === 'outbound'
-                  ? 'background:var(--brand,#dc8a78);color:var(--on-brand, #1e1e2e);border:1px solid rgba(0,0,0,0.06);border-bottom-right-radius:4px;'
-                  : 'background:var(--surface-elevated,#eff1f5);color:var(--text-primary,#333);border:1px solid var(--border,#ccd0da);border-bottom-left-radius:4px;'}`}>
-                  <div class="text-sm" style="white-space:pre-wrap;word-break:break-word;">{smsBodyText(sms)}</div>
+                 <div style={`max-width:80%;padding:8px 12px;border-radius:var(--radius-lg);display:flex;flex-direction:column;gap:6px;${sms.direction === 'outbound'
+                   ? 'background:var(--brand,#dc8a78);color:var(--on-brand, #1e1e2e);border:1px solid rgba(0,0,0,0.06);border-bottom-right-radius:var(--radius-xs);'
+                   : 'background:var(--surface-elevated,#eff1f5);color:var(--text-primary,#333);border:1px solid var(--border,#ccd0da);border-bottom-left-radius:var(--radius-xs);'}`}>
+                  <div class="text-sm leading-normal" style="white-space:pre-wrap;word-break:break-word;">{smsBodyText(sms)}</div>
                   <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-                    <span style={`font-size:0.875rem;opacity:0.7;${sms.direction === 'outbound' ? 'color:#fff;' : ''}`}>{formatTime(sms.created_at)}</span>
+                    <span style={`font-size:0.75rem;line-height:1.5;opacity:0.7;${sms.direction === 'outbound' ? 'color:#fff;' : ''}`}>{formatTime(sms.created_at)}</span>
                     <div style="display:flex;align-items:center;gap:6px;">
                       {sms.direction === 'outbound' && smsStatusBadge(sms.status)}
                       {sms.direction === 'inbound' && canCreateTask && !taskCompleted && (
@@ -163,7 +163,7 @@ export const SmsHistoryList = ({
                           data-task-suggested-title={smsBodyText(sms).replace(/\s+/g, ' ').slice(0, 72)}
                           aria-label="Add task to job"
                           title="Add task to job"
-                          style="padding:0;min-height:24px;min-width:24px;width:24px;height:24px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;"
+                          style="padding:0;min-height:24px;min-width:24px;width:24px;height:24px;border-radius:var(--radius-full);display:inline-flex;align-items:center;justify-content:center;"
                         >
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M12 5V19"></path>
@@ -175,7 +175,7 @@ export const SmsHistoryList = ({
                         <span
                           class="uk-label uk-label-secondary"
                           title="Task complete"
-                          style="padding:0;min-width:24px;height:24px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:rgba(34,197,94,0.14);color:#15803d;border:1px solid rgba(21,128,61,0.35);"
+                          style="padding:0;min-width:24px;height:24px;border-radius:var(--radius-full);display:inline-flex;align-items:center;justify-content:center;background:rgba(34,197,94,0.14);color:#15803d;border:1px solid rgba(21,128,61,0.35);"
                         >
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M20 6L9 17L4 12"></path>
@@ -214,7 +214,7 @@ export const SmsThreadPanel = ({ messageId, smsHistory, twilioEnabled, phoneE164
   <div id="sms-thread-panel" class="uk-card uk-card-body">
      <div class="flex items-start justify-between gap-3 pb-3 mb-3" style="border-bottom:1px solid var(--border);" data-sms-thread-header="1">
       <div class="min-w-0">
-        <p class="text-[11px] uppercase tracking-wide text-muted-foreground">Thread</p>
+        <p class="text-xs uppercase tracking-wide text-muted-foreground">Thread</p>
         {customerName && (
           <span data-sms-thread-customer-name="1" style="display:none;">{customerName}</span>
         )}
@@ -378,7 +378,7 @@ export const MessageDetailContent = ({ message, smsHistory, twilioEnabled, phone
           <div class="uk-card uk-card-body">
             <div class="flex items-start justify-between gap-3 mb-2">
               <div class="min-w-0">
-                <p class="text-[11px] uppercase tracking-wide text-muted-foreground">Sender</p>
+                <p class="text-xs uppercase tracking-wide text-muted-foreground">Sender</p>
                 <h3 class="text-sm font-semibold leading-tight break-words" style="margin-top:2px;">{senderName}</h3>
               </div>
               <div class="flex flex-wrap justify-end items-center gap-1.5 shrink-0" style="max-width:52%;">
@@ -391,31 +391,31 @@ export const MessageDetailContent = ({ message, smsHistory, twilioEnabled, phone
             <div class="grid gap-1.5 text-sm">
               {message.first_name && (
                 <div class="flex items-start justify-between gap-3 rounded-md px-2.5 py-1.5" style="background:var(--surface-elevated);">
-                  <span class="text-[11px] uppercase tracking-wide text-muted-foreground">Name</span>
+                  <span class="text-xs uppercase tracking-wide text-muted-foreground">Name</span>
                   <p class="font-medium leading-tight break-words text-right">{message.first_name} {message.last_name}</p>
                 </div>
               )}
               {message.email && (
                 <div class="flex items-start justify-between gap-3 rounded-md px-2.5 py-1.5" style="background:var(--surface-elevated);">
-                  <span class="text-[11px] uppercase tracking-wide text-muted-foreground">Email</span>
+                  <span class="text-xs uppercase tracking-wide text-muted-foreground">Email</span>
                   <p class="font-medium leading-tight text-right" style="max-width:70%;"><a href={`mailto:${message.email}`} class="uk-link break-all">{message.email}</a></p>
                 </div>
               )}
               {message.phone && (
                 <div class="flex items-start justify-between gap-3 rounded-md px-2.5 py-1.5" style="background:var(--surface-elevated);">
-                  <span class="text-[11px] uppercase tracking-wide text-muted-foreground">Phone</span>
+                  <span class="text-xs uppercase tracking-wide text-muted-foreground">Phone</span>
                   <p class="font-medium leading-tight text-right"><a href={`tel:${message.phone}`} class="uk-link">{message.phone}</a></p>
                 </div>
               )}
               {message.postal_code && (
                 <div class="flex items-start justify-between gap-3 rounded-md px-2.5 py-1.5" style="background:var(--surface-elevated);">
-                  <span class="text-[11px] uppercase tracking-wide text-muted-foreground">Postal</span>
+                  <span class="text-xs uppercase tracking-wide text-muted-foreground">Postal</span>
                   <p class="font-medium leading-tight text-right">{message.postal_code}</p>
                 </div>
               )}
               {message.reason && (
                 <div class="flex items-start justify-between gap-3 rounded-md px-2.5 py-1.5" style="background:var(--surface-elevated);">
-                  <span class="text-[11px] uppercase tracking-wide text-muted-foreground">Reason</span>
+                  <span class="text-xs uppercase tracking-wide text-muted-foreground">Reason</span>
                   <p class="font-medium leading-tight text-right" style="text-transform: capitalize;">{message.reason}</p>
                 </div>
               )}

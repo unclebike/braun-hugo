@@ -65,34 +65,34 @@ export const ProviderDetailPage = ({ member, weeklyHours, dateOverrides, skills,
 
                 <div class="grid gap-x-4 gap-y-3 grid-cols-2">
                   <div class="grid gap-1">
-                    <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="first_name">First Name</label>
+                    <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="first_name">First Name</label>
                     <input id="first_name" name="first_name" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3" value={member.first_name} />
                   </div>
                   <div class="grid gap-1">
-                    <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="last_name">Last Name</label>
+                    <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="last_name">Last Name</label>
                     <input id="last_name" name="last_name" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3" value={member.last_name} />
                   </div>
                   <div class="grid gap-1 col-span-2 sm:col-span-1">
-                    <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="email">Email Address</label>
+                    <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="email">Email Address</label>
                     <input id="email" name="email" type="email" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3" value={member.email} />
                   </div>
                   <div class="grid gap-1 col-span-2 sm:col-span-1">
-                    <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="phone">Phone Number</label>
+                    <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="phone">Phone Number</label>
                     <input id="phone" name="phone" type="tel" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3" value={member.phone || ''} />
                   </div>
                   <div class="grid gap-1">
-                    <label class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1" for="role">User Role</label>
+                    <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="role">User Role</label>
                     <select id="role" name="role" class="uk-select rounded-xl border-2 font-bold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3">
                       <option value="manager" selected={member.role === 'manager'}>Manager</option>
                       <option value="provider" selected={member.role === 'provider'}>Provider</option>
                     </select>
                   </div>
                   <div class="flex flex-col justify-end gap-2 pb-0.5">
-                    <label class="uk-form-label flex items-center gap-2 cursor-pointer text-[10px] sm:text-xs font-bold uppercase tracking-tight">
+                    <label class="uk-form-label flex items-center gap-2 cursor-pointer text-caption-2 sm:text-xs font-semibold uppercase tracking-tight">
                       <input type="checkbox" name="can_be_auto_assigned" checked={Boolean(member.can_be_auto_assigned)} class="uk-toggle-switch uk-toggle-switch-primary" />
                       Auto-assign
                     </label>
-                    <label class="uk-form-label flex items-center gap-2 cursor-pointer text-[10px] sm:text-xs font-bold uppercase tracking-tight">
+                    <label class="uk-form-label flex items-center gap-2 cursor-pointer text-caption-2 sm:text-xs font-semibold uppercase tracking-tight">
                       <input type="checkbox" name="is_active" checked={Boolean(member.is_active)} class="uk-toggle-switch uk-toggle-switch-primary" />
                       Active
                     </label>
@@ -205,7 +205,7 @@ export const ProviderDetailPage = ({ member, weeklyHours, dateOverrides, skills,
             <section>
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-base font-semibold">Skills</h3>
-                <a href="/admin/skills" class="text-[11px] uppercase tracking-wider font-semibold uk-link" hx-get="/admin/skills" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Manage Skills</a>
+                <a href="/admin/skills" class="text-xs uppercase tracking-wider font-semibold uk-link" hx-get="/admin/skills" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Manage Skills</a>
               </div>
               <div class="flex flex-wrap items-center gap-2 mb-4">
                 {skills.map((skill) => (

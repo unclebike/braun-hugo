@@ -219,7 +219,7 @@ const TableView = ({ title, columns, rows, createUrl, extraActions, detailUrlPre
                          <div class="grid grid-cols-2 gap-2 mt-2">
                            {compactMeta.map((entry) => (
                              <div class="min-w-0" key={entry.index}>
-                               <p class="text-[10px] uppercase tracking-wide text-muted-foreground truncate">{entry.label}</p>
+                               <p class="text-caption-2 uppercase tracking-wide text-muted-foreground truncate">{entry.label}</p>
                                <p class="text-xs font-medium truncate">{stringifyValue(entry.value) || '-'}</p>
                              </div>
                            ))}

@@ -78,12 +78,12 @@ export const InvoiceDetailPage = ({
                 <div class="uk-card uk-card-body" style="background:var(--surface-0);">
                   <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
-                      <p class="text-[10px] uppercase tracking-wide text-muted-foreground">Amount due</p>
+                      <p class="text-caption-2 uppercase tracking-wide text-muted-foreground">Amount due</p>
                       <p class="text-3xl font-extrabold" style="margin:0;">{money(total)}</p>
                       <p class="text-xs text-muted-foreground" style="margin:6px 0 0;">Subtotal {money(subtotal)} • Tax {money(Number(invoice.tax_cents || 0))} • Discount {money(Number(invoice.discount_cents || 0))}</p>
                     </div>
                     <div class="text-right">
-                      <p class="text-[10px] uppercase tracking-wide text-muted-foreground">Status</p>
+                      <p class="text-caption-2 uppercase tracking-wide text-muted-foreground">Status</p>
                       <StatusIcon status={invoice.status} />
                       {invoice.due_date ? (
                         <p class="text-xs text-muted-foreground" style="margin:8px 0 0;">Due {invoice.due_date}</p>

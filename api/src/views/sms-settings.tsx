@@ -116,7 +116,7 @@ export const SmsSettingsPage = ({ config, templates, stats }: Props) => (
                       checked={!!tpl.is_active}
                       class="uk-checkbox"
                     />
-                    <span class="text-[11px] text-muted-foreground">{tpl.event_type}</span>
+                    <span class="text-xs text-muted-foreground">{tpl.event_type}</span>
                   </div>
                 </div>
                 <textarea
@@ -130,7 +130,7 @@ export const SmsSettingsPage = ({ config, templates, stats }: Props) => (
                   oninput={`var c=this.value.length;var s=c<=160?1:Math.ceil(c/153);this.closest('form').querySelector('.tpl-chars').textContent=c+' chars · '+s+' segment'+(s>1?'s':'');`}
                 >{tpl.body_template}</textarea>
                 <div class="flex items-center justify-between">
-                  <span class="tpl-chars text-[11px] text-muted-foreground">
+                  <span class="tpl-chars text-xs text-muted-foreground">
                     {tpl.body_template.length} chars · {segmentCount(tpl.body_template.length)} segment{segmentCount(tpl.body_template.length) > 1 ? 's' : ''}
                   </span>
                   <button type="submit" class="uk-btn uk-btn-default uk-btn-sm">Save</button>
