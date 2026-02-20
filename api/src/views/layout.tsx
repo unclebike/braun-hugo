@@ -458,6 +458,7 @@ p { color: var(--text) !important; }
 [data-theme="dark"] .uk-close { color: var(--text) !important; }
 </style>`}
         <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+        <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
         <script src={`/admin.js?v=${ADMIN_JS_VERSION}`} defer></script>
         <link rel="stylesheet" href="https://unpkg.com/franken-ui@2.1.2/dist/css/core.min.css" />
         <script src="https://unpkg.com/franken-ui@2.1.2/dist/js/core.iife.js"></script>
@@ -987,8 +988,8 @@ document.addEventListener('click', function(e) {
           .text-xl { font-size: var(--text-md) !important; }
           .text-2xl { font-size: var(--text-lg) !important; }
 
-          .grid-masonry { column-width: 160px !important; column-gap: 0.5rem !important; }
-          .grid-masonry > * { break-inside: avoid !important; margin-bottom: 0.5rem !important; }
+          .grid-masonry { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.5rem; }
+          .grid-masonry > * { margin: 0 !important; }
 
           select:not(.uk-select) { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
           a, button, input, select, textarea, label, [role="switch"], [hx-post], [hx-get], [hx-delete] { touch-action: manipulation; }
@@ -1545,6 +1546,16 @@ function updateThemeLabels(t) {
 updateThemeLabels(document.documentElement.getAttribute('data-theme') || 'light');
 window.updateThemeLabels = updateThemeLabels;
 requestAnimationFrame(function(){requestAnimationFrame(function(){document.body.classList.add('ready')})});
+
+function initMasonry() {
+  document.querySelectorAll('.grid-masonry').forEach(function(grid) {
+    if (window.Masonry) {
+      new Masonry(grid, { itemSelector: '.grid-masonry > *', columnWidth: 160 });
+    }
+  });
+}
+initMasonry();
+htmx.on('htmx:afterSettle', initMasonry);
 </script>`}
       </body>
     </html>
