@@ -458,7 +458,6 @@ p { color: var(--text) !important; }
 [data-theme="dark"] .uk-close { color: var(--text) !important; }
 </style>`}
         <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-        <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
         <script src={`/admin.js?v=${ADMIN_JS_VERSION}`} defer></script>
         <link rel="stylesheet" href="https://unpkg.com/franken-ui@2.1.2/dist/css/core.min.css" />
         <script src="https://unpkg.com/franken-ui@2.1.2/dist/js/core.iife.js"></script>
@@ -988,9 +987,13 @@ document.addEventListener('click', function(e) {
           .text-xl { font-size: var(--text-md) !important; }
           .text-2xl { font-size: var(--text-lg) !important; }
 
-          .grid-masonry { position: relative; }
-           .grid-masonry > * { position: absolute; width: 160px; margin: 0; }
-           .grid-masonry > [data-wide] { width: 330px; }
+              .grid-masonry { display: grid; grid-template-columns: repeat(6, 1fr); column-gap: 8px; }
+             .grid-masonry > * { align-self: start; min-width: 0; grid-column: span 3; }
+             .grid-masonry > [data-cols="1"] { grid-column: span 2; }
+             .grid-masonry > [data-cols="2"] { grid-column: span 3; }
+             .grid-masonry > [data-cols="3"] { grid-column: span 6; }
+             .grid-masonry > * p { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+             .grid-masonry > [data-cols="3"] p { -webkit-line-clamp: 2; }
 
           select:not(.uk-select) { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
           a, button, input, select, textarea, label, [role="switch"], [hx-post], [hx-get], [hx-delete] { touch-action: manipulation; }
@@ -1548,26 +1551,25 @@ updateThemeLabels(document.documentElement.getAttribute('data-theme') || 'light'
 window.updateThemeLabels = updateThemeLabels;
 requestAnimationFrame(function(){requestAnimationFrame(function(){document.body.classList.add('ready')})});
 
+function layoutMasonry(grid) {
+  grid.style.gridAutoRows = '0px';
+  grid.style.setProperty('row-gap', '1px', 'important');
+  var colGap = parseFloat(getComputedStyle(grid).columnGap);
+  var items = grid.querySelectorAll(':scope > *');
+  items.forEach(function(item) {
+    item.style.gridRowEnd = '';
+    var height = item.getBoundingClientRect().height;
+    item.style.gridRowEnd = 'span ' + Math.round(height + colGap);
+  });
+}
 function initMasonry() {
-   document.querySelectorAll('.grid-masonry').forEach(function(grid) {
-     if (window.Masonry) {
-       const items = grid.querySelectorAll(':scope > [class*="flex items-start"]');
-       if (items.length > 0) {
-         items.forEach(function(item) {
-           if (item.getAttribute('data-wide')) {
-             item.style.width = '330px';
-           } else {
-             item.style.width = '160px';
-           }
-         });
-         new Masonry(grid, { 
-           itemSelector: ':scope > [class*="flex items-start"]',
-           columnWidth: 165,
-           transitionDuration: '0.3s'
-         });
-       }
-     }
-   });
+  document.querySelectorAll('.grid-masonry').forEach(function(grid) {
+    layoutMasonry(grid);
+    if (!grid._masonryObserver) {
+      grid._masonryObserver = new ResizeObserver(function() { layoutMasonry(grid); });
+      grid._masonryObserver.observe(grid);
+    }
+  });
 }
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initMasonry);
