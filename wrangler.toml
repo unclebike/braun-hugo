@@ -1,0 +1,7 @@
+# Cloudflare Pages configuration for Pages Functions.
+# The Service Binding lets Functions call the API worker directly,
+# bypassing Cloudflare Access that protects api.unclebike.xyz.
+
+[[services]]
+binding = "API"
+service = "zenbooker-api"

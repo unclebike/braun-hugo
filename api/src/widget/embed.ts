@@ -1422,7 +1422,7 @@ export const BOOKING_WIDGET_JS = `(function() {
 })();`;
 
 export const BOOKING_WIDGET_POPUP = `(function() {
-  var API_URL = 'https://api.unclebike.xyz';
+  var API_URL = '';
   var PRIMARY_COLOR = '#2563eb';
   var loaded = false;
   var overlay = null;
