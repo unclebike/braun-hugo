@@ -31,6 +31,11 @@ export const PUBLIC_PATHS = [
   '/webhooks/twilio/',
   '/widget',
   '/widget/',
+  // Static admin assets – no sensitive data, must load without CF Access JWT
+  '/admin.js',
+  '/admin.webmanifest',
+  '/admin-sw.js',
+  '/admin-offline.html',
 ];
 
 function isPublicPath(path: string): boolean {

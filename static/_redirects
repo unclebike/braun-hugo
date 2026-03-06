@@ -1,2 +1,5 @@
 # Widget and public API routes are handled by Pages Functions (see /functions).
-# This file intentionally left with no proxy rules.
+
+# Redirect /admin to the API worker's admin UI
+/admin/* https://api.unclebike.xyz/admin/:splat 302
+/admin https://api.unclebike.xyz/admin/ 302
