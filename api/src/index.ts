@@ -186,6 +186,9 @@ api.route('/messages', messagesRoutes);
 
 app.route('/v1', api);
 app.route('/webhooks/twilio', twilioWebhooksRoutes);
+
+// Redirect /admin (no trailing slash) → /admin/ so Hono sub-router matches get('/')
+app.get('/admin', (c) => c.redirect('/admin/', 301));
 app.route('/admin', adminRoutes);
 
 async function sendReminders(db: D1Database) {

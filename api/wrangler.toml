@@ -10,6 +10,7 @@ binding = "ASSETS"
 [vars]
 ENVIRONMENT = "production"
 CF_ACCESS_TEAM_DOMAIN = "unclebike"
+CF_ACCESS_AUD = "1880df9f2fadb70b7ae5958f76fb9a56240a4171625e379a936868c54b81e3d5"
 
 [[d1_databases]]
 binding = "DB"

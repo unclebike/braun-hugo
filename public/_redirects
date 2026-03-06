@@ -1,0 +1,11 @@
+# Admin panel redirect — send to the Worker behind CF Access
+/admin https://api.unclebike.xyz/admin/ 302
+/admin/* https://api.unclebike.xyz/admin/:splat 302
+
+/untitled-2/ /404.html 404
+/bike-news-so-far-in-june/ /404.html 404
+/membership/ /404.html 404
+/ready-to-ride-subscription-2/ /404.html 404
+/demo-case-study-one/ /404.html 404
+/untitled/ /404.html 404
+/tools/ /404.html 404

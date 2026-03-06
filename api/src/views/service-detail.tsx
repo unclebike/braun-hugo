@@ -84,7 +84,7 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
               >
                 <input type="hidden" name="_section" value="basic" />
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-sm font-black tracking-tight">Basic Info</h3>
+                  <h3 class="text-sm font-bold tracking-tight">Basic Info</h3>
                   <span class="save-indicator"></span>
                 </div>
 
@@ -102,7 +102,7 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
                       <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="service-category">Category</label>
                       <a href="/admin/categories" class="text-caption-2 uppercase tracking-widest font-semibold uk-link" hx-get="/admin/categories" hx-target="#page-content" hx-select="#page-content" hx-push-url="true">Groups</a>
                     </div>
-                    <select id="service-category" name="category_id" class="uk-select rounded-xl border-2 font-bold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3">
+                    <select id="service-category" name="category_id" class="uk-select rounded-xl border-2 font-semibold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3">
                       <option value="">No Category</option>
                       {categories.map((cat) => (
                         <option value={cat.id} selected={service.category_id === cat.id} key={cat.id}>{cat.name}</option>
@@ -112,7 +112,7 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
                   <div class="grid gap-1">
                     <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="service-price">Base Price</label>
                     <div class="relative">
-                      <span class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
+                      <span class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">$</span>
                       <input id="service-price" name="base_price" type="number" min={0} step={0.01} class="uk-input rounded-xl border-2 font-medium h-10 sm:h-11 pl-6 sm:pl-8 pr-2 text-xs sm:text-sm" value={(service.base_price_cents / 100).toFixed(2)} />
                     </div>
                   </div>
@@ -125,7 +125,7 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
                   </div>
                   <div class="grid gap-1 col-span-2 sm:col-span-1">
                     <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="assign-method">Assignment Logic</label>
-                    <select id="assign-method" name="auto_assign_method" class="uk-select rounded-xl border-2 font-bold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3">
+                    <select id="assign-method" name="auto_assign_method" class="uk-select rounded-xl border-2 font-semibold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3">
                       <option value="balanced" selected={service.auto_assign_method === 'balanced'}>Balanced</option>
                       <option value="prioritized" selected={service.auto_assign_method === 'prioritized'}>Prioritized</option>
                       <option value="drive_time" selected={service.auto_assign_method === 'drive_time'}>Drive Time</option>
@@ -148,7 +148,7 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
 
           <div class="uk-card uk-card-body">
             <section>
-              <h3 class="text-sm font-black tracking-tight mb-4">Modifiers</h3>
+              <h3 class="text-sm font-bold tracking-tight mb-4">Modifiers</h3>
               <div class="uk-overflow-auto mb-4">
                 <table class="uk-table uk-table-divider uk-table-hover uk-table-sm text-sm">
                   <thead>
@@ -225,7 +225,7 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
 
           <div class="uk-card uk-card-body">
             <section>
-              <h3 class="text-sm font-black tracking-tight mb-4">Price Rules</h3>
+              <h3 class="text-sm font-bold tracking-tight mb-4">Price Rules</h3>
               <div class="uk-overflow-auto mb-4">
                 <table class="uk-table uk-table-divider uk-table-hover uk-table-sm text-sm">
                   <thead>
@@ -333,7 +333,7 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
 
           <div class="uk-card uk-card-body">
             <section>
-              <h3 class="text-sm font-black tracking-tight mb-4">Required Skills</h3>
+              <h3 class="text-sm font-bold tracking-tight mb-4">Required Skills</h3>
               <div class="flex flex-wrap gap-2 mb-4">
                 {requiredSkills.map((skill) => {
                   const keep = requiredSkills.filter((s) => s.id !== skill.id);
@@ -365,7 +365,7 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
           <div class="uk-card uk-card-body" id="service-checklist">
             <section>
               <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-black tracking-tight">Service Checklist</h3>
+                <h3 class="text-sm font-bold tracking-tight">Service Checklist</h3>
                 <span class="text-xs text-muted-foreground">{taskTemplates.length} task{taskTemplates.length !== 1 ? 's' : ''}</span>
               </div>
               <p class="text-xs text-muted-foreground mb-4">These tasks are automatically added to every job when this service is booked. Technicians must complete them before marking the job done.</p>
@@ -453,7 +453,7 @@ export const ServiceDetailPage = ({ service, categories, modifiers, priceRules, 
 
           <div class="uk-card uk-card-body danger-card">
             <section>
-              <h3 class="text-sm font-black tracking-tight mb-3">Delete</h3>
+              <h3 class="text-sm font-bold tracking-tight mb-3">Delete</h3>
               <button
                 type="button"
                 class="delete-btn"

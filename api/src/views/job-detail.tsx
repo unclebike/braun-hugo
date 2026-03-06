@@ -328,7 +328,7 @@ export const WorkTimeline = ({
               />
             ))}
             {estimatePct > 1 && estimatePct < 99 && (
-              <div class="absolute top-0 h-full w-px z-10" style={`left:${estimatePct.toFixed(2)}%;background:var(--muted-foreground);opacity:0.5;`} />
+              <div class="absolute top-0 h-full w-px z-10" style={`left:${estimatePct.toFixed(2)}%;background:var(--text-secondary);opacity:0.5;`} />
             )}
           </div>
           <div class="flex justify-between items-baseline">

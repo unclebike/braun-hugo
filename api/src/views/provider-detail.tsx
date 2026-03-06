@@ -66,23 +66,23 @@ export const ProviderDetailPage = ({ member, weeklyHours, dateOverrides, skills,
                 <div class="grid gap-x-4 gap-y-3 grid-cols-2">
                   <div class="grid gap-1">
                     <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="first_name">First Name</label>
-                    <input id="first_name" name="first_name" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3" value={member.first_name} />
+                    <input id="first_name" name="first_name" class="uk-input rounded-xl border-2 font-semibold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3" value={member.first_name} />
                   </div>
                   <div class="grid gap-1">
                     <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="last_name">Last Name</label>
-                    <input id="last_name" name="last_name" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3" value={member.last_name} />
+                    <input id="last_name" name="last_name" class="uk-input rounded-xl border-2 font-semibold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3" value={member.last_name} />
                   </div>
                   <div class="grid gap-1 col-span-2 sm:col-span-1">
                     <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="email">Email Address</label>
-                    <input id="email" name="email" type="email" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3" value={member.email} />
+                    <input id="email" name="email" type="email" class="uk-input rounded-xl border-2 font-semibold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3" value={member.email} />
                   </div>
                   <div class="grid gap-1 col-span-2 sm:col-span-1">
                     <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="phone">Phone Number</label>
-                    <input id="phone" name="phone" type="tel" class="uk-input rounded-xl border-2 font-bold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3" value={member.phone || ''} />
+                    <input id="phone" name="phone" type="tel" class="uk-input rounded-xl border-2 font-semibold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3" value={member.phone || ''} />
                   </div>
                   <div class="grid gap-1">
                     <label class="text-caption-2 font-semibold uppercase tracking-wider text-muted-foreground ml-1" for="role">User Role</label>
-                    <select id="role" name="role" class="uk-select rounded-xl border-2 font-bold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3">
+                    <select id="role" name="role" class="uk-select rounded-xl border-2 font-semibold h-10 sm:h-11 text-xs sm:text-sm px-2 sm:px-3">
                       <option value="manager" selected={member.role === 'manager'}>Manager</option>
                       <option value="provider" selected={member.role === 'provider'}>Provider</option>
                     </select>

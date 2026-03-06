@@ -2309,9 +2309,14 @@ app.get('/jobs/:id', async (c) => {
   })();
 
   const notes = JSON.parse(notesJson) as Array<{ text: string; timestamp: string; completed: number }>;
+  const resolvedServiceName = (service as { name?: string } | null)?.name || (job.custom_service_name as string) || null;
   const lineItems = parsedLineItems.length > 0
-    ? parsedLineItems
-    : [buildServiceBaseLine((service as { name?: string } | null)?.name || (job.custom_service_name as string) || 'Service', Number(job.total_price_cents || 0))];
+    ? parsedLineItems.map(line =>
+        line.kind === 'service' && resolvedServiceName
+          ? { ...line, description: resolvedServiceName }
+          : line
+      )
+    : [buildServiceBaseLine(resolvedServiceName || 'Service', Number(job.total_price_cents || 0))];
 
   const serviceTasks = (serviceTasksResult.results || []).map(t => ({
     id: t.id as string,
