@@ -2,6 +2,9 @@
 # The Service Binding lets Functions call the API worker directly,
 # bypassing Cloudflare Access that protects api.unclebike.xyz.
 
+name = "braun-hugo"
+pages_build_output_dir = "public"
+
 [[services]]
 binding = "API"
 service = "zenbooker-api"
