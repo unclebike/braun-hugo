@@ -6,6 +6,8 @@ account_id = "7e5b73319badf4c429b8018988b72cbb"
 [assets]
 directory = "src/assets"
 binding = "ASSETS"
+html_handling = "none"
+not_found_handling = "none"
 
 [vars]
 ENVIRONMENT = "production"
