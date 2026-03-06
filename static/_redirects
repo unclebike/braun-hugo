@@ -1,0 +1,8 @@
+# Proxy public widget and API routes through Pages to bypass Cloudflare Access
+/widget/*  https://api.unclebike.xyz/widget/:splat  200
+/v1/scheduling/*  https://api.unclebike.xyz/v1/scheduling/:splat  200
+/v1/services  https://api.unclebike.xyz/v1/services  200
+/v1/services/*  https://api.unclebike.xyz/v1/services/:splat  200
+/v1/coupons/validate  https://api.unclebike.xyz/v1/coupons/validate  200
+/v1/bookings/create  https://api.unclebike.xyz/v1/bookings/create  200
+/v1/messages/submit  https://api.unclebike.xyz/v1/messages/submit  200
