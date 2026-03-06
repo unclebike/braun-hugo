@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { authMiddleware } from './middleware/auth';
-import adminRoutes from './routes/admin';
+import adminRoutes, { dashboardHandler } from './routes/admin';
 import bookingsRoutes from './routes/bookings';
 import categoriesRoutes from './routes/categories';
 import couponsRoutes from './routes/coupons';
@@ -187,8 +187,8 @@ api.route('/messages', messagesRoutes);
 app.route('/v1', api);
 app.route('/webhooks/twilio', twilioWebhooksRoutes);
 
-// Redirect /admin (no trailing slash) → /admin/ so Hono sub-router matches get('/')
-app.get('/admin', (c) => c.redirect('/admin/', 301));
+app.get('/admin', dashboardHandler);
+app.get('/admin/', dashboardHandler);
 app.route('/admin', adminRoutes);
 
 async function sendReminders(db: D1Database) {

@@ -217,9 +217,9 @@ const parseImportedCustomers = (raw: string): Array<{ first_name: string; last_n
   }).filter((entry) => entry.first_name && entry.last_name);
 };
 
-app.get('/', async (c) => {
+const dashboardHandler = async (c: AdminContext) => {
   const db = c.env.DB;
-  
+
   const today = new Date().toISOString().split('T')[0];
   const weekFromNow = new Date();
   weekFromNow.setDate(weekFromNow.getDate() + 7);
@@ -307,7 +307,8 @@ app.get('/', async (c) => {
   });
   
   return c.html(dashboardHtml);
-});
+};
+app.get('/', dashboardHandler);
 
 app.get('/territories', async (c) => {
   const db = c.env.DB;
@@ -4423,4 +4424,5 @@ app.post('/inbox/:id/delete', async (c) => {
   return c.redirect('/admin/inbox');
 });
 
+export { dashboardHandler };
 export default app;
