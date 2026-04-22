@@ -218,9 +218,11 @@ fieldset {
 /* Newsletter signup (components/newsletter-signup.html) */
 .newsletter-signup { padding: 4rem 0; }
 .newsletter-box {
-    /* Width is controlled by the outer .container.medium — do not re-cap
-       here, it creates a jarring shift from the surrounding full-width
-       sections. */
+    /* Cap to roughly the hero-content column width (Book Now, service pickers)
+       and LEFT-align so the form anchors under the preceding CTA instead of
+       sprawling the full 961px container width. Not centered — centering
+       creates a visible shift from the left-aligned elements above. */
+    max-width: 720px;
     text-align: left;
 }
 .newsletter-text {
