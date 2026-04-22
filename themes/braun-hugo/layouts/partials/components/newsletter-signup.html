@@ -1,3 +1,60 @@
+<style>
+.newsletter-signup { padding: 4rem 0; }
+.newsletter-box {
+  max-width: 520px;
+  margin: 0 auto;
+  text-align: left;
+}
+.newsletter-text {
+  font-size: 1.6rem;
+  color: var(--secondary-text-color);
+  margin: 0 0 1.2rem;
+}
+.newsletter-form-wrapper {
+  display: flex;
+  gap: 0.8rem;
+  align-items: stretch;
+  width: 100%;
+}
+.newsletter-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 1.1rem 1.4rem;
+  font-size: 1.5rem;
+  font-family: inherit;
+  color: var(--primary-text-color);
+  background: var(--input-background-color);
+  border: 1.5px solid var(--divider-color);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  box-sizing: border-box;
+}
+.newsletter-input:focus {
+  border-color: var(--brand-color);
+  box-shadow: 0 0 0 3px rgba(255, 87, 87, 0.25);
+}
+.newsletter-input::placeholder { color: var(--tertiary-text-color); }
+.newsletter-button.newsletter-button {
+  flex: 0 0 auto;
+  padding: 1.1rem 1.8rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border-radius: 10px;
+  white-space: nowrap;
+  margin: 0;
+}
+.newsletter-message { margin-top: 1rem; }
+.newsletter-success {
+  font-size: 1.35rem;
+  color: var(--green-color);
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .newsletter-form-wrapper { flex-direction: column; }
+  .newsletter-button.newsletter-button { width: 100%; }
+}
+</style>
 <section class="section-container newsletter-signup">
     <div class="container medium">
         <div class="newsletter-box">
