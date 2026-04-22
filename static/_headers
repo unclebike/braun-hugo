@@ -1,6 +1,12 @@
 /*
   Cache-Control: public, max-age=0, must-revalidate
 
+/assets/built/*
+  # Unhashed bundle filenames — must revalidate so CSS/JS edits ship promptly.
+  # If we adopt filename fingerprinting (e.g. screen.abc123.css), restore
+  # the long-immutable policy below.
+  Cache-Control: public, max-age=300, must-revalidate
+
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 

@@ -6,7 +6,11 @@
     <title>{{ .Title }} | {{ .Site.Title }}</title>
     <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
     
-    <link rel="stylesheet" href="/assets/built/screen.css">
+    {{/* Cachebuster: the bundle filename is unhashed, so we append a
+         build-time value. Hugo resolves now.Unix once per build, so each
+         deploy produces a unique URL that bypasses browser+CDN `immutable`
+         caches from prior deploys. */}}
+    <link rel="stylesheet" href="/assets/built/screen.css?v={{ now.Unix }}">
     {{/* Inline brand color override: wins over basics.css default, prevents
          flash-of-purple before /widget/branding.js runs and sets the runtime
          value from the admin app. */}}
