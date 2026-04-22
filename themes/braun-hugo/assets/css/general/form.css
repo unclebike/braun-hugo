@@ -218,8 +218,9 @@ fieldset {
 /* Newsletter signup (components/newsletter-signup.html) */
 .newsletter-signup { padding: 4rem 0; }
 .newsletter-box {
-    max-width: 520px;
-    margin: 0 auto;
+    /* Width is controlled by the outer .container.medium — do not re-cap
+       here, it creates a jarring shift from the surrounding full-width
+       sections. */
     text-align: left;
 }
 .newsletter-text {
