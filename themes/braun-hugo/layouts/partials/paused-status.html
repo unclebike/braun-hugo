@@ -33,7 +33,10 @@
   }
   .ub-paused-hero-burst svg polygon {
     fill: var(--brand-color, #FF5757);
-    stroke: #1e1e2e;
+    /* Stroke matches the page background so the burst looks like it's
+       cut from the page. Tracks light/dark theme automatically — this
+       was the trick behind the "sticker on paper" effect in dark mode. */
+    stroke: var(--background-color, #1e1e2e);
     stroke-width: 2.5;
     stroke-linejoin: round;
   }
