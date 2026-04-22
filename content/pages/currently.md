@@ -5,7 +5,7 @@ draft: false
 description: "Uncle Bike is out delivering the Tyendinaga Township cycling wayfinding project — 74 signs across five colour-coded loops, funded by the Ontario Trillium Foundation."
 ---
 
-<p class="lead" style="font-size:1.8rem;line-height:1.5;color:var(--secondary-text-color);">Uncle Bike hasn't gone anywhere — he's just out doing cycling work of a different shape for a little while. Here's what's on the road.</p>
+<p class="currently-lead">Uncle Bike hasn't gone anywhere — he's just out doing cycling work of a different shape for a little while. Here's what's on the road.</p>
 
 ## The Tyendinaga Cycling Wayfinding Project
 
@@ -15,26 +15,100 @@ It's one of the first dedicated cycling wayfinding networks in the region — cy
 
 ### The five loops
 
-<div style="margin:2.4rem 0;">
-  <button type="button" id="ub-map-open" style="display:inline-flex;align-items:center;gap:0.8rem;padding:1.2rem 1.8rem;background:#228B22;color:#fff;border:0;border-radius:10px;font-family:inherit;font-size:1.6rem;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(34,139,34,0.3);">
-    🗺️ Open the interactive wayfinding map
+<div class="currently-map-trigger">
+  <button type="button" id="ub-map-open" class="button button-primary">
+    <span aria-hidden="true">🗺️</span> Open the interactive wayfinding map
   </button>
 </div>
 
-<div id="ub-map-overlay" role="dialog" aria-modal="true" aria-label="Tyendinaga wayfinding map" style="display:none;position:fixed;inset:0;z-index:10010;background:rgba(17,17,27,0.85);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:2vh 2vw;">
-  <div style="position:relative;width:100%;height:100%;max-width:1400px;background:#000;border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.5);">
-    <button type="button" id="ub-map-close" aria-label="Close map" style="position:absolute;top:1rem;right:1rem;z-index:2;width:4.4rem;height:4.4rem;border-radius:50%;border:0;background:rgba(0,0,0,0.7);color:#fff;font-size:2.8rem;line-height:1;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);">&times;</button>
+<div id="ub-map-overlay" role="dialog" aria-modal="true" aria-label="Tyendinaga wayfinding map" class="currently-map-overlay">
+  <div class="currently-map-card">
+    <button type="button" id="ub-map-close" aria-label="Close map" class="currently-map-close">&times;</button>
     <iframe
       id="ub-map-iframe"
       title="Tyendinaga cycling wayfinding interactive map"
       loading="lazy"
-      style="width:100%;height:100%;border:0;display:block;"
+      class="currently-map-iframe"
       allowfullscreen></iframe>
   </div>
 </div>
 
+<style>
+  .currently-lead {
+    font-size: clamp(1.6rem, 1.3rem + 0.6vw, 1.9rem);
+    line-height: 1.5;
+    color: var(--secondary-text-color);
+    text-wrap: pretty;
+  }
+
+  .currently-map-trigger {
+    margin: 2.4rem 0;
+  }
+
+  .currently-funder {
+    font-size: 1.3rem;
+    color: var(--tertiary-text-color);
+    line-height: 1.6;
+    margin-top: 3rem;
+  }
+
+  .currently-map-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10010;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 2vh 2vw;
+    background: color-mix(in oklch, var(--background-base, #000) 82%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .currently-map-overlay.is-active { display: flex; }
+
+  .currently-map-card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 1400px;
+    background: var(--background-color);
+    border-radius: var(--radii-large, 14px);
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  }
+
+  .currently-map-iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  .currently-map-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2;
+    width: 4.4rem;
+    height: 4.4rem;
+    border-radius: 50%;
+    border: 0;
+    background: color-mix(in oklch, var(--background-base, #000) 75%, transparent);
+    color: var(--primary-text-color);
+    font-size: 2.8rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: background-color .15s ease;
+  }
+  .currently-map-close:hover,
+  .currently-map-close:focus-visible {
+    background: color-mix(in oklch, var(--brand-color) 40%, var(--background-base, #000));
+  }
+</style>
+
 <script>
-(function() {
+(function () {
   var openBtn = document.getElementById('ub-map-open');
   var overlay = document.getElementById('ub-map-overlay');
   var closeBtn = document.getElementById('ub-map-close');
@@ -42,19 +116,21 @@ It's one of the first dedicated cycling wayfinding networks in the region — cy
   var SRC = 'https://boq.bike/tyendinaga-project/wayfinding_map';
   function open() {
     if (!iframe.src) iframe.src = SRC;
-    overlay.style.display = 'flex';
+    overlay.classList.add('is-active');
     document.body.classList.add('ub-modal-open');
     document.body.style.overflow = 'hidden';
   }
   function close() {
-    overlay.style.display = 'none';
+    overlay.classList.remove('is-active');
     document.body.classList.remove('ub-modal-open');
     document.body.style.overflow = '';
   }
   openBtn.addEventListener('click', open);
   closeBtn.addEventListener('click', close);
-  overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
-  document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && overlay.style.display === 'flex') close(); });
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && overlay.classList.contains('is-active')) close();
+  });
 })();
 </script>
 
@@ -88,4 +164,4 @@ While this project is in the ground, I'm **not booking new fitting or service cl
 
 ---
 
-<p style="font-size:1.3rem;color:var(--tertiary-text-color);line-height:1.6;margin-top:3rem;">This project is funded by an Ontario Trillium Foundation Seed Grant and delivered through Explore Hastings County in partnership with Tyendinaga Township. The Ontario Trillium Foundation is an agency of the Government of Ontario.</p>
+<p class="currently-funder">This project is funded by an Ontario Trillium Foundation Seed Grant and delivered through Explore Hastings County in partnership with Tyendinaga Township. The Ontario Trillium Foundation is an agency of the Government of Ontario.</p>
