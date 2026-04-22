@@ -26,7 +26,10 @@ function css() {
     .pipe(sourcemaps.init())
     .pipe(postcss(processors))
     .pipe(sourcemaps.write('.'))
-    .pipe(dest('assets/built/'));
+    // Hugo serves /static/assets/built/* at /assets/built/* via the repo-root
+    // static directory. That's the canonical home for the built bundle —
+    // the theme-local assets/built/ path is not served.
+    .pipe(dest('../../static/assets/built/'));
 }
 
 function watchCss() {

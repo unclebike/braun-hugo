@@ -6,8 +6,11 @@
     <title>{{ .Title }} | {{ .Site.Title }}</title>
     <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
     
-    {{ with .Site.Params.brand_color }}<style>:root{--brand-color:{{ . | safeCSS }};}</style>{{ end }}
     <link rel="stylesheet" href="/assets/built/screen.css">
+    {{/* Inline brand color override: wins over basics.css default, prevents
+         flash-of-purple before /widget/branding.js runs and sets the runtime
+         value from the admin app. */}}
+    {{ with .Site.Params.brand_color }}<style>:root{--brand-color:{{ . | safeCSS }};}</style>{{ end }}
     <style>
         :root.has-light-text,
         :root.dark-page,
