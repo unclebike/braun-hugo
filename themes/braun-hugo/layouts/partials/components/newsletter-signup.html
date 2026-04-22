@@ -1,17 +1,16 @@
-<section class="section-container newsletter-signup">
-    <div class="container medium">
-        <div class="newsletter-box">
-            <p class="newsletter-text">{{ default "Subscribe to my monthly newsletter" .Site.Params.email_signup_text }}</p>
-            <form class="newsletter-form" onsubmit="return submitNewsletter(event)">
-                <div class="newsletter-form-wrapper">
-                    <input type="email" name="email" class="newsletter-input" id="nl-email" placeholder="Your email address" required>
-                    <button type="submit" class="button button-primary newsletter-button" id="nl-submit">Subscribe</button>
-                </div>
-                <div class="newsletter-message" id="nl-status" style="display:none;">
-                    <p class="newsletter-success" id="nl-msg"></p>
-                </div>
-            </form>
+{{/* Newsletter signup — intended to live inside the hero-content column
+     so it inherits the column's width. Drop the outer section/container
+     wrappers so width comes from whatever parent hosts this partial. */}}
+<div class="newsletter-box">
+    <p class="newsletter-text">{{ default "Subscribe to my monthly newsletter" .Site.Params.email_signup_text }}</p>
+    <form class="newsletter-form" onsubmit="return submitNewsletter(event)">
+        <div class="newsletter-form-wrapper">
+            <input type="email" name="email" class="newsletter-input" id="nl-email" placeholder="Your email address" required>
+            <button type="submit" class="button button-primary newsletter-button" id="nl-submit">Subscribe</button>
         </div>
-    </div>
-</section>
+        <div class="newsletter-message" id="nl-status" style="display:none;">
+            <p class="newsletter-success" id="nl-msg"></p>
+        </div>
+    </form>
+</div>
 <script src="/js/forms.js"></script>
