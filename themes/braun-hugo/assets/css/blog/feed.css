@@ -63,12 +63,22 @@
     display: flex;
     align-items: flex-start;
     overflow: hidden;
-    padding: 8px 0;
+    padding: clamp(1rem, 1vw + 0.6rem, 1.4rem) clamp(0.4rem, 1vw, 1rem);
     line-height: 1;
+    border-radius: var(--radii-small);
+    transition: background-color 0.15s ease;
 }
 
-.feed:not(.no-link):hover .feed-title {
-    opacity: 0.8;
+/* Row-level hover/focus affordance: whole row is clickable via .u-permalink,
+   so hover and keyboard focus both tint the row. */
+.feed:not(.no-link):hover,
+.feed:not(.no-link):focus-within {
+    background-color: color-mix(in oklch, var(--brand-color) 6%, transparent);
+}
+
+.feed:not(.no-link):hover .feed-title,
+.feed:not(.no-link):focus-within .feed-title {
+    opacity: 0.85;
 }
 
 .feed:not(.no-link):hover .feed-right {
@@ -119,6 +129,11 @@
 
 .feed-calendar {
     white-space: nowrap;
+    /* Aligns "22 Apr" / "30 Apr" digit columns across rows so dates form a
+       clean vertical edge. Negligible support cost — baseline since 2020. */
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    color: var(--tertiary-text-color);
 }
 
 .post-feed.expanded .feed-calendar {
@@ -187,6 +202,19 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: clamp(1.5rem, 1.2rem + 0.4vw, 1.8rem);
+}
+
+/* Expanded layouts wrap titles — balance line breaks for a tidier right edge. */
+.post-feed.expanded .feed-title {
+    text-wrap: balance;
+}
+
+/* Keyboard focus ring on the whole row via the permalink. */
+.feed .u-permalink:focus-visible {
+    outline: 2px solid var(--brand-color);
+    outline-offset: -2px;
+    border-radius: var(--radii-small);
 }
 
 .feed-sub-title {

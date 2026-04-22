@@ -22,9 +22,15 @@
         {{ else if .Summary }}
             <div class="feed-excerpt">{{ .Summary | plainify | truncate 200 }}</div>
         {{ end }}
-        <time class="body-1 feed-calendar" datetime="{{ .Date.Format "2006-01-02" }}">
-            {{ .Date.Format "02 Jan" }}
-        </time>
+        {{/* Dotted leader between title and date — shown only in compact
+             (non-expanded) layouts per feed.css. Aria-hidden: decorative. */}}
+        <span class="dot-spacer" aria-hidden="true"></span>
+        <div class="feed-right">
+            <time class="body-1 feed-calendar" datetime="{{ .Date.Format "2006-01-02" }}">
+                {{ .Date.Format "02 Jan" }}
+            </time>
+            <span class="feed-icon" aria-hidden="true">{{ partial "icons/arrow-right" . }}</span>
+        </div>
     </div>
     <a class="u-permalink" href="{{ .RelPermalink }}" aria-label="{{ .Title }}"></a>
 </article>
