@@ -74,6 +74,21 @@ theme = 'braun-hugo'
   
   # GOATkit booking widget
   goatkit_url = "https://api.unclebike.xyz/widget/demo"
+
+  # Brand color — keep in sync with the admin app's primaryColor (branding.js
+  # also sets this at runtime, but this value is the anti-flash default before
+  # the API script runs).
+  brand_color = "#ff5757"
+
+  # Paused mode — Uncle Bike is out delivering the Tyendinaga wayfinding project.
+  # Flip to false when bookings reopen; every sticker, modal, and CTA intercept
+  # is driven by this flag.
+  paused_mode = true
+  paused_project_title = "Tyendinaga Township Cycling Wayfinding"
+  paused_project_url = "/currently/"
+  paused_phone_intl = "+16132874543"
+  paused_phone_display = "613-287-4543"
+  paused_funder_line = "Funded by the Ontario Trillium Foundation. Delivered by Explore Hastings County in partnership with Tyendinaga Township."
   
   # Post settings
   show_author = false

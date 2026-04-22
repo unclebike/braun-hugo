@@ -21,6 +21,11 @@ const newsletterSchema = z.object({
   email: z.string().email(),
 });
 
+const waitlistSchema = z.object({
+  source: z.literal('waitlist'),
+  email: z.string().email(),
+});
+
 const registrationSchema = z.object({
   source: z.literal('registration'),
   first_name: z.string().min(1),
@@ -42,6 +47,7 @@ const registrationSchema = z.object({
 const messageSchema = z.discriminatedUnion('source', [
   contactSchema,
   newsletterSchema,
+  waitlistSchema,
   registrationSchema,
 ]);
 
@@ -54,7 +60,9 @@ app.post('/submit', zValidator('json', messageSchema), async (c) => {
     ? `${data.reason.charAt(0).toUpperCase() + data.reason.slice(1)} — ${data.first_name} ${data.last_name}`
     : data.source === 'newsletter'
       ? 'Newsletter Signup'
-      : `Registration — ${data.first_name} ${data.last_name}`;
+      : data.source === 'waitlist'
+        ? 'Booking Waitlist — notify when reopened'
+        : `Registration — ${data.first_name} ${data.last_name}`;
 
   await db.prepare(`
     INSERT INTO messages (id, source, first_name, last_name, email, phone, postal_code, reason, subject, body, metadata)

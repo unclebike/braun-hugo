@@ -1,0 +1,520 @@
+{{/* Paused-mode UX: corner sticker + booking-CTA intercept modal.
+     Driven by Site.Params.paused_mode. Removes itself from the DOM when false. */}}
+
+{{ $phoneIntl := .Site.Params.paused_phone_intl }}
+{{ $phoneDisplay := .Site.Params.paused_phone_display }}
+{{ $projectTitle := .Site.Params.paused_project_title }}
+{{ $projectUrl := .Site.Params.paused_project_url | default "/currently/" }}
+{{ $funder := .Site.Params.paused_funder_line }}
+
+<style>
+  button.ub-paused-sticker {
+    position: fixed !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 1.6rem) !important;
+    right: 1.6rem !important;
+    left: auto !important;
+    top: auto !important;
+    z-index: 9998 !important;
+    width: 13rem !important;
+    height: 13rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-family: inherit !important;
+    color: #fff !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transform: rotate(-10deg) !important;
+    transform-origin: center !important;
+    transition: transform .25s ease !important;
+    overflow: visible !important;
+    animation: ubStickerWobble 3.6s ease-in-out infinite !important;
+  }
+  button.ub-paused-sticker:hover {
+    transform: rotate(-4deg) scale(1.08) !important;
+    animation-play-state: paused !important;
+  }
+  /* Hide sticker when any overlay is open or the contact gate has taken over the page. */
+  body.ub-modal-open button.ub-paused-sticker,
+  body.ub-contact-gated button.ub-paused-sticker {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: rotate(-10deg) scale(0.5) !important;
+    transition: opacity .2s ease, transform .2s ease !important;
+  }
+  @keyframes ubStickerWobble {
+    0%, 100% { transform: rotate(-10deg); }
+    50% { transform: rotate(-7deg); }
+  }
+
+  button.ub-paused-sticker .ub-paused-burst {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: none !important;
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.25));
+  }
+  button.ub-paused-sticker .ub-paused-burst polygon {
+    fill: #E97451;
+    stroke: #fff;
+    stroke-width: 3;
+    stroke-linejoin: round;
+  }
+  button.ub-paused-sticker .ub-paused-sticker-text {
+    position: relative !important;
+    z-index: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.2rem !important;
+    text-align: center !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    line-height: 1 !important;
+    padding: 0 0.4rem !important;
+    pointer-events: none !important;
+  }
+  button.ub-paused-sticker .ub-paused-sticker-eyebrow {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    opacity: 0.92 !important;
+  }
+  button.ub-paused-sticker .ub-paused-sticker-headline {
+    font-size: 1.8rem !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.02em !important;
+  }
+  button.ub-paused-sticker .ub-paused-sticker-sub {
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    opacity: 0.88 !important;
+    margin-top: 0.25rem !important;
+  }
+  @media (max-width: 600px) {
+    button.ub-paused-sticker {
+      width: 10rem !important;
+      height: 10rem !important;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 1.1rem) !important;
+      right: 1.1rem !important;
+    }
+    button.ub-paused-sticker .ub-paused-sticker-eyebrow { font-size: 0.85rem !important; }
+    button.ub-paused-sticker .ub-paused-sticker-headline { font-size: 1.5rem !important; }
+    button.ub-paused-sticker .ub-paused-sticker-sub { font-size: 0.8rem !important; }
+  }
+
+  .ub-paused-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    background: rgba(17, 17, 27, 0.72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 6vh 1.6rem 1.6rem;
+    overflow-y: auto;
+  }
+  .ub-paused-overlay.is-active { display: flex; }
+  .ub-paused-card {
+    width: 100%;
+    max-width: 560px;
+    background: var(--background-color, #fff);
+    color: var(--primary-text-color, #111);
+    border-radius: 16px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+    padding: 2.8rem 2.4rem 2.4rem;
+    position: relative;
+    animation: ubPausedIn .2s ease-out;
+  }
+  @keyframes ubPausedIn {
+    from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .ub-paused-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    color: var(--tertiary-text-color, #888);
+    font-size: 2.4rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    border-radius: 50%;
+  }
+  .ub-paused-close:hover { background: var(--color-lighter-gray, #eee); }
+  .ub-paused-eyebrow {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #E97451;
+    margin-bottom: 0.6rem;
+  }
+  .ub-paused-card h2 {
+    font-size: 2.4rem;
+    line-height: 1.2;
+    margin: 0 0 1.2rem;
+    color: var(--primary-text-color);
+  }
+  .ub-paused-card p {
+    font-size: 1.55rem;
+    line-height: 1.55;
+    color: var(--secondary-text-color, #444);
+    margin: 0 0 1.2rem;
+  }
+  .ub-paused-card p strong { color: var(--primary-text-color); }
+  .ub-paused-card a { color: #4169A0; text-decoration: underline; }
+
+  .ub-paused-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin: 2rem 0 1.6rem;
+  }
+  .ub-paused-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 1.2rem 1.6rem;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: transform .1s ease, box-shadow .1s ease;
+  }
+  .ub-paused-btn-primary {
+    background: #228B22;
+    color: #fff;
+  }
+  .ub-paused-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34, 139, 34, 0.35); }
+  .ub-paused-btn-secondary {
+    background: transparent;
+    color: var(--primary-text-color);
+    border: 1.5px solid var(--divider-color, #ddd);
+  }
+  .ub-paused-btn-secondary:hover { background: var(--color-lighter-gray, #f5f5f5); }
+
+  .ub-paused-phone-reveal {
+    display: none;
+    padding: 1.4rem 1.6rem;
+    background: rgba(34, 139, 34, 0.08);
+    border: 1px dashed rgba(34, 139, 34, 0.35);
+    border-radius: 10px;
+    margin: 0.4rem 0 1.2rem;
+    text-align: center;
+    font-size: 1.6rem;
+  }
+  .ub-paused-phone-reveal.is-active { display: block; }
+  .ub-paused-phone-reveal a {
+    color: #228B22;
+    font-weight: 700;
+    font-size: 1.9rem;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+  }
+  .ub-paused-phone-reveal small {
+    display: block;
+    margin-top: 0.4rem;
+    color: var(--tertiary-text-color);
+    font-size: 1.2rem;
+  }
+
+  .ub-paused-waitlist {
+    margin-top: 1.6rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--divider-color, #eee);
+  }
+  .ub-paused-waitlist label {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    color: var(--primary-text-color);
+  }
+  .ub-paused-waitlist .ub-paused-field {
+    display: flex;
+    gap: 0.6rem;
+  }
+  .ub-paused-waitlist input[type="email"] {
+    flex: 1;
+    padding: 1.1rem 1.2rem;
+    font-size: 1.5rem;
+    font-family: inherit;
+    border: 1.5px solid var(--divider-color, #ddd);
+    border-radius: 10px;
+    background: var(--input-background-color, #fff);
+    color: var(--primary-text-color);
+  }
+  .ub-paused-waitlist input[type="email"]:focus {
+    outline: none;
+    border-color: #4169A0;
+  }
+  .ub-paused-waitlist button {
+    padding: 1.1rem 1.6rem;
+    background: #4169A0;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 1.4rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .ub-paused-waitlist button:hover { background: #355889; }
+  .ub-paused-waitlist button:disabled { opacity: 0.6; cursor: default; }
+  .ub-paused-waitlist-msg {
+    margin-top: 0.8rem;
+    font-size: 1.3rem;
+    min-height: 1.3rem;
+  }
+  .ub-paused-waitlist-msg.is-ok { color: #228B22; }
+  .ub-paused-waitlist-msg.is-err { color: #c0392b; }
+
+  .ub-paused-funder {
+    margin-top: 1.6rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--divider-color, #eee);
+    font-size: 1.15rem;
+    color: var(--tertiary-text-color, #888);
+    line-height: 1.5;
+  }
+</style>
+
+<button type="button" class="ub-paused-sticker" id="ub-paused-sticker" aria-label="Uncle Bike is on a special ride — tap for details">
+  <svg class="ub-paused-burst" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
+    <polygon id="ub-paused-burst-poly" points="" />
+  </svg>
+  <span class="ub-paused-sticker-text">
+    <span class="ub-paused-sticker-eyebrow">Uncle Bike is</span>
+    <span class="ub-paused-sticker-headline">On A Ride!</span>
+    <span class="ub-paused-sticker-sub">Tap for details</span>
+  </span>
+</button>
+<script>
+(function() {
+  var poly = document.getElementById('ub-paused-burst-poly');
+  if (!poly) return;
+  var N = 14, cx = 100, cy = 100, rO = 96, rI = 82;
+  var pts = [];
+  for (var i = 0; i < N * 2; i++) {
+    var r = (i % 2 === 0) ? rO : rI;
+    var a = (i * Math.PI / N) - Math.PI / 2;
+    pts.push((cx + r * Math.cos(a)).toFixed(2) + ',' + (cy + r * Math.sin(a)).toFixed(2));
+  }
+  poly.setAttribute('points', pts.join(' '));
+})();
+</script>
+
+<div class="ub-paused-overlay" id="ub-paused-overlay" role="dialog" aria-modal="true" aria-labelledby="ub-paused-title">
+  <div class="ub-paused-card">
+    <button type="button" class="ub-paused-close" id="ub-paused-close" aria-label="Close">&times;</button>
+    <div class="ub-paused-eyebrow">Uncle Bike is out riding</div>
+    <h2 id="ub-paused-title">The booking calendar's off the road for a bit.</h2>
+    <p>
+      I'm out delivering the <strong>{{ $projectTitle }}</strong> — 74 signs across five colour-coded loops, built so riders can explore the backroads without a phone, a map, or a plan. <a href="{{ $projectUrl }}">Read the story →</a>
+    </p>
+    <p>
+      Poke around the site all you like. Bookings for new clients are paused while this is in the ground — but if we've worked together before, I'd still love to hear from you.
+    </p>
+
+    <div class="ub-paused-actions">
+      <button type="button" class="ub-paused-btn ub-paused-btn-primary" id="ub-paused-reveal-phone">
+        I've worked with Uncle Bike before
+      </button>
+      <a class="ub-paused-btn ub-paused-btn-secondary" href="{{ $projectUrl }}">
+        What's Uncle Bike up to? →
+      </a>
+    </div>
+
+    <div class="ub-paused-phone-reveal" id="ub-paused-phone-reveal" aria-live="polite">
+      <a href="sms:{{ $phoneIntl }}">Text {{ $phoneDisplay }}</a>
+      <small>Text only, please — I'll get back to you between sign installs.</small>
+    </div>
+
+    <form class="ub-paused-waitlist" id="ub-paused-waitlist">
+      <label for="ub-paused-email">Tell me when bookings reopen</label>
+      <div class="ub-paused-field">
+        <input type="email" id="ub-paused-email" name="email" placeholder="your@email.com" required autocomplete="email">
+        <button type="submit" id="ub-paused-submit">Notify me</button>
+      </div>
+      <div class="ub-paused-waitlist-msg" id="ub-paused-waitlist-msg" role="status"></div>
+    </form>
+
+    <div class="ub-paused-funder">
+      {{ $funder }}
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var sticker = document.getElementById('ub-paused-sticker');
+  var overlay = document.getElementById('ub-paused-overlay');
+  var closeBtn = document.getElementById('ub-paused-close');
+  var revealBtn = document.getElementById('ub-paused-reveal-phone');
+  var phoneBox = document.getElementById('ub-paused-phone-reveal');
+  var form = document.getElementById('ub-paused-waitlist');
+  var input = document.getElementById('ub-paused-email');
+  var submit = document.getElementById('ub-paused-submit');
+  var msg = document.getElementById('ub-paused-waitlist-msg');
+
+  function open() {
+    overlay.classList.add('is-active');
+    document.body.classList.add('ub-modal-open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function() { (input || closeBtn).focus(); }, 60);
+  }
+  function close() {
+    overlay.classList.remove('is-active');
+    document.body.classList.remove('ub-modal-open');
+    document.body.style.overflow = '';
+    phoneBox.classList.remove('is-active');
+    revealBtn.style.display = '';
+    msg.textContent = '';
+    msg.className = 'ub-paused-waitlist-msg';
+  }
+
+  sticker.addEventListener('click', open);
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && overlay.classList.contains('is-active')) close();
+  });
+
+  revealBtn.addEventListener('click', function() {
+    phoneBox.classList.add('is-active');
+    revealBtn.style.display = 'none';
+  });
+
+  // Intercept every booking CTA: GOATkit triggers + #book anchors.
+  function isBookingTrigger(el) {
+    if (!el) return false;
+    if (el.id === 'goatkit-trigger') return true;
+    if (el.hasAttribute && el.hasAttribute('data-zbw-open')) return true;
+    if (el.classList && el.classList.contains('zbw-book-btn')) return true;
+    if (el.id === 'zbw-floating-btn') return true;
+    var href = el.getAttribute && el.getAttribute('href');
+    if (href && (href === '#book' || href.indexOf('#book') !== -1)) return true;
+    return false;
+  }
+  document.addEventListener('click', function(e) {
+    var target = e.target.closest('a, button, [role="button"]');
+    if (!target) return;
+    if (!isBookingTrigger(target)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    open();
+  }, true);
+
+  // Gate the /contact/ form: swap it for the paused messaging when present.
+  var contactForm = document.getElementById('contact-form');
+  if (contactForm) {
+    var gate = document.createElement('div');
+    gate.className = 'ub-paused-contact-gate';
+    gate.innerHTML =
+      '<div class="ub-paused-eyebrow">Uncle Bike is out riding</div>' +
+      '<h3 style="margin:0 0 1rem;font-size:2rem;line-height:1.25;">The message line is paused for a bit.</h3>' +
+      '<p style="font-size:1.55rem;line-height:1.55;margin:0 0 1.4rem;color:var(--secondary-text-color);">' +
+        "I'm out delivering the <strong>" + {{ $projectTitle | jsonify }} + "</strong> project — so I'm not taking new messages through this form for the moment. " +
+        '<a href="' + {{ $projectUrl | jsonify }} + '">Read the story →</a>' +
+      '</p>' +
+      '<button type="button" class="ub-paused-btn ub-paused-btn-primary" id="ub-contact-gate-returning" style="width:100%;margin-bottom:0.8rem;">I\u2019ve worked with Uncle Bike before</button>' +
+      '<div class="ub-paused-phone-reveal" id="ub-contact-gate-phone">' +
+        '<a href="sms:' + {{ .Site.Params.paused_phone_intl | jsonify }} + '">Text ' + {{ $phoneDisplay | jsonify }} + '</a>' +
+        "<small>Text only, please — I'll get back to you between sign installs.</small>" +
+      '</div>' +
+      '<div style="margin-top:1.6rem;padding-top:1.4rem;border-top:1px solid var(--divider-color,#eee);">' +
+        '<label for="ub-contact-gate-email" style="display:block;font-size:1.3rem;font-weight:600;margin-bottom:0.6rem;">Tell me when bookings reopen</label>' +
+        '<div class="ub-paused-field" style="display:flex;gap:0.6rem;">' +
+          '<input type="email" id="ub-contact-gate-email" placeholder="your@email.com" style="flex:1;padding:1.1rem 1.2rem;font-size:1.5rem;font-family:inherit;border:1.5px solid var(--divider-color,#ddd);border-radius:10px;background:var(--input-background-color,#fff);color:var(--primary-text-color);">' +
+          '<button type="button" id="ub-contact-gate-submit" style="padding:1.1rem 1.6rem;background:#4169A0;color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:1.4rem;font-weight:600;cursor:pointer;">Notify me</button>' +
+        '</div>' +
+        '<div class="ub-paused-waitlist-msg" id="ub-contact-gate-msg" role="status"></div>' +
+      '</div>' +
+      '<div class="ub-paused-funder" style="margin-top:1.6rem;padding-top:1.2rem;border-top:1px solid var(--divider-color,#eee);font-size:1.15rem;color:var(--tertiary-text-color,#888);line-height:1.5;">' +
+        {{ $funder | jsonify }} +
+      '</div>';
+    contactForm.parentNode.insertBefore(gate, contactForm);
+    contactForm.style.display = 'none';
+    document.body.classList.add('ub-contact-gated');
+    // Also hide the friendly "we respond in under 24 hours" callout above the form.
+    var callout = document.querySelector('.kg-callout-card');
+    if (callout) callout.style.display = 'none';
+
+    document.getElementById('ub-contact-gate-returning').addEventListener('click', function() {
+      var box = document.getElementById('ub-contact-gate-phone');
+      box.classList.add('is-active');
+      this.style.display = 'none';
+    });
+    document.getElementById('ub-contact-gate-submit').addEventListener('click', function() {
+      var em = (document.getElementById('ub-contact-gate-email').value || '').trim();
+      var m = document.getElementById('ub-contact-gate-msg');
+      if (!em) return;
+      this.disabled = true;
+      m.textContent = 'Sending...';
+      m.className = 'ub-paused-waitlist-msg';
+      var btn = this;
+      fetch('/v1/messages/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: 'waitlist', email: em })
+      })
+        .then(function(r) { if (!r.ok) throw new Error(); return r.json().catch(function() { return {}; }); })
+        .then(function() {
+          m.textContent = "You're on the list. I'll be in touch when the calendar opens back up.";
+          m.className = 'ub-paused-waitlist-msg is-ok';
+          document.getElementById('ub-contact-gate-email').value = '';
+        })
+        .catch(function() {
+          m.textContent = "Hmm, that didn't send. Try texting " + {{ $phoneDisplay | jsonify }} + " instead.";
+          m.className = 'ub-paused-waitlist-msg is-err';
+        })
+        .then(function() { btn.disabled = false; });
+    });
+  }
+
+  // Waitlist submit → reuses existing /v1/messages/submit endpoint with a waitlist source.
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var email = (input.value || '').trim();
+    if (!email) return;
+    submit.disabled = true;
+    msg.textContent = 'Sending...';
+    msg.className = 'ub-paused-waitlist-msg';
+
+    fetch('/v1/messages/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source: 'waitlist', email: email })
+    })
+      .then(function(r) {
+        if (!r.ok) throw new Error('bad status ' + r.status);
+        return r.json().catch(function() { return {}; });
+      })
+      .then(function() {
+        msg.textContent = "You're on the list. I'll be in touch when the calendar opens back up.";
+        msg.className = 'ub-paused-waitlist-msg is-ok';
+        input.value = '';
+      })
+      .catch(function() {
+        msg.textContent = "Hmm, that didn't send. Try texting " + {{ $phoneDisplay | jsonify }} + " instead.";
+        msg.className = 'ub-paused-waitlist-msg is-err';
+      })
+      .then(function() { submit.disabled = false; });
+  });
+})();
+</script>

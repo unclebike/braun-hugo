@@ -6,6 +6,7 @@
     <title>{{ .Title }} | {{ .Site.Title }}</title>
     <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
     
+    {{ with .Site.Params.brand_color }}<style>:root{--brand-color:{{ . | safeCSS }};}</style>{{ end }}
     <link rel="stylesheet" href="/assets/built/screen.css">
     <style>
         :root.has-light-text,
@@ -357,7 +358,12 @@
     })();
     </script>
     
+    {{/* branding.js sets --brand-color at runtime (Uncle Bike red).
+         Always load it, even in paused mode, so site buttons stay on-brand. */}}
     <script src="/widget/branding.js"></script>
+    {{ if .Site.Params.paused_mode }}
+      {{ partial "paused-status.html" . }}
+    {{ else }}
     <script>
       window.GOATkitPopupConfig = {
         apiUrl: '',
@@ -373,6 +379,7 @@
       }
     </script>
     <script src="/widget/popup.js" defer></script>
+    {{ end }}
     <script>
     (function() {
       var header = document.getElementById('gh-head');
