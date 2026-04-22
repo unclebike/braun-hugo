@@ -252,7 +252,7 @@
         }
     </style>
 </head>
-<body class="{{ if .IsHome }}home-template{{ else }}post-template{{ end }}">
+<body class="{{ if .IsHome }}home-template{{ else }}post-template{{ end }}{{ if .Site.Params.paused_mode }} is-paused{{ end }}">
     <div class="site">
         {{ partial "header.html" . }}
         

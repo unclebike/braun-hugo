@@ -8,105 +8,134 @@
 {{ $funder := .Site.Params.paused_funder_line }}
 
 <style>
-  button.ub-paused-sticker {
-    position: fixed !important;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 1.6rem) !important;
-    right: 1.6rem !important;
-    left: auto !important;
-    top: auto !important;
-    z-index: 9998 !important;
-    width: 13rem !important;
-    height: 13rem !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    font-family: inherit !important;
-    color: #fff !important;
-    cursor: pointer !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    transform: rotate(-10deg) !important;
-    transform-origin: center !important;
-    transition: transform .25s ease !important;
-    overflow: visible !important;
-    animation: ubStickerWobble 3.6s ease-in-out infinite !important;
+  /* Hero burst overlay — sits on top of the hero Book Now button. */
+  .ub-paused-hero-wrap {
+    position: relative !important;
+    display: inline-block !important;
   }
-  button.ub-paused-sticker:hover {
-    transform: rotate(-4deg) scale(1.08) !important;
-    animation-play-state: paused !important;
+  .ub-paused-hero-burst {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 11rem;
+    height: 11rem;
+    transform: translate(55%, -62%) rotate(-14deg);
+    transform-origin: center;
+    pointer-events: none;
+    z-index: 5;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
   }
-  /* Hide sticker when any overlay is open or the contact gate has taken over the page. */
-  body.ub-modal-open button.ub-paused-sticker,
-  body.ub-contact-gated button.ub-paused-sticker {
-    opacity: 0 !important;
-    pointer-events: none !important;
-    transform: rotate(-10deg) scale(0.5) !important;
-    transition: opacity .2s ease, transform .2s ease !important;
+  .ub-paused-hero-burst svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
   }
-  @keyframes ubStickerWobble {
-    0%, 100% { transform: rotate(-10deg); }
-    50% { transform: rotate(-7deg); }
-  }
-
-  button.ub-paused-sticker .ub-paused-burst {
-    position: absolute !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    pointer-events: none !important;
-    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.25));
-  }
-  button.ub-paused-sticker .ub-paused-burst polygon {
-    fill: #E97451;
-    stroke: #fff;
-    stroke-width: 3;
+  .ub-paused-hero-burst svg polygon {
+    fill: var(--brand-color, #FF5757);
+    stroke: #1e1e2e;
+    stroke-width: 2.5;
     stroke-linejoin: round;
   }
-  button.ub-paused-sticker .ub-paused-sticker-text {
-    position: relative !important;
-    z-index: 2 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 0.2rem !important;
-    text-align: center !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.04em !important;
-    line-height: 1 !important;
-    padding: 0 0.4rem !important;
-    pointer-events: none !important;
+  .ub-paused-hero-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #1e1e2e;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    font-weight: 900;
+    padding: 0 0.8rem;
   }
-  button.ub-paused-sticker .ub-paused-sticker-eyebrow {
-    font-size: 1rem !important;
-    font-weight: 700 !important;
-    opacity: 0.92 !important;
+  .ub-paused-hero-logo {
+    width: 5.6rem;
+    height: 5.6rem;
+    margin-bottom: 0.2rem;
+    /* Render the logo in navy to match stroke + text. */
+    filter: brightness(0);
+    pointer-events: none;
   }
-  button.ub-paused-sticker .ub-paused-sticker-headline {
-    font-size: 1.8rem !important;
-    font-weight: 900 !important;
-    letter-spacing: 0.02em !important;
-  }
-  button.ub-paused-sticker .ub-paused-sticker-sub {
-    font-size: 0.95rem !important;
-    font-weight: 700 !important;
-    opacity: 0.88 !important;
-    margin-top: 0.25rem !important;
+  .ub-paused-hero-headline {
+    font-size: 2rem;
+    letter-spacing: 0.04em;
   }
   @media (max-width: 600px) {
-    button.ub-paused-sticker {
-      width: 10rem !important;
-      height: 10rem !important;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 1.1rem) !important;
-      right: 1.1rem !important;
+    .ub-paused-hero-burst {
+      width: 9rem;
+      height: 9rem;
+      transform: translate(40%, -58%) rotate(-14deg);
     }
-    button.ub-paused-sticker .ub-paused-sticker-eyebrow { font-size: 0.85rem !important; }
-    button.ub-paused-sticker .ub-paused-sticker-headline { font-size: 1.5rem !important; }
-    button.ub-paused-sticker .ub-paused-sticker-sub { font-size: 0.8rem !important; }
+    .ub-paused-hero-logo { width: 4.4rem; height: 4.4rem; }
+    .ub-paused-hero-headline { font-size: 1.6rem; }
+  }
+
+  /* Disabled-state for inline Book buttons when paused. Still clickable —
+     the booking-CTA intercept routes the click to the modal. */
+  body.is-paused .zbw-book-btn[data-ub-paused-btn] {
+    position: relative !important;
+    opacity: 0.75 !important;
+    background-color: var(--color-lighter-gray) !important;
+    color: var(--color-dark-gray) !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    overflow: visible !important;
+  }
+  body.is-paused .zbw-book-btn[data-ub-paused-btn]:hover {
+    opacity: 0.95 !important;
+  }
+  /* Thick diagonal strike centered on the button text. Width is bounded so
+     wide buttons don't get an enormous angled slash. */
+  body.is-paused .zbw-book-btn[data-ub-paused-btn]::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 10rem;
+    height: 4px;
+    background: currentColor;
+    border-radius: 2px;
+    transform: translate(-50%, -50%) rotate(-10deg);
+    transform-origin: center;
+    pointer-events: none;
+    z-index: 1;
+  }
+  /* Header/nav button is narrow — smaller strike. */
+  body.is-paused #gh-head .zbw-book-btn[data-ub-paused-btn]::before,
+  body.is-paused .gh-head-members .zbw-book-btn[data-ub-paused-btn]::before {
+    width: 7rem;
+    height: 3px;
+  }
+  body.is-paused .zbw-book-btn[data-ub-paused-btn]::after {
+    content: "BRB";
+    position: absolute;
+    top: -0.8rem;
+    right: -0.8rem;
+    padding: 0.3rem 0.7rem;
+    background: #FF5757;
+    color: #1e1e2e;
+    font-size: 1rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    border-radius: 0.4rem;
+    transform: rotate(8deg);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    text-decoration: none;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 2;
+  }
+  /* Header/nav button is tight — shrink the tag. */
+  body.is-paused #gh-head .zbw-book-btn[data-ub-paused-btn]::after {
+    top: -0.6rem;
+    right: -0.6rem;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.85rem;
   }
 
   .ub-paused-overlay {
@@ -157,7 +186,7 @@
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #E97451;
+    color: var(--brand-color);
     margin-bottom: 0.6rem;
   }
   .ub-paused-card h2 {
@@ -173,7 +202,7 @@
     margin: 0 0 1.2rem;
   }
   .ub-paused-card p strong { color: var(--primary-text-color); }
-  .ub-paused-card a { color: #4169A0; text-decoration: underline; }
+  .ub-paused-card a { color: var(--brand-color); text-decoration: underline; }
 
   .ub-paused-actions {
     display: flex;
@@ -197,10 +226,10 @@
     transition: transform .1s ease, box-shadow .1s ease;
   }
   .ub-paused-btn-primary {
-    background: #228B22;
-    color: #fff;
+    background: var(--brand-color);
+    color: var(--primary-text-color-invert);
   }
-  .ub-paused-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34, 139, 34, 0.35); }
+  .ub-paused-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px hsl(from var(--brand-color) h s l / .4); }
   .ub-paused-btn-secondary {
     background: transparent;
     color: var(--primary-text-color);
@@ -211,8 +240,8 @@
   .ub-paused-phone-reveal {
     display: none;
     padding: 1.4rem 1.6rem;
-    background: rgba(34, 139, 34, 0.08);
-    border: 1px dashed rgba(34, 139, 34, 0.35);
+    background: hsl(from var(--brand-color) h s l / .08);
+    border: 1px dashed hsl(from var(--brand-color) h s l / .35);
     border-radius: 10px;
     margin: 0.4rem 0 1.2rem;
     text-align: center;
@@ -220,7 +249,7 @@
   }
   .ub-paused-phone-reveal.is-active { display: block; }
   .ub-paused-phone-reveal a {
-    color: #228B22;
+    color: var(--brand-color);
     font-weight: 700;
     font-size: 1.9rem;
     text-decoration: none;
@@ -261,12 +290,13 @@
   }
   .ub-paused-waitlist input[type="email"]:focus {
     outline: none;
-    border-color: #4169A0;
+    border-color: var(--brand-color);
+    box-shadow: 0 0 0 3px hsl(from var(--brand-color) h s l / .25);
   }
   .ub-paused-waitlist button {
     padding: 1.1rem 1.6rem;
-    background: #4169A0;
-    color: #fff;
+    background: var(--brand-color);
+    color: var(--primary-text-color-invert);
     border: none;
     border-radius: 10px;
     font-family: inherit;
@@ -274,15 +304,15 @@
     font-weight: 600;
     cursor: pointer;
   }
-  .ub-paused-waitlist button:hover { background: #355889; }
+  .ub-paused-waitlist button:hover { background: hsl(from var(--brand-color) h s l / .85); }
   .ub-paused-waitlist button:disabled { opacity: 0.6; cursor: default; }
   .ub-paused-waitlist-msg {
     margin-top: 0.8rem;
     font-size: 1.3rem;
     min-height: 1.3rem;
   }
-  .ub-paused-waitlist-msg.is-ok { color: #228B22; }
-  .ub-paused-waitlist-msg.is-err { color: #c0392b; }
+  .ub-paused-waitlist-msg.is-ok { color: var(--brand-color); }
+  .ub-paused-waitlist-msg.is-err { color: var(--red-color); }
 
   .ub-paused-funder {
     margin-top: 1.6rem;
@@ -294,28 +324,47 @@
   }
 </style>
 
-<button type="button" class="ub-paused-sticker" id="ub-paused-sticker" aria-label="Uncle Bike is on a special ride — tap for details">
-  <svg class="ub-paused-burst" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
-    <polygon id="ub-paused-burst-poly" points="" />
-  </svg>
-  <span class="ub-paused-sticker-text">
-    <span class="ub-paused-sticker-eyebrow">Uncle Bike is</span>
-    <span class="ub-paused-sticker-headline">On A Ride!</span>
-    <span class="ub-paused-sticker-sub">Tap for details</span>
-  </span>
-</button>
 <script>
-(function() {
-  var poly = document.getElementById('ub-paused-burst-poly');
-  if (!poly) return;
-  var N = 14, cx = 100, cy = 100, rO = 96, rI = 82;
-  var pts = [];
+// Build the burst polygon points — shared by every sticker instance.
+function ubBuildBurst(N, rO, rI) {
+  var pts = [], cx = 100, cy = 100;
   for (var i = 0; i < N * 2; i++) {
     var r = (i % 2 === 0) ? rO : rI;
     var a = (i * Math.PI / N) - Math.PI / 2;
     pts.push((cx + r * Math.cos(a)).toFixed(2) + ',' + (cy + r * Math.sin(a)).toFixed(2));
   }
-  poly.setAttribute('points', pts.join(' '));
+  return pts.join(' ');
+}
+
+(function() {
+  // Tag every Book button for disabled styling + BRB tag, except the hero
+  // (which gets the big overlay) and the corner sticker itself.
+  var heroBtn = document.querySelector('.hero-content .zbw-book-btn, .hero-wrapper .zbw-book-btn');
+  var all = document.querySelectorAll('a.zbw-book-btn, button.zbw-book-btn');
+  all.forEach(function(btn) {
+    if (btn === heroBtn) return;
+    if (btn.classList.contains('ub-paused-sticker')) return;
+    btn.setAttribute('data-ub-paused-btn', '');
+  });
+
+  // Hero sticker overlay.
+  if (heroBtn) {
+    var wrap = document.createElement('span');
+    wrap.className = 'ub-paused-hero-wrap';
+    heroBtn.parentNode.insertBefore(wrap, heroBtn);
+    wrap.appendChild(heroBtn);
+
+    var burst = document.createElement('span');
+    burst.className = 'ub-paused-hero-burst';
+    burst.setAttribute('aria-hidden', 'true');
+    burst.innerHTML =
+      '<svg viewBox="0 0 200 200"><polygon points="' + ubBuildBurst(32, 96, 87) + '"/></svg>' +
+      '<span class="ub-paused-hero-text">' +
+        '<img class="ub-paused-hero-logo" src="/images/ghost/uncle_logo-1.svg" alt="" aria-hidden="true">' +
+        '<span class="ub-paused-hero-headline">BRB!</span>' +
+      '</span>';
+    wrap.appendChild(burst);
+  }
 })();
 </script>
 
@@ -362,7 +411,6 @@
 
 <script>
 (function() {
-  var sticker = document.getElementById('ub-paused-sticker');
   var overlay = document.getElementById('ub-paused-overlay');
   var closeBtn = document.getElementById('ub-paused-close');
   var revealBtn = document.getElementById('ub-paused-reveal-phone');
@@ -388,7 +436,6 @@
     msg.className = 'ub-paused-waitlist-msg';
   }
 
-  sticker.addEventListener('click', open);
   closeBtn.addEventListener('click', close);
   overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
   document.addEventListener('keydown', function(e) {
@@ -441,7 +488,7 @@
         '<label for="ub-contact-gate-email" style="display:block;font-size:1.3rem;font-weight:600;margin-bottom:0.6rem;">Tell me when bookings reopen</label>' +
         '<div class="ub-paused-field" style="display:flex;gap:0.6rem;">' +
           '<input type="email" id="ub-contact-gate-email" placeholder="your@email.com" style="flex:1;padding:1.1rem 1.2rem;font-size:1.5rem;font-family:inherit;border:1.5px solid var(--divider-color,#ddd);border-radius:10px;background:var(--input-background-color,#fff);color:var(--primary-text-color);">' +
-          '<button type="button" id="ub-contact-gate-submit" style="padding:1.1rem 1.6rem;background:#4169A0;color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:1.4rem;font-weight:600;cursor:pointer;">Notify me</button>' +
+          '<button type="button" id="ub-contact-gate-submit" style="padding:1.1rem 1.6rem;background:var(--brand-color);color:var(--primary-text-color-invert);border:none;border-radius:10px;font-family:inherit;font-size:1.4rem;font-weight:600;cursor:pointer;">Notify me</button>' +
         '</div>' +
         '<div class="ub-paused-waitlist-msg" id="ub-contact-gate-msg" role="status"></div>' +
       '</div>' +

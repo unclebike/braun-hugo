@@ -18,6 +18,35 @@
     text-decoration: underline;
 }
 
+.kg-card.kg-callout-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.2rem;
+    padding: 1.6rem 2rem;
+    margin: 2rem 0;
+    background: var(--color-lighter-gray);
+    border-left: 3px solid var(--brand-color);
+    border-radius: var(--radii-medium);
+    font-size: 1.5rem;
+    line-height: 1.55;
+    color: var(--secondary-text-color);
+}
+
+.kg-card.kg-callout-card.kg-callout-card-accent {
+    background: hsl(from var(--brand-color) h s l / .08);
+    color: var(--primary-text-color);
+}
+
+.kg-callout-emoji {
+    flex: 0 0 auto;
+    font-size: 2rem;
+    line-height: 1.2;
+}
+
+.kg-callout-text {
+    flex: 1;
+}
+
 blockquote.kg-blockquote-alt {
     font-size: clamp(2.8rem, 3vw, 4rem);
     font-style: normal;

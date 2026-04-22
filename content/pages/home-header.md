@@ -8,7 +8,14 @@ description: ""
 featured_image: "/images/ghost/2025/05/dfuns-2025-05-31-103837.261-1.jpg"
 ---
 
-<p><strong>I’ve spent nearly a decade keeping bikes rolling smoothly—and now I bring the service to you.</strong><br>No matter where you are in the Bay of Quinte Region, I make it easier to get your bike fixed without the hassle of heading into town. I come to you for most services—and when I can’t, I’ll handle the pickup and drop-off.</p><p>No shop visits. Just timely, personal service that keeps your season rolling.</p><p>Our cycling season is short.<br>Let me handle the maintenance—<strong>so you can enjoy more time on the bike.</strong></p><h2 id="we-start-here">We start here</h2>
+<p><strong>Every rider should have a local bike guy.</strong></p><p>Someone who knows the roads, knows your bike, and actually picks up when you text. Someone who’ll tell you where to ride Sunday and sort your shifting Tuesday. Someone who’s been here, and plans to stay.</p><p>Around the Bay of Quinte, <strong>that’s me</strong>.</p>
+<!--kg-card-begin: html-->
+<div class="kg-card kg-callout-card kg-callout-card-accent">
+  <div class="kg-callout-emoji">🛠️</div>
+  <div class="kg-callout-text">Nine years running The Brake Room. Now mobile across the region, building cycling with Hastings County, Tyendinaga Township, and riders like you.</div>
+</div>
+<!--kg-card-end: html-->
+<h2 id="we-start-here">We start here</h2>
 <!--kg-card-begin: html-->
 <a class="gh-head-link button button-primary button-head zbw-book-btn" href="#book">Book Now</a>
 <!--kg-card-end: html-->
